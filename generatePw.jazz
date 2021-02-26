@@ -1,8 +1,14 @@
-inline fn rng(reg u64 state, stack u64 range, stack u64[76] set) -> stack u64 {
+inline fn rng(reg u64 state, stack u64 range) -> stack u64 {
+    stack u64 rand_number;
+    rand_number = 4;            //FIXED 4
+    return rand_number;
+}
+
+inline fn random_char(reg u64 state, stack u64 range, stack u64[76] set) -> stack u64 {
     stack u64 rand_char;
     stack u64 rand_number;
-    rand_number = 4; //FIXED 4
-    rand_char = set[4];
+    rand_number = rng(state, range);
+    rand_char = set[(int)rand_number];
     return rand_char;
 }
 
@@ -156,7 +162,7 @@ export fn generatePw(reg u64 length, reg u64 lowercase_bool, reg u64 uppercase_b
     max_char = 26 * lowercase_bool + 26 * uppercase_bool + 10 * numbers_bool + 14 * special_bool;
     i = 0;
     while (i < length) {
-        random_char = rng(length, max_char, set_of_chars);
+        random_char = random_char(length, max_char, set_of_chars);
         [p_output + i] = random_char;
         i += 1;
     }
