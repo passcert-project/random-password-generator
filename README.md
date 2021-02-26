@@ -1,5 +1,5 @@
 # Random Password Generator
-The Password Generator component of PassCert. The generator is implemented in Jasmin [1] and will be formally verified with EasyCrypt [2].
+The Password Generator component of PassCert. The generator is implemented in Jasmin [1] and will be formally verified with EasyCrypt [2]. This repository has the code of the password generator written in Jasmin and also a small example of a C application using the generator.
 
 ## Dependencies
 * [Jasmin Compiler](#https://github.com/jasmin-lang/jasmin)
