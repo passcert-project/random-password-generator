@@ -1,1 +1,41 @@
-# random-password-generator
+# Random Password Generator
+The Password Generator component of PassCert. The generator is implemented in Jasmin [1] and will be formally verified with EasyCrypt [2].
+
+## Dependencies
+* [Jasmin Compiler](#https://github.com/jasmin-lang/jasmin)
+* C compiler (I use *gcc* to compile the example)
+
+
+## Compiling
+### Using the Makefile
+Having the compiler executable in the same folder as this repository, makes it possible to simply use
+
+```bash
+make
+```
+ to compile the generator and the C example.
+
+### Without the Makefile
+One can also compile separately the Jasmin code and the C code using, respectively,
+```bash
+./jasminc generatePw.jazz -o generatePw.s
+```
+```bash
+gcc passwordGenerator.c generatePw.s -o passwordGenerator.out
+```
+## Running
+```
+./passwordGenerator.out
+```
+
+## References
+[1]
+Almeida, J.B., Barbosa, M., Barthe, G., Blot, A., Grégoire, B., Laporte, V.,
+Oliveira, T., Pacheco, H., Schmidt, B., Strub, P.Y.: Jasmin: High-assurance and
+high-speed cryptography. In: Proceedings of the 2017 ACM SIGSAC Conference
+on Computer and Communications Security. pp. 1807–1823 (2017)
+
+[2]
+Barthe, G., Dupressoir, F., Grégoire, B., Kunz, C., Schmidt, B., Strub, P.Y.: Easy-
+crypt: A tutorial. In: Foundations of security analysis and design vii, pp. 146–166.
+Springer (2013)
