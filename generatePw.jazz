@@ -1,25 +1,38 @@
-inline fn rng(reg u64 state, stack u64 range) -> stack u64 {
+inline fn rng(stack u64 state, stack u64 range) -> stack u64 {
     stack u64 rand_number;
-    rand_number = 4;            //FIXED 4
+    reg u64 a, c, tmp1, tmp2;
+    inline int x, modulo;
+    a = 5;
+    c = 1;
+    tmp1 = state;
+    tmp2 = a * tmp1;
+    tmp2 = tmp2 + c;
+    x = (int) tmp2;
+    tmp1 = range;
+    modulo = tmp1;
+    rand_number = x % modulo;            //FIXED 4
     return rand_number;
 }
 
-inline fn random_char_generator(reg u64 state, stack u64 range, stack u64[76] set) -> stack u64 {
-    stack u64 rand_char;
+inline fn random_char_generator(stack u64 state, stack u64 range, stack u64[76] set) -> reg u64, stack u64 {
+    reg u64 rand_char;
     stack u64 rand_number;
     rand_number = rng(state, range);
     rand_char = set[(int)rand_number];
-    return rand_char;
+    return rand_char, rand_number;
 }
 
 export fn generatePw(reg u64 length, reg u64 lowercase_bool, reg u64 uppercase_bool, reg u64 numbers_bool, reg u64 special_bool, reg u64 p_output) {
-    stack u64 random_char;
-    stack u64 seed;
-    stack u64 stack_length;
-    reg u64 i_char;
+    // General purpose register
+    reg u64 tmp;
+    // State of the RNG
+    stack u64 state;
+    // Size of the set of chars (max index)
     stack u64 max_char;
+    // Registers used for iterations
     reg u64 i;
     reg u64 i_set;
+    // Stack positions that store the char sets
     stack u64[76] set_of_chars;
     stack u64[26] lowercase_set;
     stack u64[26] uppercase_set;
@@ -124,8 +137,8 @@ export fn generatePw(reg u64 length, reg u64 lowercase_bool, reg u64 uppercase_b
     if (lowercase_bool == 1) {
         i = 0;
         while (i < 26) {
-            i_char = lowercase_set[(int)i];
-            set_of_chars[(int)i_set] = i_char;
+            tmp = lowercase_set[(int)i];
+            set_of_chars[(int)i_set] = tmp;
             i += 1;
             i_set += 1;
         }    
@@ -133,8 +146,8 @@ export fn generatePw(reg u64 length, reg u64 lowercase_bool, reg u64 uppercase_b
     if (uppercase_bool == 1) {
         i = 0;
         while (i < 26) {
-            i_char = uppercase_set[(int)i];
-            set_of_chars[(int)i_set] = i_char;
+            tmp = uppercase_set[(int)i];
+            set_of_chars[(int)i_set] = tmp;
             i += 1;
             i_set += 1;
         }    
@@ -142,8 +155,8 @@ export fn generatePw(reg u64 length, reg u64 lowercase_bool, reg u64 uppercase_b
     if (numbers_bool == 1) {
         i = 0;
         while (i < 10) {
-            i_char = numbers_set[(int)i];
-            set_of_chars[(int)i_set] = i_char;
+            tmp = numbers_set[(int)i];
+            set_of_chars[(int)i_set] = tmp;
             i += 1;
             i_set += 1;
         }    
@@ -151,19 +164,21 @@ export fn generatePw(reg u64 length, reg u64 lowercase_bool, reg u64 uppercase_b
     if (special_bool == 1) {
         i = 0;
         while (i < 14) {
-            i_char = special_set[(int)i];
-            set_of_chars[(int)i_set] = i_char;
+            tmp = special_set[(int)i];
+            set_of_chars[(int)i_set] = tmp;
             i += 1;
             i_set += 1;
         }    
     }
 
     // Generate password from the set of characters available
-    max_char = 26 * lowercase_bool + 26 * uppercase_bool + 10 * numbers_bool + 14 * special_bool;
+    tmp = 26 * lowercase_bool + 26 * uppercase_bool + 10 * numbers_bool + 14 * special_bool;
+    max_char = 1;
     i = 0;
+    state = length;
     while (i < length) {
-        random_char = random_char_generator(length, max_char, set_of_chars);
-        [p_output + i] = random_char;
+        tmp, state = random_char_generator(state, max_char, set_of_chars);
+        [p_output + i] = tmp;
         i += 1;
     }
 
