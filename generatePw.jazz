@@ -1,22 +1,16 @@
-inline fn rng(stack u64 state, stack u64 range) -> stack u64 {
-    stack u64 rand_number;
-    reg u64 a, c, tmp1, tmp2;
-    inline int x, modulo;
-    a = 5;
-    c = 1;
-    tmp1 = state;
-    tmp2 = a * tmp1;
-    tmp2 = tmp2 + c;
-    x = (int) tmp2;
-    tmp1 = range;
-    modulo = tmp1;
-    rand_number = x % modulo;            //FIXED 4
+inline fn rng(stack u64 state, stack u64 range) -> reg u64 {
+    reg u64 rand_number, x, modulo;
+    x = state;
+    x = 5 * x;
+    x = x + 1;
+    modulo = range;
+    rand_number = x % modulo;
     return rand_number;
 }
 
 inline fn random_char_generator(stack u64 state, stack u64 range, stack u64[76] set) -> reg u64, stack u64 {
     reg u64 rand_char;
-    stack u64 rand_number;
+    reg u64 rand_number;
     rand_number = rng(state, range);
     rand_char = set[(int)rand_number];
     return rand_char, rand_number;
