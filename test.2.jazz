@@ -1,0 +1,7 @@
+export fn test(reg u64 p_array) -> reg u64 {
+    reg u64 tmp1;
+
+    tmp1 = (u64) [p_array + 64];
+
+    return tmp1;
+}
