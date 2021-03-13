@@ -1,14 +1,16 @@
 inline fn rng(reg u64 range) -> reg u64 {
-    reg u64 rand_number, out; //max_value, tmp1, tmp2;
-    // max_value = 2^64;
+    reg u64 rand_number, out, tmp, aux; //max_value, tmp1, tmp2;
+    // max_value = 2^64 - 1;
     // tmp1 = max_value / range;
     // tmp2 = tmp1 * range;
-    // max_value = tmp2 -1;
+    // max_value = tmp2 - 1;
     // while {
-        rand_number = #RDRAND();
+    rand_number = #RDRAND();
     // } (rand_number > max_value)
-    out = rand_number % range; //FIXME MAKE THE DISTRIBUTION UNIFORM
-    return out;
+    aux = rand_number;
+    out = aux % range; //FIXME MAKE THE DISTRIBUTION UNIFORM
+    tmp = out;
+    return tmp;
 }
 
 inline fn random_char_generator(reg u64 range, stack u8[76] set) -> reg u8 {
@@ -16,7 +18,7 @@ inline fn random_char_generator(reg u64 range, stack u8[76] set) -> reg u8 {
     reg u64 choice, tmp;
     choice = rng(range);
     tmp = choice;
-    char = set[(int)choice];
+    char = set[(int)tmp];
     return char;
 }
 
@@ -36,7 +38,7 @@ inline fn permutation(reg u64 p_string, reg u64 string_len) {
 inline fn define_union_set(reg u64 lowercase_available, reg u64 uppercase_available, reg u64 numbers_available, reg u64 special_available,
     stack u8[76] lowercase_set, stack u8[76] uppercase_set, stack u8[76] numbers_set,stack u8[76] special_set, stack u8[76] union_set) -> reg u64, stack u8[76] {
     
-    reg u8 tmp8;
+    reg u8 tmp;
     reg u64 i, i_set;
     
     i_set = 0;
@@ -44,8 +46,8 @@ inline fn define_union_set(reg u64 lowercase_available, reg u64 uppercase_availa
     if (lowercase_available == 1) {
         i = 0;
         while (i < 26) {
-            tmp8 = lowercase_set[(int)i];
-            union_set[(int)i_set] = tmp8;
+            tmp = lowercase_set[(int)i];
+            union_set[(int)i_set] = tmp;
             i += 1;
             i_set += 1;
         }    
@@ -53,8 +55,8 @@ inline fn define_union_set(reg u64 lowercase_available, reg u64 uppercase_availa
     if (uppercase_available == 1) {
         i = 0;
         while (i < 26) {
-            tmp8 = uppercase_set[(int)i];
-            union_set[(int)i_set] = tmp8;
+            tmp = uppercase_set[(int)i];
+            union_set[(int)i_set] = tmp;
             i += 1;
             i_set += 1;
         }    
@@ -62,8 +64,8 @@ inline fn define_union_set(reg u64 lowercase_available, reg u64 uppercase_availa
     if (numbers_available == 1) {
         i = 0;
         while (i < 10) {
-            tmp8 = numbers_set[(int)i];
-            union_set[(int)i_set] = tmp8;
+            tmp = numbers_set[(int)i];
+            union_set[(int)i_set] = tmp;
             i += 1;
             i_set += 1;
         }    
@@ -71,8 +73,8 @@ inline fn define_union_set(reg u64 lowercase_available, reg u64 uppercase_availa
     if (special_available == 1) {
         i = 0;
         while (i < 14) {
-            tmp8 = special_set[(int)i];
-            union_set[(int)i_set] = tmp8;
+            tmp = special_set[(int)i];
+            union_set[(int)i_set] = tmp;
             i += 1;
             i_set += 1;
         }    
@@ -86,7 +88,7 @@ export fn generatePw(reg u64 length, reg u64 lowercase_policies, reg u64 upperca
     // Macros
     inline int MAX_LOWERCASE, MAX_UPPERCASE, MAX_NUMBERS, MAX_SPECIAL, MAX_UNION;
     // General purpose registers
-    reg u8 tmp8;
+    reg u8 tmp8, tmp88;
     reg u64 tmp64;
     // Registers used for iterations
     reg u64 i, i_set;
@@ -247,7 +249,8 @@ export fn generatePw(reg u64 length, reg u64 lowercase_policies, reg u64 upperca
         i = 0;
         while (i < [uppercase_policies + 1]) {
             tmp8 = random_char_generator(MAX_UPPERCASE, uppercase_set);
-            (u8) [p_output + i] = tmp8;
+            tmp88 = tmp8;
+            (u8) [p_output + i] = tmp88;
             i += 1;
         }
     }
@@ -276,33 +279,35 @@ export fn generatePw(reg u64 length, reg u64 lowercase_policies, reg u64 upperca
     i = 0;
     while (i < length) {
         tmp8 = random_char_generator(tmp64, union_set);
-        if (tmp8 >= 97 && tmp8 <= 122) {
-            lowercase_max -= 1;
-            if (lowercase_max == 0) {
-                lowercase_available = 0;
-                tmp64, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
-                                    lowercase_set, uppercase_set, numbers_set, special_set, union_set);
-            }
-        } if (tmp8 >= 65 && tmp8 <= 90) {
-            uppercase_max -= 1;
-            if (uppercase_max == 0) {
-                uppercase_available = 0;
-                tmp64, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
-                                    lowercase_set, uppercase_set, numbers_set, special_set, union_set);
-            }
-        } if (tmp8 >= 48 && tmp8 <= 57) {
-            numbers_max -= 1;
-            if (numbers_max == 0) {
-                numbers_available = 0;
-                tmp64, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
-                                    lowercase_set, uppercase_set, numbers_set, special_set, union_set);
-            }
-        } if ((tmp8 >= 33 && tmp8 <= 45) || (tmp8 >= 58 && tmp8 <= 63) || tmp8 == 95) {
-            special_max -= 1;
-            if (special_max == 0) {
-                special_available = 0;
-                tmp64, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
-                                    lowercase_set, uppercase_set, numbers_set, special_set, union_set);
+        if (tmp8 >= 97) { if (tmp8 <= 122) {
+                lowercase_max -= 1;
+                if (lowercase_max == 0) {
+                    lowercase_available = 0;
+                    tmp64, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
+                                        lowercase_set, uppercase_set, numbers_set, special_set, union_set);
+                }
+        }} else { if (tmp8 >= 65) { if (tmp8 <= 90) {
+                uppercase_max -= 1;
+                if (uppercase_max == 0) {
+                    uppercase_available = 0;
+                    tmp64, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
+                                        lowercase_set, uppercase_set, numbers_set, special_set, union_set);
+                }
+            }} else { if (tmp8 >= 48) { if (tmp8 <= 57) {
+                    numbers_max -= 1;
+                    if (numbers_max == 0) {
+                        numbers_available = 0;
+                        tmp64, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
+                                            lowercase_set, uppercase_set, numbers_set, special_set, union_set);
+                    }
+                }} else {
+                    special_max -= 1;
+                    if (special_max == 0) {
+                        special_available = 0;
+                        tmp64, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
+                                            lowercase_set, uppercase_set, numbers_set, special_set, union_set);
+                    }
+                }   
             }
         }
         (u8) [p_output + i] = tmp8;
