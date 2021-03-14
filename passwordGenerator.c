@@ -54,14 +54,14 @@ int main() {
 
     // Ask for special characters
     int specialBool = 0;
-    int specialMin = 1;
+    int specialMin = 0;
     int specialMax = 0;
     printf("Do you want special characters in your password? (1-Yes; 0-No):\n-> ");
     scanf("%d", &specialBool);
     if(specialBool) {
         printf("What is the minimum number of occurrences of special characters in your password?:\n-> ");
         scanf("%d", &specialMin);
-        printf("What is the maximum number of occurrences of special characters in your password?:\n-> ");
+        printf("What is the maximum number of occurrences of special characters in your password? (0 in case you do not care about the maximum number of occurrences of this set):\n-> ");
         scanf("%d", &specialMax);
     }
 
@@ -92,8 +92,17 @@ int main() {
     // Generate password
 	generatePw((uint64_t) length, (uint64_t) lowercasePolicies, (uint64_t) uppercasePolicies, (uint64_t) numbersPolicies, (uint64_t) specialPolicies, (uint64_t) password);
     
-    // Output password
-    printf("Random Password: %s\n", password);
+    if (password[0] == 1) {
+        printf("Password length is too large (must be smaller than 200)\n");
+    } else if (password[0] == 2) {
+        printf("Minimum values are too big. It is not possible to satisfy the length with such minimum values\n");
+    } else if (password[0] == 3) {
+        printf("Maximum values are too small. It is not possible to satisfy the length with such maximum values\n");
+    } else {
+        // Output password
+        printf("Random Password: %s\n", password);
+    }
+
     
     // Free memory
     free(password);
