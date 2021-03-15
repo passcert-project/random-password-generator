@@ -1,6 +1,6 @@
 all: compile-jasmin compile-c
 
-compile-jasmin: ./jasminc Jasmin/generatePw.jazz
+compile-jasmin: jasminc Jasmin/generatePw.jazz
 				./jasminc Jasmin/generatePw.jazz -o asm/generatePw.s
 
 compile-c:	C/passwordGeneratorApp.c asm/generatePw.s
