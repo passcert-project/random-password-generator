@@ -18,14 +18,14 @@ make
 ### Without the Makefile
 One can also compile separately the Jasmin code and the C code using, respectively,
 ```bash
-./jasminc generatePw.jazz -o generatePw.s
+./jasminc Jasmin/generatePw.jazz -o asm/generatePw.s
 ```
 ```bash
-gcc passwordGenerator.c generatePw.s -o passwordGenerator.out
+gcc C/passwordGeneratorApp.c asm/generatePw.s -o passwordGeneratorApp.out
 ```
 ## Running
 ```
-./passwordGenerator.out
+./passwordGeneratorApp.out
 ```
 
 ## References

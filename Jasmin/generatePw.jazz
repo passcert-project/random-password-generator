@@ -1,12 +1,6 @@
 inline fn rng(reg u64 range) -> reg u64 {
-    reg u64 rand_number; //max_value, tmp1, tmp2;
-    // max_value = 2^64 - 1;
-    // tmp1 = max_value / range;
-    // tmp2 = tmp1 * range;
-    // max_value = tmp2 - 1;
-    // while {
+    reg u64 rand_number;
     rand_number = #RDRAND();
-    // } (rand_number > max_value)
     rand_number = rand_number % range; //FIXME MAKE THE DISTRIBUTION UNIFORM
     return rand_number;
 }
@@ -80,7 +74,7 @@ inline fn define_union_set(reg u64 lowercase_available, reg u64 uppercase_availa
     return i_set, union_set;
 }
 
-export fn generatePw(reg u64 length, reg u64 lowercase_policies, reg u64 uppercase_policies, reg u64 numbers_policies, reg u64 special_policies, reg u64 p_output) {
+export fn generatePw(reg u64 length, reg u64 lowercase_policies, reg u64 uppercase_policies, reg u64 numbers_policies, reg u64 special_policies, reg u64 p_output) -> reg u64 {
 
     // General purpose registers
     reg u8 tmp8;
@@ -97,6 +91,8 @@ export fn generatePw(reg u64 length, reg u64 lowercase_policies, reg u64 upperca
     stack u64 lowercase_available, uppercase_available, numbers_available, special_available;
     // Variables that stor min and max values of characters to be generated
     stack u64 lowercase_min, uppercase_min, numbers_min, special_min, lowercase_max, uppercase_max, numbers_max, special_max;
+    // Output
+    reg u64 output;
 
     /////////////////////////////////      Sets of characters     ////////////////////////////////////
     //                                                                                              //
@@ -139,237 +135,362 @@ export fn generatePw(reg u64 length, reg u64 lowercase_policies, reg u64 upperca
         special_max = 200;
     }
 
-    // VERIFICATIONS OF INPUT
+    
+    ////////////////////////////
+    // VERIFICATIONS OF INPUT //
+    ////////////////////////////
 
     // Length does not exceed maximum length of 200
     if (length <= 200) {
-        // Minimum values do not exceed password length
-        tmp64_1 = lowercase_min;
-        tmp64_2 = uppercase_min;
+    // At least one set is selected
+    tmp64_1 = lowercase_available;
+    tmp64_2 = uppercase_available;
+    tmp64_1 += tmp64_2;
+    tmp64_2 = numbers_available;
+    tmp64_1 += tmp64_2;
+    tmp64_2 = special_available;
+    tmp64_1 += special_available;
+    if (tmp64_1 > 0) {
+    // Min values are not negative
+    tmp64_1 = lowercase_min;
+    if (tmp64_1 >=s 0) {
+    tmp64_1 = uppercase_min;
+    if (tmp64_1 >=s 0) {
+    tmp64_1 = numbers_min;
+    if (tmp64_1 >=s 0) {
+    tmp64_1 = special_min;
+    if (tmp64_1 >=s 0) {      
+    // Max values are not negative
+    tmp64_1 = lowercase_max;
+    if (tmp64_1 >=s 0) {
+    tmp64_1 = uppercase_max;
+    if (tmp64_1 >=s 0) {
+    tmp64_1 = numbers_max;
+    if (tmp64_1 >=s 0) {
+    tmp64_1 = special_max;
+    if (tmp64_1 >=s 0) {
+    // Max values are larger than min values
+    tmp64_1 = lowercase_max;
+    tmp64_2 = lowercase_min;
+    if (tmp64_1 >= tmp64_2) {
+    tmp64_1 = uppercase_max;
+    tmp64_2 = uppercase_min;
+    if (tmp64_1 >= tmp64_2) {
+    tmp64_1 = numbers_max;
+    tmp64_2 = numbers_min;
+    if (tmp64_1 >= tmp64_2) {
+    tmp64_1 = special_max;
+    tmp64_2 = special_min;
+    if (tmp64_1 >= tmp64_2) {
+    // Sum of minimum values do not exceed password length
+    tmp64_1 = lowercase_min;
+    tmp64_2 = uppercase_min;
+    tmp64_1 += tmp64_2;
+    tmp64_2 = numbers_min;
+    tmp64_1 += tmp64_2;
+    tmp64_2 = special_min;
+    tmp64_1 += tmp64_2;
+    if (tmp64_1 <= length) {
+    // Sum of maximum values satisfies the password length
+    tmp64_1 = 0;
+    if (lowercase_available == 1) {
+        tmp64_2 = lowercase_max;
         tmp64_1 += tmp64_2;
-        tmp64_2 = numbers_min;
+    }
+    if (uppercase_available == 1) {
+        tmp64_2 = uppercase_max;
         tmp64_1 += tmp64_2;
-        tmp64_2 = special_min;
+    }
+    if (numbers_available == 1) {
+        tmp64_2 = numbers_max;
         tmp64_1 += tmp64_2;
-        if (tmp64_1 <= length) {
-            // Maximum values satisfy the password length
-            tmp64_1 = lowercase_max;
-            tmp64_2 = uppercase_max;
-            tmp64_1 += tmp64_2;
-            tmp64_2 = numbers_max;
-            tmp64_1 += tmp64_2;
-            tmp64_2 = special_max;
-            tmp64_1 += tmp64_2;
-            if (tmp64_1 >= length) {
+    }
+    if (special_available == 1) {
+        tmp64_2 = lowercase_max;
+        tmp64_1 += tmp64_2;
+    }
+    if (tmp64_1 >= length) {
 
-                // READY TO GENERATE PASSWORD
 
-                // Initialize the sets. The values are the ASCII codes of the different characters
-                lowercase_set[0] = 97;
-                lowercase_set[1] = 98;
-                lowercase_set[2] = 99;
-                lowercase_set[3] = 100;
-                lowercase_set[4] = 101;
-                lowercase_set[5] = 102;
-                lowercase_set[6] = 103;
-                lowercase_set[7] = 104;
-                lowercase_set[8] = 105;
-                lowercase_set[9] = 106;
-                lowercase_set[10] = 107;
-                lowercase_set[11] = 108;
-                lowercase_set[12] = 109;
-                lowercase_set[13] = 110;
-                lowercase_set[14] = 111;
-                lowercase_set[15] = 112;
-                lowercase_set[16] = 113;
-                lowercase_set[17] = 114;
-                lowercase_set[18] = 115;
-                lowercase_set[19] = 116;
-                lowercase_set[20] = 117;
-                lowercase_set[21] = 118;
-                lowercase_set[22] = 119;
-                lowercase_set[23] = 120;
-                lowercase_set[24] = 121;
-                lowercase_set[25] = 122;
-                i = 26;
-                while (i < (76)) {
-                    lowercase_set[(int)i] = 0;
-                    i += 1;
-                }
-                uppercase_set[0] = 65;
-                uppercase_set[1] = 66;
-                uppercase_set[2] = 67;
-                uppercase_set[3] = 68;
-                uppercase_set[4] = 69;
-                uppercase_set[5] = 70;
-                uppercase_set[6] = 71;
-                uppercase_set[7] = 72;
-                uppercase_set[8] = 73;
-                uppercase_set[9] = 74;
-                uppercase_set[10] = 75;
-                uppercase_set[11] = 76;
-                uppercase_set[12] = 77;
-                uppercase_set[13] = 78;
-                uppercase_set[14] = 79;
-                uppercase_set[15] = 80;
-                uppercase_set[16] = 81;
-                uppercase_set[17] = 82;
-                uppercase_set[18] = 83;
-                uppercase_set[19] = 84;
-                uppercase_set[20] = 85;
-                uppercase_set[21] = 86;
-                uppercase_set[22] = 87;
-                uppercase_set[23] = 88;
-                uppercase_set[24] = 89;
-                uppercase_set[25] = 90;
-                i = 26;
-                while (i < (76)) {
-                    uppercase_set[(int)i] = 0;
-                    i += 1;
-                }
-                numbers_set[0] = 48;
-                numbers_set[1] = 49;
-                numbers_set[2] = 50;
-                numbers_set[3] = 51;
-                numbers_set[4] = 52;
-                numbers_set[5] = 53;
-                numbers_set[6] = 54;
-                numbers_set[7] = 55;
-                numbers_set[8] = 56;
-                numbers_set[9] = 57;
-                i = 10;
-                while (i < (76)) {
-                    numbers_set[(int)i] = 0;
-                    i += 1;
-                }
-                special_set[0] = 33;
-                special_set[1] = 63;
-                special_set[2] = 35;
-                special_set[3] = 36;
-                special_set[4] = 37;
-                special_set[5] = 38;
-                special_set[6] = 43;
-                special_set[7] = 45;
-                special_set[8] = 42;
-                special_set[9] = 95;
-                special_set[10] = 64;
-                special_set[11] = 58;
-                special_set[12] = 59;
-                special_set[13] = 61;
-                i = 14;
-                while (i < (76)) {
-                    special_set[(int)i] = 0;
-                    i += 1;
-                }
+    ////////////////////////////////
+    // READY TO GENERATE PASSWORD //
+    ////////////////////////////////
 
-                // Initialize union set FIXME IS THIS NEEDED?
-                i = 0;
-                while (i < (76)) {
-                    union_set[(int)i] = 0;
-                    i += 1;
-                }
+    // Initialize the sets. The values are the ASCII codes of the different characters
+    lowercase_set[0] = 97;
+    lowercase_set[1] = 98;
+    lowercase_set[2] = 99;
+    lowercase_set[3] = 100;
+    lowercase_set[4] = 101;
+    lowercase_set[5] = 102;
+    lowercase_set[6] = 103;
+    lowercase_set[7] = 104;
+    lowercase_set[8] = 105;
+    lowercase_set[9] = 106;
+    lowercase_set[10] = 107;
+    lowercase_set[11] = 108;
+    lowercase_set[12] = 109;
+    lowercase_set[13] = 110;
+    lowercase_set[14] = 111;
+    lowercase_set[15] = 112;
+    lowercase_set[16] = 113;
+    lowercase_set[17] = 114;
+    lowercase_set[18] = 115;
+    lowercase_set[19] = 116;
+    lowercase_set[20] = 117;
+    lowercase_set[21] = 118;
+    lowercase_set[22] = 119;
+    lowercase_set[23] = 120;
+    lowercase_set[24] = 121;
+    lowercase_set[25] = 122;
+    i = 26;
+    while (i < (76)) {
+        lowercase_set[(int)i] = 0;
+        i += 1;
+    }
+    uppercase_set[0] = 65;
+    uppercase_set[1] = 66;
+    uppercase_set[2] = 67;
+    uppercase_set[3] = 68;
+    uppercase_set[4] = 69;
+    uppercase_set[5] = 70;
+    uppercase_set[6] = 71;
+    uppercase_set[7] = 72;
+    uppercase_set[8] = 73;
+    uppercase_set[9] = 74;
+    uppercase_set[10] = 75;
+    uppercase_set[11] = 76;
+    uppercase_set[12] = 77;
+    uppercase_set[13] = 78;
+    uppercase_set[14] = 79;
+    uppercase_set[15] = 80;
+    uppercase_set[16] = 81;
+    uppercase_set[17] = 82;
+    uppercase_set[18] = 83;
+    uppercase_set[19] = 84;
+    uppercase_set[20] = 85;
+    uppercase_set[21] = 86;
+    uppercase_set[22] = 87;
+    uppercase_set[23] = 88;
+    uppercase_set[24] = 89;
+    uppercase_set[25] = 90;
+    i = 26;
+    while (i < (76)) {
+        uppercase_set[(int)i] = 0;
+        i += 1;
+    }
+    numbers_set[0] = 48;
+    numbers_set[1] = 49;
+    numbers_set[2] = 50;
+    numbers_set[3] = 51;
+    numbers_set[4] = 52;
+    numbers_set[5] = 53;
+    numbers_set[6] = 54;
+    numbers_set[7] = 55;
+    numbers_set[8] = 56;
+    numbers_set[9] = 57;
+    i = 10;
+    while (i < (76)) {
+        numbers_set[(int)i] = 0;
+        i += 1;
+    }
+    special_set[0] = 33;
+    special_set[1] = 63;
+    special_set[2] = 35;
+    special_set[3] = 36;
+    special_set[4] = 37;
+    special_set[5] = 38;
+    special_set[6] = 43;
+    special_set[7] = 45;
+    special_set[8] = 42;
+    special_set[9] = 95;
+    special_set[10] = 64;
+    special_set[11] = 58;
+    special_set[12] = 59;
+    special_set[13] = 61;
+    i = 14;
+    while (i < (76)) {
+        special_set[(int)i] = 0;
+        i += 1;
+    }
 
-                // Generate characters with min values defined
-                i_filled = 0;
-                if (lowercase_available == 1) {
-                    i = 0;
-                    while (i < lowercase_min) {
-                        tmp8 = random_char_generator(26, lowercase_set);
-                        (u8) [p_output + i_filled] = tmp8;
-                        i += 1;
-                        i_filled += 1;
-                    }
-                }
-                if (uppercase_available == 1) {
-                    i = 0;
-                    while (i < uppercase_min) {
-                        tmp8 = random_char_generator(26, uppercase_set);
-                        (u8) [p_output + i_filled] = tmp8;
-                        i += 1;
-                        i_filled += 1;
-                    }
-                }
-                if (numbers_available == 1) {
-                    i = 0;
-                    while (i < numbers_min) {
-                        tmp8 = random_char_generator(10, numbers_set);
-                        (u8) [p_output + i_filled] = tmp8;
-                        i += 1;
-                        i_filled += 1;
-                    }
-                }
-                if (special_available == 1) {
-                    i = 0;
-                    while (i < special_min) {
-                        tmp8 = random_char_generator(14, special_set);
-                        (u8) [p_output + i_filled] = tmp8;
-                        i += 1;
-                        i_filled += 1;
-                    }
-                }
+    // Initialize union set FIXME IS THIS NEEDED?
+    i = 0;
+    while (i < (76)) {
+        union_set[(int)i] = 0;
+        i += 1;
+    }
 
-                // Define set of characters available, if their maximum value has not been reached yet
-                tmp64_1, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
-                                    lowercase_set, uppercase_set, numbers_set, special_set, union_set);
-
-                // Generate password from the set of characters available
-                while (i_filled < length) {
-                    tmp8 = random_char_generator(tmp64_1, union_set);
-                    if (tmp8 >= 97) { if (tmp8 <= 122) {
-                            lowercase_max -= 1;
-                            if (lowercase_max == 0) {
-                                lowercase_available = 0;
-                                tmp64_1, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
-                                                    lowercase_set, uppercase_set, numbers_set, special_set, union_set);
-                            }
-                    }} else { if (tmp8 >= 65) { if (tmp8 <= 90) {
-                            uppercase_max -= 1;
-                            if (uppercase_max == 0) {
-                                uppercase_available = 0;
-                                tmp64_1, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
-                                                    lowercase_set, uppercase_set, numbers_set, special_set, union_set);
-                            }
-                        }} else { if (tmp8 >= 48) { if (tmp8 <= 57) {
-                                numbers_max -= 1;
-                                if (numbers_max == 0) {
-                                    numbers_available = 0;
-                                    tmp64_1, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
-                                                        lowercase_set, uppercase_set, numbers_set, special_set, union_set);
-                                }
-                            }} else {
-                                special_max -= 1;
-                                if (special_max == 0) {
-                                    special_available = 0;
-                                    tmp64_1, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
-                                                        lowercase_set, uppercase_set, numbers_set, special_set, union_set);
-                                }
-                            }   
-                        }
-                    }
-                    (u8) [p_output + i] = tmp8;
-                    i_filled += 1;
-                }
-
-                // Generate random permutation of string
-                permutation(p_output, length);
-
-                // Make sure last character is \0
-                [p_output + length] = 0;
-            } else {
-                // Maximum values are short (Sum(Max) < length)
-                [p_output + 0] = 3;
-                [p_output + 1] = 0;
+    // Generate characters with min values defined
+    i_filled = 0;
+    if (lowercase_available == 1) {
+        i = 0;
+        while (i < lowercase_min) {
+            lowercase_max -= 1;
+            if (lowercase_max == 0) {
+                lowercase_available = 0;
             }
-        } else {
-            // Minimum values are larger than length (Sum(Min) > length)
-            [p_output + 0] = 2;
-            [p_output + 1] = 0;
+            tmp8 = random_char_generator(26, lowercase_set);
+            (u8) [p_output + i_filled] = tmp8;
+            i += 1;
+            i_filled += 1;
         }
+    }
+    if (uppercase_available == 1) {
+        i = 0;
+        while (i < uppercase_min) {
+            uppercase_max -= 1;
+            if (uppercase_max == 0) {
+                uppercase_available = 0;
+            }
+            tmp8 = random_char_generator(26, uppercase_set);
+            (u8) [p_output + i_filled] = tmp8;
+            i += 1;
+            i_filled += 1;
+        }
+    }
+    if (numbers_available == 1) {
+        i = 0;
+        while (i < numbers_min) {
+            numbers_max -= 1;
+            if (numbers_max == 0) {
+                numbers_available = 0;
+            }
+            tmp8 = random_char_generator(10, numbers_set);
+            (u8) [p_output + i_filled] = tmp8;
+            i += 1;
+            i_filled += 1;
+        }
+    }
+    if (special_available == 1) {
+        i = 0;
+        while (i < special_min) {
+            special_max -= 1;
+            if (special_max == 0) {
+                special_available = 0;
+            }
+            tmp8 = random_char_generator(14, special_set);
+            (u8) [p_output + i_filled] = tmp8;
+            i += 1;
+            i_filled += 1;
+        }
+    }
+
+    // Define set of characters available, if their maximum value has not been reached yet
+    tmp64_1, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
+                        lowercase_set, uppercase_set, numbers_set, special_set, union_set);
+
+    // Generate password from the set of characters available
+    while (i_filled < length) {
+        tmp8 = random_char_generator(tmp64_1, union_set);
+        if (tmp8 >= 97) { if (tmp8 <= 122) {
+                lowercase_max -= 1;
+                if (lowercase_max == 0) {
+                    lowercase_available = 0;
+                    tmp64_1, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
+                                        lowercase_set, uppercase_set, numbers_set, special_set, union_set);
+                }
+        }} else { if (tmp8 >= 65) { if (tmp8 <= 90) {
+                uppercase_max -= 1;
+                if (uppercase_max == 0) {
+                    uppercase_available = 0;
+                    tmp64_1, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
+                                        lowercase_set, uppercase_set, numbers_set, special_set, union_set);
+                }
+            }} else { if (tmp8 >= 48) { if (tmp8 <= 57) {
+                    numbers_max -= 1;
+                    if (numbers_max == 0) {
+                        numbers_available = 0;
+                        tmp64_1, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
+                                            lowercase_set, uppercase_set, numbers_set, special_set, union_set);
+                    }
+                }} else {
+                    special_max -= 1;
+                    if (special_max == 0) {
+                        special_available = 0;
+                        tmp64_1, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
+                                            lowercase_set, uppercase_set, numbers_set, special_set, union_set);
+                    }
+                }   
+            }
+        }
+        (u8) [p_output + i_filled] = tmp8;
+        i_filled += 1;
+    }
+
+    // Generate random permutation of string
+    permutation(p_output, length);
+
+    // Make sure last character is \0
+    [p_output + length] = 0;
+
+    output = 1;
+
+    } else {
+        // Maximum values are short (Sum(Max) < length)
+        output = -16; 
+    }
+    } else {
+        // Minimum values are larger than length (Sum(Min) > length)
+        output = -15; 
+    }
+    } else {
+        // Special characters max value is smaller than min value
+        output = -14; 
+    }
+    } else {
+        // Numbers max value is smaller than min value 
+        output = -13; 
+    }
+    } else {
+        // Uppercase letters max value is smaller than min value 
+        output = -12; 
+    }
+    } else {
+        // Lowercase letters max value is smaller than min value 
+        output = -11; 
+    }
+    } else {
+        // Special characters max value is negative
+        output = -10; 
+    }
+    } else {
+        // Numbers max value is negative
+        output = -9; 
+    }
+    } else {
+        // Uppercase letters max value is negative
+        output = -8; 
+    }
+    } else {
+        // Lowercase letters max value is negative
+        output = -7; 
+    }
+    } else {
+        // Special characters min value is negative
+        output = -6; 
+    }
+    } else {
+        // Numbers min value is negative
+        output = -5; 
+    }
+    } else {
+        // Uppercase letters min value is negative
+        output = -4; 
+    }
+    } else {
+        // Lowercase letters min value is negative
+        output = -3;
+    }
+    } else {
+        // No set is selected
+        output = -2;
+    }
     } else {
         // Length is too large (length > 200)
-        [p_output + 0] = 1;
-        [p_output + 1] = 0;
+        output = -1;
     }
-    
+
+    return output;
 
 }

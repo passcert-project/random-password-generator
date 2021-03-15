@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <inttypes.h>
 
-extern void generatePw(uint64_t length, uint64_t lowercaseBool, uint64_t uppercaseBool, uint64_t numbersBool, uint64_t specialBool, uint64_t poutput);
+extern uint64_t generatePw(uint64_t length, uint64_t lowercaseBool, uint64_t uppercaseBool, uint64_t numbersBool, uint64_t specialBool, uint64_t poutput);
 
 int main() {
     // Welcome message
@@ -90,14 +90,40 @@ int main() {
     }
 
     // Generate password
-	generatePw((uint64_t) length, (uint64_t) lowercasePolicies, (uint64_t) uppercasePolicies, (uint64_t) numbersPolicies, (uint64_t) specialPolicies, (uint64_t) password);
+	uint64_t code = generatePw((uint64_t) length, (uint64_t) lowercasePolicies, (uint64_t) uppercasePolicies, (uint64_t) numbersPolicies, (uint64_t) specialPolicies, (uint64_t) password);
     
-    if (password[0] == 1) {
+    if ((int) code == -1) {
         printf("Password length is too large (must be smaller than 200)\n");
-    } else if (password[0] == 2) {
-        printf("Minimum values are too big. It is not possible to satisfy the length with such minimum values\n");
-    } else if (password[0] == 3) {
-        printf("Maximum values are too small. It is not possible to satisfy the length with such maximum values\n");
+    } else if ((int) code == -2) {
+        printf("At least one of the character sets must be selected.\n");
+    } else if ((int) code == -3) {
+        printf("Lowercase letters minimum number of occurrences can not be negative.\n");
+    } else if ((int) code == -4) {
+        printf("Uppercase letters minimum number of occurrences can not be negative.\n");
+    } else if ((int) code == -5) {
+        printf("Numbers minimum number of occurrences can not be negative.\n");
+    } else if ((int) code == -6) {
+        printf("Special characters minimum number of occurrences can not be negative.\n");
+    } else if ((int) code == -7) {
+        printf("Lowercase letters maximum number of occurrences can not be negative.\n");
+    } else if ((int) code == -8) {
+        printf("Uppercase letters maximum number of occurrences can not be negative.\n");
+    } else if ((int) code == -9) {
+        printf("Numbers maximum number of occurrences can not be negative.\n");
+    } else if ((int) code == -10) {
+        printf("Special characters maximum number of occurrences can not be negative.\n");
+    } else if ((int) code == -11) {
+        printf("Lowercase letters maximum number of occurrences can not be smaller than minimum\n");
+    } else if ((int) code == -12) {
+        printf("Uppercase letters maximum number of occurrences can not be smaller than minimum\n");
+    } else if ((int) code == -13) {
+        printf("Numbers maximum number of occurrences can not be smaller than minimum\n");
+    } else if ((int) code == -14) {
+        printf("Special characters maximum number of occurrences can not be smaller than minimum\n");
+    } else if ((int) code == -15) {
+        printf("Minimum values sum is too big. It is not possible to satisfy the length with such minimum values.\n");
+    } else if ((int) code == -16) {
+        printf("Maximum values sum is too small. It is not possible to satisfy the length with such maximum values.\n");
     } else {
         // Output password
         printf("Random Password: %s\n", password);
