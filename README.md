@@ -27,6 +27,21 @@ gcc C/passwordGeneratorApp.c asm/generatePw.s -o passwordGeneratorApp.out
 ```
 ./passwordGeneratorApp.out
 ```
+## Extracting EasyCrypt from Jasmin program
+### Using the Makefile
+Having the compiler executable in the same folder as EC, makes it possible to simply use
+
+```bash
+make
+```
+ to extract the EasyCrypt model of the Jasmin program automatically.
+ 
+### Without the Makefile
+One can also extract EasyCrypt with the following command
+```bash
+./jasminc Jasmin/generatePw.jazz -ec generatePw -oec generatePw_jazz.ec
+```
+
 
 ## References
 [1]
