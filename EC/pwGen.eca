@@ -1,0 +1,28 @@
+(* Correctness definition for a random password generator *)
+
+module PasswordGenerator_T = {
+  proc generatePassword(length:W64.t, lowercase_policies:W64.t, uppercase_policies:W64.t, numbers_policies:W64.t, special_policies:W64.t, p_output:W64.t) : message
+}
+
+(* If, given a concrete password generator, the main procedure of the following module
+    is true with 100% probability, then it means that the password generator always terminates *)
+
+module Termination (PasswordGenerator : PasswordGenerator_T) = {
+  proc main(policies) : bool = {
+    var password;
+    password <- PasswordGenerator.generatePassword(policies);
+    return True;
+  }
+}
+
+
+(* If, given a concrete password generator, the main procedure of the following module
+    is true with 100% probability, then we say that the password generator is correct *)
+
+module Correctness (PasswordGenerator : PasswordGenerator_T) = {
+  proc main(policies) : bool = {
+    var password;
+    password <- PasswordGenerator.generatePassword(policies);
+    return meetsPolicies(policies,password);
+  }
+}

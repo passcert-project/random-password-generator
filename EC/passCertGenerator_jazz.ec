@@ -4,14 +4,14 @@ require import JModel.
 require import Array76.
 require import WArray76.
 
-
+op [full uniform] RDRAND: W64.t distr.
 
 module M = {
   proc rng (range:W64.t) : W64.t = {
     
     var rand_number:W64.t;
     
-    rand_number <- RDRAND ;
+    rand_number <$ RDRAND ;
     rand_number <- (rand_number \umod range);
     return (rand_number);
   }
@@ -640,4 +640,3 @@ module M = {
     return (output);
   }
 }.
-
