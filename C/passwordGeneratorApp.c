@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <inttypes.h>
 
-extern uint64_t generatePw(uint64_t length, uint64_t lowercaseBool, uint64_t uppercaseBool, uint64_t numbersBool, uint64_t specialBool, uint64_t poutput);
+extern uint64_t generatePassword(uint64_t length, uint64_t lowercaseBool, uint64_t uppercaseBool, uint64_t numbersBool, uint64_t specialBool, uint64_t poutput);
 
 int main() {
     // Welcome message
@@ -90,7 +90,7 @@ int main() {
     }
 
     // Generate password
-	uint64_t code = generatePw((uint64_t) length, (uint64_t) lowercasePolicies, (uint64_t) uppercasePolicies, (uint64_t) numbersPolicies, (uint64_t) specialPolicies, (uint64_t) password);
+	uint64_t code = generatePassword((uint64_t) length, (uint64_t) lowercasePolicies, (uint64_t) uppercasePolicies, (uint64_t) numbersPolicies, (uint64_t) specialPolicies, (uint64_t) password);
     
     if ((int) code == -1) {
         printf("Password length is too large (must be smaller than 200)\n");

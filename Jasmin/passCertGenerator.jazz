@@ -74,7 +74,7 @@ inline fn define_union_set(reg u64 lowercase_available, reg u64 uppercase_availa
     return i_set, union_set;
 }
 
-export fn generatePw(reg u64 length, reg u64 lowercase_policies, reg u64 uppercase_policies, reg u64 numbers_policies, reg u64 special_policies, reg u64 p_output) -> reg u64 {
+export fn generatePassword(reg u64 length, reg u64 lowercase_policies, reg u64 uppercase_policies, reg u64 numbers_policies, reg u64 special_policies, reg u64 p_output) -> reg u64 {
 
     // General purpose registers
     reg u8 tmp8;

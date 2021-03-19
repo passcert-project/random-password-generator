@@ -1,5 +1,5 @@
 require import AllCore IntDiv CoreMap List.
-from Jasmin require import JModel.
+require import JModel.
 
 require import Array76.
 require import WArray76.
@@ -110,9 +110,9 @@ module M = {
     return (i_set, union_set);
   }
   
-  proc generatePw (length:W64.t, lowercase_policies:W64.t,
-                   uppercase_policies:W64.t, numbers_policies:W64.t,
-                   special_policies:W64.t, p_output:W64.t) : W64.t = {
+  proc generatePassword (length:W64.t, lowercase_policies:W64.t,
+                         uppercase_policies:W64.t, numbers_policies:W64.t,
+                         special_policies:W64.t, p_output:W64.t) : W64.t = {
     
     var output:W64.t;
     var lowercase_available:W64.t;

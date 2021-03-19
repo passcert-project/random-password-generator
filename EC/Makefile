@@ -1,5 +1,5 @@
 all: extract-ec
 
-extract-ec: ../jasminc ../Jasmin/generatePw.jazz
-		../jasminc ../Jasmin/generatePw.jazz -ec generatePw -oec generatePw_jazz.ec
+extract-ec: ../jasminc ../Jasmin/passCertGenerator.jazz
+		../jasminc ../Jasmin/passCertGenerator.jazz -ec generatePassword -oec passCertGenerator_jazz.ec
 
