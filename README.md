@@ -18,10 +18,10 @@ make
 ### Without the Makefile
 One can also compile separately the Jasmin code and the C code using, respectively,
 ```bash
-./jasminc Jasmin/generatePw.jazz -o asm/generatePw.s
+./jasminc Jasmin/passCertGenerator.jazz -o asm/passCertGenerator.s
 ```
 ```bash
-gcc C/passwordGeneratorApp.c asm/generatePw.s -o passwordGeneratorApp.out
+gcc C/passwordGeneratorApp.c asm/passCertGenerator.s -o passwordGeneratorApp.out
 ```
 ## Running
 ```
@@ -39,7 +39,7 @@ make
 ### Without the Makefile
 One can also extract EasyCrypt with the following command
 ```bash
-./jasminc Jasmin/generatePw.jazz -ec generatePw -oec generatePw_jazz.ec
+./jasminc Jasmin/passCertGenerator.jazz -ec generatePassword -oec passCertGenerator_jazz.ec
 ```
 
 
