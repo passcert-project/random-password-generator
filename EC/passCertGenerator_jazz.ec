@@ -12,7 +12,7 @@ module M = {
     
     var rand_number:W64.t;
     
-    rand_number <- RDRAND ;
+    rand_number <$ RDRAND;
     rand_number <- (rand_number \umod range);
     return (rand_number);
   }
