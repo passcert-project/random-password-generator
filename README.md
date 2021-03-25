@@ -1,5 +1,5 @@
 # Random Password Generator
-The Password Generator component of PassCert. The generator is implemented in Jasmin [1] and will be formally verified with EasyCrypt [2]. This repository has the code of the password generator written in Jasmin and also a small example of a C application using the generator.
+The Password Generator component of PassCert. The generator is implemented in Jasmin [1] and will be formally verified with EasyCrypt [2]. This repository has the code of the password generator written in Jasmin and also a small example of a C application using the generator. Also, it has the specification written in EasyCrypt of a random password generator. We want to prove that this specification is correct and secure, and then we want to prove that our Jasmin program meets the specification (it is equivalent).
 
 ## Dependencies
 * [Jasmin Compiler](#https://github.com/jasmin-lang/jasmin)
@@ -8,7 +8,7 @@ The Password Generator component of PassCert. The generator is implemented in Ja
 
 ## Compiling
 ### Using the Makefile
-Having the compiler executable in the same folder as this repository, makes it possible to simply use
+Having the jasmin(#https://github.com/jasmin-lang/jasmin) repo next to this one, makes it possible to simply use
 
 ```bash
 make
@@ -18,7 +18,7 @@ make
 ### Without the Makefile
 One can also compile separately the Jasmin code and the C code using, respectively,
 ```bash
-./jasminc Jasmin/passCertGenerator.jazz -o asm/passCertGenerator.s
+../jasmin/compiler/jasminc Jasmin/passCertGenerator.jazz -o asm/passCertGenerator.s
 ```
 ```bash
 gcc C/passwordGeneratorApp.c asm/passCertGenerator.s -o passwordGeneratorApp.out
@@ -29,17 +29,17 @@ gcc C/passwordGeneratorApp.c asm/passCertGenerator.s -o passwordGeneratorApp.out
 ```
 ## Extracting EasyCrypt from Jasmin program
 ### Using the Makefile
-Having the compiler executable in the same folder as EC, makes it possible to simply use
+Having the jasmin(#https://github.com/jasmin-lang/jasmin) repo next to this one, makes it possible to simply use
 
 ```bash
 make
 ```
- to extract the EasyCrypt model of the Jasmin program automatically.
+ in the EC folder to extract the EasyCrypt model of the Jasmin program automatically.
  
 ### Without the Makefile
 One can also extract EasyCrypt with the following command
 ```bash
-./jasminc Jasmin/passCertGenerator.jazz -ec generatePassword -oec passCertGenerator_jazz.ec
+../../jasmin/compiler/jasminc Jasmin/passCertGenerator.jazz -ec generatePassword -oec passCertGenerator_jazz.ec
 ```
 
 
