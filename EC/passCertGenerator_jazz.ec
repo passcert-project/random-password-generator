@@ -1,5 +1,6 @@
 require import AllCore IntDiv CoreMap List.
-require import JModel.
+
+from Jasmin require import JModel.
 
 require import Array76.
 require import WArray76.
@@ -11,7 +12,7 @@ module M = {
     
     var rand_number:W64.t;
     
-    rand_number <$ RDRAND;
+    rand_number <- RDRAND ;
     rand_number <- (rand_number \umod range);
     return (rand_number);
   }
@@ -640,3 +641,4 @@ module M = {
     return (output);
   }
 }.
+

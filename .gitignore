@@ -1,5 +1,3 @@
 *.s
 *.out
-jasminc
-test.*
-test
+test*
