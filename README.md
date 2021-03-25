@@ -8,7 +8,7 @@ The Password Generator component of PassCert. The generator is implemented in Ja
 
 ## Compiling
 ### Using the Makefile
-Having the jasmin(#https://github.com/jasmin-lang/jasmin) repo next to this one, makes it possible to simply use
+Having the [jasmin](#https://github.com/jasmin-lang/jasmin) repo next to this one, makes it possible to simply use
 
 ```bash
 make
@@ -29,7 +29,7 @@ gcc C/passwordGeneratorApp.c asm/passCertGenerator.s -o passwordGeneratorApp.out
 ```
 ## Extracting EasyCrypt from Jasmin program
 ### Using the Makefile
-Having the jasmin(#https://github.com/jasmin-lang/jasmin) repo next to this one, makes it possible to simply use
+Having the [jasmin](#https://github.com/jasmin-lang/jasmin) repo next to this one, makes it possible to simply use
 
 ```bash
 make
