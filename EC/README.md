@@ -1,5 +1,5 @@
 # EasyCrypt
-In this folder there are all the files related to the Correctness and Security proofs of our implementation, using the [EasyCrypt](#https://www.easycrypt.info/trac) framework [1]
+In this folder there are all the files related to the Correctness and Security proofs of our implementation, using the [EasyCrypt](#https://www.easycrypt.info/trac) framework [1].
 
 ## Files
 * **pwGenSpec.ec** - The specification of a Random Password Generator (RPG)
