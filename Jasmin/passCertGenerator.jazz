@@ -103,51 +103,17 @@ export fn generatePassword(reg u64 length, reg u64 lowercase_policies, reg u64 u
     //                                                                                              //
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Get policy of whether user wants a given set or not
-    lowercase_available = [lowercase_policies + 0];
-    uppercase_available = [uppercase_policies + 0];
-    numbers_available   = [numbers_policies + 0];
-    special_available   = [special_policies + 0];
-
-    // We consider that all values different from 0 are equal to "true" regarding the "_available" status
-    if (lowercase_available != 0) {
-        lowercase_available = 1;
-    }
-    if (uppercase_available != 0) {
-        uppercase_available = 1;
-    }
-    if (numbers_available != 0) {
-        numbers_available = 1;
-    }
-    if (special_available != 0) {
-        special_available = 1;
-    }
-
     // Get policy of the minimum values of characters per set to be generated
-    lowercase_min       = [lowercase_policies + 8];
-    uppercase_min       = [uppercase_policies + 8];
-    numbers_min         = [numbers_policies + 8];
-    special_min         = [special_policies + 8];
+    lowercase_min       = [lowercase_policies + 0];
+    uppercase_min       = [uppercase_policies + 0];
+    numbers_min         = [numbers_policies + 0];
+    special_min         = [special_policies + 0];
 
     // Get policy of the maximum values of characters per set to be generated
-    lowercase_max       = [lowercase_policies + 16];
-    uppercase_max       = [uppercase_policies + 16];
-    numbers_max         = [numbers_policies + 16];
-    special_max         = [special_policies + 16];
-
-    // If the user says max = 0 we consider that the user does not care about maximum value, so we say it is "infinite" (200 since it is the max length)
-    if (lowercase_max == 0) {
-        lowercase_max = 200;
-    }
-    if (uppercase_max == 0) {
-        uppercase_max = 200;
-    }
-    if (numbers_max == 0) {
-        numbers_max = 200;
-    }
-    if (special_max == 0) {
-        special_max = 200;
-    }
+    lowercase_max       = [lowercase_policies + 8];
+    uppercase_max       = [uppercase_policies + 8];
+    numbers_max         = [numbers_policies + 8];
+    special_max         = [special_policies + 8];
 
     
     ////////////////////////////
@@ -158,15 +124,6 @@ export fn generatePassword(reg u64 length, reg u64 lowercase_policies, reg u64 u
     if (length <=s 200) {
     // Length is not negative
     if (length >=s 0) {
-    // At least one set is selected
-    tmp64_1 = lowercase_available;
-    tmp64_2 = uppercase_available;
-    tmp64_1 += tmp64_2;
-    tmp64_2 = numbers_available;
-    tmp64_1 += tmp64_2;
-    tmp64_2 = special_available;
-    tmp64_1 += special_available;
-    if (tmp64_1 > 0) {
     // Min values are not negative
     tmp64_1 = lowercase_min;
     if (tmp64_1 >=s 0) {
@@ -185,7 +142,7 @@ export fn generatePassword(reg u64 length, reg u64 lowercase_policies, reg u64 u
     if (tmp64_1 >=s 0) {
     tmp64_1 = special_max;
     if (tmp64_1 >=s 0) {
-    // Max values are larger than min values
+    // Max values are larger or equal to min values
     tmp64_1 = lowercase_max;
     tmp64_2 = lowercase_min;
     if (tmp64_1 >= tmp64_2) {
@@ -208,23 +165,13 @@ export fn generatePassword(reg u64 length, reg u64 lowercase_policies, reg u64 u
     tmp64_1 += tmp64_2;
     if (tmp64_1 <= length) {
     // Sum of maximum values satisfies the password length
-    tmp64_1 = 0;
-    if (lowercase_available == 1) {
-        tmp64_2 = lowercase_max;
-        tmp64_1 += tmp64_2;
-    }
-    if (uppercase_available == 1) {
-        tmp64_2 = uppercase_max;
-        tmp64_1 += tmp64_2;
-    }
-    if (numbers_available == 1) {
-        tmp64_2 = numbers_max;
-        tmp64_1 += tmp64_2;
-    }
-    if (special_available == 1) {
-        tmp64_2 = lowercase_max;
-        tmp64_1 += tmp64_2;
-    }
+    tmp64_1 = lowercase_max;
+    tmp64_2 = uppercase_max;
+    tmp64_1 += tmp64_2;
+    tmp64_2 = numbers_max;
+    tmp64_1 += tmp64_2;
+    tmp64_2 = special_max;
+    tmp64_1 += tmp64_2;
     if (tmp64_1 >= length) {
 
 
@@ -337,6 +284,29 @@ export fn generatePassword(reg u64 length, reg u64 lowercase_policies, reg u64 u
         i += 1;
     }
 
+    // Check which sets are available to sample from
+    if (lowercase_max > 0) {
+        lowercase_available = 1;
+    } else {
+        lowercase_available = 0;
+    }
+    if (uppercase_max > 0) {
+        uppercase_available = 1;
+    } else {
+        uppercase_available = 0;
+    }
+    if (numbers_max > 0) {
+        numbers_available = 1;
+    } else {
+        numbers_available = 0;
+    }
+    if (special_max > 0) {
+        special_available = 1;        
+    } else {
+        special_available = 0;
+    }
+    
+
     // Generate characters with min values defined
     i_filled = 0;
     if (lowercase_available == 1) {
@@ -392,6 +362,19 @@ export fn generatePassword(reg u64 length, reg u64 lowercase_policies, reg u64 u
         }
     }
 
+    if (lowercase_max == 0) {
+        lowercase_available = 0;
+    }
+    if (uppercase_max == 0) {
+        uppercase_available = 0;
+    }
+    if (numbers_max == 0) {
+        numbers_available = 0;
+    }
+    if (special_max == 0) {
+        special_available = 0;
+    }
+
     // Define set of characters available, if their maximum value has not been reached yet
     tmp64_1, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
                         lowercase_set, uppercase_set, numbers_set, special_set, union_set);
@@ -444,62 +427,58 @@ export fn generatePassword(reg u64 length, reg u64 lowercase_policies, reg u64 u
 
     } else {
         // Maximum values are short (Sum(Max) < length)
-        output = -17; 
-    }
-    } else {
-        // Minimum values are larger than length (Sum(Min) > length)
         output = -16; 
     }
     } else {
-        // Special characters max value is smaller than min value
+        // Minimum values are larger than length (Sum(Min) > length)
         output = -15; 
     }
     } else {
-        // Numbers max value is smaller than min value 
+        // Special characters max value is smaller than min value
         output = -14; 
     }
     } else {
-        // Uppercase letters max value is smaller than min value 
+        // Numbers max value is smaller than min value 
         output = -13; 
     }
     } else {
-        // Lowercase letters max value is smaller than min value 
+        // Uppercase letters max value is smaller than min value 
         output = -12; 
     }
     } else {
-        // Special characters max value is negative
+        // Lowercase letters max value is smaller than min value 
         output = -11; 
     }
     } else {
-        // Numbers max value is negative
+        // Special characters max value is negative
         output = -10; 
     }
     } else {
-        // Uppercase letters max value is negative
+        // Numbers max value is negative
         output = -9; 
     }
     } else {
-        // Lowercase letters max value is negative
+        // Uppercase letters max value is negative
         output = -8; 
     }
     } else {
-        // Special characters min value is negative
+        // Lowercase letters max value is negative
         output = -7; 
     }
     } else {
-        // Numbers min value is negative
+        // Special characters min value is negative
         output = -6; 
     }
     } else {
-        // Uppercase letters min value is negative
+        // Numbers min value is negative
         output = -5; 
     }
     } else {
-        // Lowercase letters min value is negative
-        output = -4;
+        // Uppercase letters min value is negative
+        output = -4; 
     }
     } else {
-        // No set is selected
+        // Lowercase letters min value is negative
         output = -3;
     }
     } else {

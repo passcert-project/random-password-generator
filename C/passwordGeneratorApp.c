@@ -66,22 +66,18 @@ int main() {
     }
 
     // Store policies in array
-    uint64_t lowercasePolicies[3];
-    lowercasePolicies[0] = (uint64_t) lowercaseBool;
-    lowercasePolicies[1] = (uint64_t) lowercaseMin;
-    lowercasePolicies[2] = (uint64_t) lowercaseMax;
-    uint64_t uppercasePolicies[3];
-    uppercasePolicies[0] = (uint64_t) uppercaseBool;
-    uppercasePolicies[1] = (uint64_t) uppercaseMin;
-    uppercasePolicies[2] = (uint64_t) uppercaseMax;
-    uint64_t numbersPolicies[3];
-    numbersPolicies[0] = (uint64_t) numbersBool;
-    numbersPolicies[1] = (uint64_t) numbersMin;
-    numbersPolicies[2] = (uint64_t) numbersMax;
-    uint64_t specialPolicies[3];
-    specialPolicies[0] = (uint64_t) specialBool;
-    specialPolicies[1] = (uint64_t) specialMin;
-    specialPolicies[2] = (uint64_t) specialMax;
+    uint64_t lowercasePolicies[2];
+    lowercasePolicies[0] = (uint64_t) lowercaseMin;
+    lowercasePolicies[1] = (uint64_t) lowercaseMax;
+    uint64_t uppercasePolicies[2];
+    uppercasePolicies[0] = (uint64_t) uppercaseMin;
+    uppercasePolicies[1] = (uint64_t) uppercaseMax;
+    uint64_t numbersPolicies[2];
+    numbersPolicies[0] = (uint64_t) numbersMin;
+    numbersPolicies[1] = (uint64_t) numbersMax;
+    uint64_t specialPolicies[2];
+    specialPolicies[0] = (uint64_t) specialMin;
+    specialPolicies[1] = (uint64_t) specialMax;
 
     // Allocate memory for password to be generated
     char* password = (char*) calloc(length+1, sizeof(char));
@@ -97,34 +93,32 @@ int main() {
     } else if ((int) code == -2) {
         printf("Length can not be negative.\n");
     } else if ((int) code == -3) {
-        printf("At least one of the character sets must be selected.\n");
-    } else if ((int) code == -4) {
         printf("Lowercase letters minimum number of occurrences can not be negative.\n");
-    } else if ((int) code == -5) {
+    } else if ((int) code == -4) {
         printf("Uppercase letters minimum number of occurrences can not be negative.\n");
-    } else if ((int) code == -6) {
+    } else if ((int) code == -5) {
         printf("Numbers minimum number of occurrences can not be negative.\n");
-    } else if ((int) code == -7) {
+    } else if ((int) code == -6) {
         printf("Special characters minimum number of occurrences can not be negative.\n");
-    } else if ((int) code == -8) {
+    } else if ((int) code == -7) {
         printf("Lowercase letters maximum number of occurrences can not be negative.\n");
-    } else if ((int) code == -9) {
+    } else if ((int) code == -8) {
         printf("Uppercase letters maximum number of occurrences can not be negative.\n");
-    } else if ((int) code == -10) {
+    } else if ((int) code == -9) {
         printf("Numbers maximum number of occurrences can not be negative.\n");
-    } else if ((int) code == -11) {
+    } else if ((int) code == -10) {
         printf("Special characters maximum number of occurrences can not be negative.\n");
-    } else if ((int) code == -12) {
+    } else if ((int) code == -11) {
         printf("Lowercase letters maximum number of occurrences can not be smaller than minimum.\n");
-    } else if ((int) code == -13) {
+    } else if ((int) code == -12) {
         printf("Uppercase letters maximum number of occurrences can not be smaller than minimum.\n");
-    } else if ((int) code == -14) {
+    } else if ((int) code == -13) {
         printf("Numbers maximum number of occurrences can not be smaller than minimum.\n");
-    } else if ((int) code == -15) {
+    } else if ((int) code == -14) {
         printf("Special characters maximum number of occurrences can not be smaller than minimum.\n");
-    } else if ((int) code == -16) {
+    } else if ((int) code == -15) {
         printf("Minimum values sum is too big. It is not possible to satisfy the length with such minimum values.\n");
-    } else if ((int) code == -17) {
+    } else if ((int) code == -16) {
         printf("Maximum values sum is too small. It is not possible to satisfy the length with such maximum values.\n");
     } else {
         // Output password
