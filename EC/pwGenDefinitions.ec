@@ -1,7 +1,7 @@
 (* EC Theory of Random Password Generators *)
 
 require import AllCore List.
-from Jasmin require import JModel.
+require import PwGenSpec.
 
 require import Array76.
 require import WArray76.
@@ -13,7 +13,7 @@ module CharacterSets = {
   var uppercaseLetters : int list
   var numbers : int list
   var specialCharacters : int list
-  
+
   proc init() = {
     lowercaseLetters <- 97::97::99::100::101::102::103::104::105::106::107::108::109::110::111::
                         112::113::114::115::116::117::118::119::120::121::122::[];
@@ -25,26 +25,16 @@ module CharacterSets = {
   
 }.
 
-
-(* Password Generator Interface *)
-module type PasswordGenerator_T = {
-  
-  proc generatePassword(length:int, lowercase_min:int, lowercase_max:int, uppercase_min:int,
-  uppercase_max:int, numbers_min:int, numbers_max:int, special_min:int, special_max:int) :
-  int list
-
-}.
-
 (* If, given a concrete password generator, the main procedure of the following module
     is true with 100% probability, then it means that the password generator always terminates *)
 
-module Termination (PasswordGenerator : PasswordGenerator_T) = {
+module Termination = {
   
   proc main(length:int, lowercase_min:int, lowercase_max:int, uppercase_min:int,
   uppercase_max:int, numbers_min:int, numbers_max:int, special_min:int, special_max:int)
   : bool = {
     
-  PasswordGenerator.generatePassword(length, lowercase_min, lowercase_max, uppercase_min,
+  RPGSpec.generatePassword(length, lowercase_min, lowercase_max, uppercase_min,
   uppercase_max, numbers_min, numbers_max, special_min, special_max);
     
     return true;
@@ -57,7 +47,7 @@ module Termination (PasswordGenerator : PasswordGenerator_T) = {
 (* If, given a concrete password generator, the main procedure of the following module
     is true with 100% probability, then we say that the password generator is correct *)
 
-module Correctness (PasswordGenerator : PasswordGenerator_T) = {
+module Correctness = {
 
   proc occurrences(password:int list, set:int list) : int = {
 
@@ -117,7 +107,7 @@ module Correctness (PasswordGenerator : PasswordGenerator_T) = {
     var generatedPassword : int list;
     var output : bool;
     
-    generatedPassword <@ PasswordGenerator.generatePassword(length, lowercase_min, lowercase_max,
+    generatedPassword <@ RPGSpec.generatePassword(length, lowercase_min, lowercase_max,
     uppercase_min, uppercase_max, numbers_min, numbers_max, special_min, special_max);
 
     output <@ satisfiesPolicies(length, lowercase_min, lowercase_max, uppercase_min,

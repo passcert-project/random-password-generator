@@ -3,7 +3,7 @@ In this folder there are all the files related to the Correctness and Security p
 
 ## Files
 * **pwGenSpec.ec** - The specification of a Random Password Generator (RPG)
-* **pwGen.eca** - RPGs Theory. Here you can see the definitions of Correctness and Security for a RPG
+* **pwGenDefinitions.ec** - RPGs Theory. Here you can see the definitions of Correctness and Security for a RPG
 * **pwGenSpec_proof.ec** - The Correctness and Security proofs of the RPG Specification
 * **passCertGenerator_jazz.ec** - Automatically extracted model of our Jasmin implementation of the RPG Specification
 * **passCertGenerator_proof.ec** - The proof of equivalence between the Jasmin implementation and the RPG Speficication
