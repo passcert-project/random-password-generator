@@ -26,15 +26,15 @@ inline fn permutation(reg u64 p_string, reg u64 string_len) {
     }
 }
 
-inline fn define_union_set(reg u64 lowercase_available, reg u64 uppercase_available, reg u64 numbers_available, reg u64 special_available,
-    stack u8[76] lowercase_set, stack u8[76] uppercase_set, stack u8[76] numbers_set, stack u8[76] special_set, stack u8[76] union_set) -> reg u64, stack u8[76] {
+inline fn define_union_set(reg u64 lowercase_max, reg u64 uppercase_max, reg u64 numbers_max, reg u64 special_max, stack u8[76] lowercase_set,
+    stack u8[76] uppercase_set, stack u8[76] numbers_set, stack u8[76] special_set, stack u8[76] union_set) -> reg u64, stack u8[76] {
     
     reg u8 tmp;
     reg u64 i, i_set;
     
     i_set = 0;
 
-    if (lowercase_available == 1) {
+    if (lowercase_max > 0) {
         i = 0;
         while (i < 26) {
             tmp = lowercase_set[(int)i];
@@ -43,7 +43,7 @@ inline fn define_union_set(reg u64 lowercase_available, reg u64 uppercase_availa
             i_set += 1;
         }    
     }
-    if (uppercase_available == 1) {
+    if (uppercase_max > 0) {
         i = 0;
         while (i < 26) {
             tmp = uppercase_set[(int)i];
@@ -52,7 +52,7 @@ inline fn define_union_set(reg u64 lowercase_available, reg u64 uppercase_availa
             i_set += 1;
         }    
     }
-    if (numbers_available == 1) {
+    if (numbers_max > 0) {
         i = 0;
         while (i < 10) {
             tmp = numbers_set[(int)i];
@@ -61,7 +61,7 @@ inline fn define_union_set(reg u64 lowercase_available, reg u64 uppercase_availa
             i_set += 1;
         }    
     }
-    if (special_available == 1) {
+    if (special_max > 0) {
         i = 0;
         while (i < 14) {
             tmp = special_set[(int)i];
@@ -74,7 +74,7 @@ inline fn define_union_set(reg u64 lowercase_available, reg u64 uppercase_availa
     return i_set, union_set;
 }
 
-export fn generatePassword(reg u64 length, reg u64 lowercase_policies, reg u64 uppercase_policies, reg u64 numbers_policies, reg u64 special_policies, reg u64 p_output) -> reg u64 {
+export fn generate_password(reg u64 length, reg u64 lowercase_policies, reg u64 uppercase_policies, reg u64 numbers_policies, reg u64 special_policies, reg u64 p_output) -> reg u64 {
 
     // General purpose registers
     reg u8 tmp8;
@@ -87,8 +87,6 @@ export fn generatePassword(reg u64 length, reg u64 lowercase_policies, reg u64 u
     stack u8[76] numbers_set;
     stack u8[76] special_set;
     stack u8[76] union_set;
-    // Variables that express whether we can sample from a given set or not
-    stack u64 lowercase_available, uppercase_available, numbers_available, special_available;
     // Variables that stor min and max values of characters to be generated
     stack u64 lowercase_min, uppercase_min, numbers_min, special_min, lowercase_max, uppercase_max, numbers_max, special_max;
     // Output
@@ -283,78 +281,44 @@ export fn generatePassword(reg u64 length, reg u64 lowercase_policies, reg u64 u
         union_set[(int)i] = 0;
         i += 1;
     }
-
-    // Check which sets are available to sample from
-    if (lowercase_max > 0) {
-        lowercase_available = 1;
-    } else {
-        lowercase_available = 0;
-    }
-    if (uppercase_max > 0) {
-        uppercase_available = 1;
-    } else {
-        uppercase_available = 0;
-    }
-    if (numbers_max > 0) {
-        numbers_available = 1;
-    } else {
-        numbers_available = 0;
-    }
-    if (special_max > 0) {
-        special_available = 1;        
-    } else {
-        special_available = 0;
-    }
     
 
     // Generate characters with min values defined
     i_filled = 0;
-    if (lowercase_available == 1) {
+    if (lowercase_max > 0) {
         i = 0;
         while (i < lowercase_min) {
             lowercase_max -= 1;
-            if (lowercase_max == 0) {
-                lowercase_available = 0;
-            }
             tmp8 = random_char_generator(26, lowercase_set);
             (u8) [p_output + i_filled] = tmp8;
             i += 1;
             i_filled += 1;
         }
     }
-    if (uppercase_available == 1) {
+    if (uppercase_max > 0) {
         i = 0;
         while (i < uppercase_min) {
             uppercase_max -= 1;
-            if (uppercase_max == 0) {
-                uppercase_available = 0;
-            }
             tmp8 = random_char_generator(26, uppercase_set);
             (u8) [p_output + i_filled] = tmp8;
             i += 1;
             i_filled += 1;
         }
     }
-    if (numbers_available == 1) {
+    if (numbers_max > 0) {
         i = 0;
         while (i < numbers_min) {
             numbers_max -= 1;
-            if (numbers_max == 0) {
-                numbers_available = 0;
-            }
             tmp8 = random_char_generator(10, numbers_set);
             (u8) [p_output + i_filled] = tmp8;
             i += 1;
             i_filled += 1;
         }
     }
-    if (special_available == 1) {
+    if (special_max > 0) {
         i = 0;
         while (i < special_min) {
             special_max -= 1;
-            if (special_max == 0) {
-                special_available = 0;
-            }
             tmp8 = random_char_generator(14, special_set);
             (u8) [p_output + i_filled] = tmp8;
             i += 1;
@@ -362,52 +326,35 @@ export fn generatePassword(reg u64 length, reg u64 lowercase_policies, reg u64 u
         }
     }
 
-    if (lowercase_max == 0) {
-        lowercase_available = 0;
-    }
-    if (uppercase_max == 0) {
-        uppercase_available = 0;
-    }
-    if (numbers_max == 0) {
-        numbers_available = 0;
-    }
-    if (special_max == 0) {
-        special_available = 0;
-    }
-
-    // Define set of characters available, if their maximum value has not been reached yet
-    tmp64_1, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
+    // Define set of available characters, if their maximum value has not been reached yet
+    tmp64_1, union_set = define_union_set(lowercase_max, uppercase_max, numbers_max, special_max,
                         lowercase_set, uppercase_set, numbers_set, special_set, union_set);
 
-    // Generate password from the set of characters available
+    // Generate password from the set of available characters
     while (i_filled < length) {
         tmp8 = random_char_generator(tmp64_1, union_set);
         if (tmp8 >= 97) { if (tmp8 <= 122) {
                 lowercase_max -= 1;
                 if (lowercase_max == 0) {
-                    lowercase_available = 0;
-                    tmp64_1, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
+                    tmp64_1, union_set = define_union_set(lowercase_max, uppercase_max, numbers_max, special_max,
                                         lowercase_set, uppercase_set, numbers_set, special_set, union_set);
                 }
         }} else { if (tmp8 >= 65) { if (tmp8 <= 90) {
                 uppercase_max -= 1;
                 if (uppercase_max == 0) {
-                    uppercase_available = 0;
-                    tmp64_1, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
+                    tmp64_1, union_set = define_union_set(lowercase_max, uppercase_max, numbers_max, special_max,
                                         lowercase_set, uppercase_set, numbers_set, special_set, union_set);
                 }
             }} else { if (tmp8 >= 48) { if (tmp8 <= 57) {
                     numbers_max -= 1;
                     if (numbers_max == 0) {
-                        numbers_available = 0;
-                        tmp64_1, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
+                        tmp64_1, union_set = define_union_set(lowercase_max, uppercase_max, numbers_max, special_max,
                                             lowercase_set, uppercase_set, numbers_set, special_set, union_set);
                     }
                 }} else {
                     special_max -= 1;
                     if (special_max == 0) {
-                        special_available = 0;
-                        tmp64_1, union_set = define_union_set(lowercase_available, uppercase_available, numbers_available, special_available,
+                        tmp64_1, union_set = define_union_set(lowercase_max, uppercase_max, numbers_max, special_max,
                                             lowercase_set, uppercase_set, numbers_set, special_set, union_set);
                     }
                 }   
