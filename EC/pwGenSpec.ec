@@ -6,7 +6,7 @@ module RPGSpec = {
     
     var rand_number:int;
     
-    rand_number <$ [0 .. (2^64)-1];
+    rand_number <$ [0 .. (2^64) - 1];
     rand_number <- (rand_number %% range);
     
     return rand_number;
@@ -46,6 +46,7 @@ module RPGSpec = {
     return string;
     
   }
+
 
   
   proc define_union_set(lowercase_max, uppercase_max, numbers_max, special_max) : int list = {
@@ -109,6 +110,7 @@ module RPGSpec = {
       (* READY TO GENERATE PASSWORD *)
 
       CharacterSets.init();
+      password <- [];
 
       (* Generate characters with min values defined*)
       

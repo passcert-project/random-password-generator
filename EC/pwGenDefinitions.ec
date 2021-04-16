@@ -3,27 +3,7 @@
 require import AllCore List.
 require import PwGenSpec.
 
-require import Array76.
-require import WArray76.
 require import CharacterSets.
-
-(* If, given a concrete password generator, the main procedure of the following module
-    is true with 100% probability, then it means that the password generator always terminates *)
-
-module Termination = {
-  
-  proc main(length:int, lowercase_min:int, lowercase_max:int, uppercase_min:int,
-  uppercase_max:int, numbers_min:int, numbers_max:int, special_min:int, special_max:int)
-  : bool = {
-    
-  RPGSpec.generate_password(length, lowercase_min, lowercase_max, uppercase_min,
-  uppercase_max, numbers_min, numbers_max, special_min, special_max);
-    
-    return true;
-    
-  }
-  
-}.
 
 
 (* If, given a concrete password generator, the main procedure of the following module
