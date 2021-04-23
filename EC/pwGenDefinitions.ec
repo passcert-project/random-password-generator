@@ -14,6 +14,7 @@ module Correctness = {
   proc occurrences(password:int list, set:int list) : int = {
 
     var i, occurrences : int;
+
     i <- 0;
     occurrences <- 0;
 

@@ -1,13 +1,16 @@
-(* RDRAND is a lossless distribution over W64 *)
-(* axiom RDRAND_ll : is_lossless RDRAND. *)
+require import AllCore.
+require import PwGenDefinitions PwGenSpec.
 
-require import AllCore PwGenDefinitions PwGenSpec.
-
-(* passCertPasswordGenerator is correct *)
+(* password generator specification is correct *)
 lemma correctness length lowercase_min lowercase_max uppercase_min uppercase_max numbers_min
     numbers_max special_min special_max &m :
 Pr[Correctness.main(length, lowercase_min, lowercase_max, uppercase_min, uppercase_max,
   numbers_min, numbers_max, special_min, special_max) @ &m : res] = 1%r.
 proof.
-admit.
+byphoare.
+proc.
+seq 1 : (true).
+inline CharacterSets.init.
+auto.
+islossless init.
 qed.
