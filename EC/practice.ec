@@ -71,7 +71,7 @@ lemma constant_string_size ['a] (x:'a) (string:'a list) (i:int):
     size string = size (insert x string i).
 proof.
 move => H1 H2.
-case insert. qed.
+admit.
 qed.
 
 lemma permutation_size_hl input:
