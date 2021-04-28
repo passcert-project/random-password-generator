@@ -1,4 +1,4 @@
-require import AllCore IntDiv DInterval List CharacterSets.
+require import AllCore IntDiv DInterval List UpdateList CharacterSets.
 
 module RPGSpec = {
 
@@ -39,8 +39,8 @@ module RPGSpec = {
       j <@ rng(i);
       i <- i - 1;
       aux <- nth 0 string i;
-      string <- insert (nth 0 string j) string i;
-      string <- insert aux string j;
+      string <- update (nth 0 string j) string i;
+      string <- update aux string j;
     }
     
     return string;
