@@ -1,0 +1,95 @@
+require import AllCore Distr List.
+
+type char = int.
+type password = int list.
+type charSet = int list.
+type policy = {length : int;
+               lowercaseMin : int;
+               lowercaseMax : int;
+               uppercaseMin : int;
+               uppercaseMax : int;
+               numbersMin : int;
+               numbersMax : int;
+               specialMin : int;
+               specialMax : int
+}.
+
+
+(* Abstract type of a RPG *)
+module type RPG_T = { 
+  proc generate_password(policy:policy) : password
+  proc get_lowercase() : charSet
+  proc get_uppercase() : charSet
+  proc get_numbers() : charSet
+  proc get_special() : charSet
+}.
+
+
+(* Correctness definition for a RPG*)
+module Correctness(RPG : RPG_T) = {
+
+  proc occurrences(password:password, set:charSet) : int = {
+
+    var i, occurrences : int;
+
+    i <- 0;
+    occurrences <- 0;
+
+    while (i < size set) {
+      occurrences <- occurrences + count (fun (e:int) => (nth 0 set i) = e) password;
+      i <- i + 1;
+    }
+    
+    return occurrences;
+    
+  }
+  
+  proc satisfies_policies(password:password, policy:policy) : bool =  {
+
+    var output : bool;
+    var i, setOccurrences : int;
+    var set : charSet;
+
+    output <- true;
+
+    if (!(size password = policy.`length)) {
+     output <- false;
+    }
+    set <- RPG.get_lowercase();
+    setOccurrences <- occurrences(password, set);
+    if (setOccurrences < policy.`lowercaseMin || policy.`lowercaseMax < setOccurrences) {
+      output <- false;
+    }
+    set <- RPG.get_uppercase();
+    setOccurrences <- occurrences(password, set);
+    if (setOccurrences < policy.`uppercaseMin || policy.`uppercaseMax < setOccurrences) {
+      output <- false;
+    }
+    set <- RPG.get_numbers();
+    setOccurrences <- occurrences(password, set);
+    if (setOccurrences < policy.`numbersMin || policy.`numbersMax < setOccurrences) {
+      output <- false;
+    }
+    set <- RPG.get_special();
+    setOccurrences <- occurrences(password, set);
+    if (setOccurrences < policy.`specialMin || policy.`specialMax < setOccurrences) {
+      output <- false;
+    }
+    
+    return output; 
+
+  }
+
+  proc main(policy:policy) : bool = {
+  
+    var password : password;
+    var output : bool;
+
+    password <@ RPG.generate_password(policy);
+    output <@ satisfies_policies(password, policy);
+
+    return output;
+
+   }
+
+}.
