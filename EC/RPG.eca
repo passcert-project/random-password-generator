@@ -14,6 +14,12 @@ type policy = {length : int;
                specialMax : int
 }.
 
+op password_satisfies_policy_length (password:password) (length:int) : bool =
+  size password = length.
+
+op password_satisfies_policy_set_bounds (password:password) (policy:policy) (set:charSet) : bool =
+true.
+
 
 (* Abstract type of a RPG *)
 module type RPG_T = { 
@@ -43,8 +49,24 @@ module Correctness(RPG : RPG_T) = {
     return occurrences;
     
   }
-  
-  proc satisfies_policies(password:password, policy:policy) : bool =  {
+
+
+  proc satisfies_length(password:password, policy:policy) : bool = {
+
+    var output : bool;
+
+    output <- true;
+
+    if (!(size password = policy.`length)) {
+     output <- false;
+    }
+
+    return output;
+
+  }
+
+
+  proc satisfies_bounds(password:password, policy:policy) : bool =  {
 
     var output : bool;
     var i, setOccurrences : int;
@@ -52,9 +74,6 @@ module Correctness(RPG : RPG_T) = {
 
     output <- true;
 
-    if (!(size password = policy.`length)) {
-     output <- false;
-    }
     set <- RPG.get_lowercase();
     setOccurrences <- occurrences(password, set);
     if (setOccurrences < policy.`lowercaseMin || policy.`lowercaseMax < setOccurrences) {
@@ -80,15 +99,42 @@ module Correctness(RPG : RPG_T) = {
 
   }
 
+
+  proc rpg_satisfies_length(policy:policy) : bool = {
+    
+    var password : password;
+    var satLength : bool;
+
+    password <@ RPG.generate_password(policy);
+    satLength <@ satisfies_length(password, policy);
+
+    return satLength;
+
+  }
+
+
+  proc rpg_satisfies_bounds(policy:policy) : bool = {
+  
+    var password : password;
+    var satBounds : bool;
+
+    password <@ RPG.generate_password(policy);
+    satBounds <@ satisfies_length(password, policy);
+
+    return satBounds;
+
+  }
+
   proc main(policy:policy) : bool = {
   
     var password : password;
-    var output : bool;
+    var satLength, satBounds : bool;
 
     password <@ RPG.generate_password(policy);
-    output <@ satisfies_policies(password, policy);
+    satLength <@ satisfies_length(password, policy);
+    satBounds <@ satisfies_bounds(password, policy);
 
-    return output;
+    return satLength /\ satBounds;
 
    }
 
