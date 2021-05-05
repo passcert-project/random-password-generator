@@ -231,13 +231,15 @@ module RPGSpec : RPG_T = {
 }.
 
 
+
 (**********************************)
 (*        AUXILIARY LEMMAS        *)
 (**********************************)
 
-(* output of rng is smaller than range*)
-lemma rng_h _range :
-  hoare [ RPGSpec.rng : 0 < _range /\ range = _range ==> res < _range].
+
+(* output of rng is smaller than range *)
+lemma rng_range_hl _range :
+  hoare [RPGSpec.rng : 0 < _range /\ range = _range ==> res < _range].
 proof.
 proc.
 wp.
@@ -249,6 +251,7 @@ by apply ltz_pmod.
 qed.
 
 
+
 (* permutation of a string doesn't change string size*)
 lemma permutation_size_hl input:
   hoare [RPGSpec.permutation : string = input ==> size res = size input].
@@ -258,7 +261,7 @@ seq 1 : (size string = size input).
   auto.
 while (size string = size input).
   seq 1 : (size string = size input).
-    ecall (rng_h i).
+    ecall (rng_range_hl i).
     skip.
     move => />.
   seq 1 : (size string = size input).
@@ -275,30 +278,32 @@ while (size string = size input).
 qed.
 
 
+
 (*********************************)
 (*          CORRECTNESS          *)
 (*********************************)
 
+
 (* RPG Spec satisfies the length defined in the policy (HL) *)
 lemma rpgspec_correctness_length_hl (p:policy) :
-hoare [Correctness(RPGSpec).rpg_satisfies_length : policy = p /\
-       p.`length <= 200 /\
-       0 < p.`length /\ 
-       0 <= p.`lowercaseMin /\
-       0 <= p.`uppercaseMin /\
-       0 <= p.`numbersMin /\
-       0 <= p.`specialMin /\
-       0 <= p.`lowercaseMax /\
-       0 <= p.`uppercaseMax /\
-       0 <= p.`numbersMax /\
-       0 <= p.`specialMax /\
-       p.`lowercaseMin <= p.`lowercaseMax /\
-       p.`uppercaseMin <= p.`uppercaseMax /\
-       p.`numbersMin <= p.`numbersMax /\
-       p.`specialMin <= p.`specialMax /\
-       p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
-       p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
-       ==> res].
+  hoare [Correctness(RPGSpec).main_satisfies_length : policy = p /\
+         p.`length <= 200 /\
+         0 < p.`length /\ 
+         0 <= p.`lowercaseMin /\
+         0 <= p.`uppercaseMin /\
+         0 <= p.`numbersMin /\
+         0 <= p.`specialMin /\
+         0 <= p.`lowercaseMax /\
+         0 <= p.`uppercaseMax /\
+         0 <= p.`numbersMax /\
+         0 <= p.`specialMax /\
+         p.`lowercaseMin <= p.`lowercaseMax /\
+         p.`uppercaseMin <= p.`uppercaseMax /\
+         p.`numbersMin <= p.`numbersMax /\
+         p.`specialMin <= p.`specialMax /\
+         p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
+         p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
+         ==> res].
 proof.
 proc.
 inline RPGSpec.generate_password.
@@ -524,56 +529,91 @@ if.
 qed.
 
 
+
 (* RPGSpec satisfies the different set bounds defined in the policy (HL) *)
 lemma rpgspec_correctness_bounds_hl (p:policy) :
-hoare [Correctness(RPGSpec).rpg_satisfies_bounds : policy = p /\
-       p.`length <= 200 /\
-       0 < p.`length /\ 
-       0 <= p.`lowercaseMin /\
-       0 <= p.`uppercaseMin /\
-       0 <= p.`numbersMin /\
-       0 <= p.`specialMin /\
-       0 <= p.`lowercaseMax /\
-       0 <= p.`uppercaseMax /\
-       0 <= p.`numbersMax /\
-       0 <= p.`specialMax /\
-       p.`lowercaseMin <= p.`lowercaseMax /\
-       p.`uppercaseMin <= p.`uppercaseMax /\
-       p.`numbersMin <= p.`numbersMax /\
-       p.`specialMin <= p.`specialMax /\
-       p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
-       p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
-       ==> res].
+  hoare [Correctness(RPGSpec).main_satisfies_bounds : policy = p /\
+         p.`length <= 200 /\
+         0 < p.`length /\ 
+         0 <= p.`lowercaseMin /\
+         0 <= p.`uppercaseMin /\
+         0 <= p.`numbersMin /\
+         0 <= p.`specialMin /\
+         0 <= p.`lowercaseMax /\
+         0 <= p.`uppercaseMax /\
+         0 <= p.`numbersMax /\
+         0 <= p.`specialMax /\
+         p.`lowercaseMin <= p.`lowercaseMax /\
+         p.`uppercaseMin <= p.`uppercaseMax /\
+         p.`numbersMin <= p.`numbersMax /\
+         p.`specialMin <= p.`specialMax /\
+         p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
+         p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
+         ==> res].
 proof.
 admitted.
+
+
+
+(* RPGSpec always terminates *)
+lemma rpgpec_ll :
+  islossless RPGSpec.generate_password.
+proof.
+proc.
+have rng_ll: islossless RPGSpec.rng.
+  proc.
+  islossless.
+  apply dinter_ll.
+  smt.
+islossless.
+  while true i.
+  - auto.
+    inline *.
+    auto.
+    smt.
+  - auto.
+    smt.
+  while true (policy.`length - size generatedPassword).
+  - auto.
+    inline *.
+    auto.
+    smt.
+  - auto.
+    smt.
+  while true (policy.`specialMin - i).
+  - auto.
+    inline *.
+    auto.
+    smt.
+  - auto.
+    smt.
+  while true ().
+ qed.
+  
 
 
 (* RPGSpec is correct (HL) *)
 lemma rpgspec_correctness_h (p:policy) :
-hoare [Correctness(RPGSpec).main : policy = p /\
-       p.`length <= 200 /\
-       0 < p.`length /\ 
-       0 <= p.`lowercaseMin /\
-       0 <= p.`uppercaseMin /\
-       0 <= p.`numbersMin /\
-       0 <= p.`specialMin /\
-       0 <= p.`lowercaseMax /\
-       0 <= p.`uppercaseMax /\
-       0 <= p.`numbersMax /\
-       0 <= p.`specialMax /\
-       p.`lowercaseMin <= p.`lowercaseMax /\
-       p.`uppercaseMin <= p.`uppercaseMax /\
-       p.`numbersMin <= p.`numbersMax /\
-       p.`specialMin <= p.`specialMax /\
-       p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
-       p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
-       ==> res].
+  hoare [Correctness(RPGSpec).main : policy = p /\
+         p.`length <= 200 /\
+         0 < p.`length /\ 
+         0 <= p.`lowercaseMin /\
+         0 <= p.`uppercaseMin /\
+         0 <= p.`numbersMin /\
+         0 <= p.`specialMin /\
+         0 <= p.`lowercaseMax /\
+         0 <= p.`uppercaseMax /\
+         0 <= p.`numbersMax /\
+         0 <= p.`specialMax /\
+         p.`lowercaseMin <= p.`lowercaseMax /\
+         p.`uppercaseMin <= p.`uppercaseMax /\
+         p.`numbersMin <= p.`numbersMax /\
+         p.`specialMin <= p.`specialMax /\
+         p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
+         p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
+         ==> res].
 proof.
-admitted.
-
-
-(* RPGSpec always terminates *)
-lemma rpgpec_ll (p:policy) :
-islossless Correctness(RPGSpec).main.
-proof.
+proc.
+seq 2 : (#pre /\ satLength = true).
+  ecall (rpgspec_correctness_length_hl p).
 admitted.

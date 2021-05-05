@@ -14,12 +14,6 @@ type policy = {length : int;
                specialMax : int
 }.
 
-op password_satisfies_policy_length (password:password) (length:int) : bool =
-  size password = length.
-
-op password_satisfies_policy_set_bounds (password:password) (policy:policy) (set:charSet) : bool =
-true.
-
 
 (* Abstract type of a RPG *)
 module type RPG_T = { 
@@ -100,7 +94,7 @@ module Correctness(RPG : RPG_T) = {
   }
 
 
-  proc rpg_satisfies_length(policy:policy) : bool = {
+  proc main_satisfies_length(policy:policy) : bool = {
     
     var password : password;
     var satLength : bool;
@@ -113,7 +107,7 @@ module Correctness(RPG : RPG_T) = {
   }
 
 
-  proc rpg_satisfies_bounds(policy:policy) : bool = {
+  proc main_satisfies_bounds(policy:policy) : bool = {
   
     var password : password;
     var satBounds : bool;
