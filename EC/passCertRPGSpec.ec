@@ -587,7 +587,27 @@ islossless.
     smt.
   - auto.
     smt.
-  while true ().
+  while true (policy.`numbersMin - i).
+  - auto.
+    inline *.
+    auto.
+    smt.
+  - auto.
+    smt.
+  while true (policy.`uppercaseMin - i).
+  - auto.
+    inline *.
+    auto.
+    smt.
+  - auto.
+    smt.
+  while true (policy.`lowercaseMin - i).
+  - auto.
+    inline *.
+    auto.
+    smt.
+  - auto.
+    smt.
  qed.
   
 
