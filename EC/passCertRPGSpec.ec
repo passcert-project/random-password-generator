@@ -5,22 +5,26 @@ clone include RPG.
 
 module RPGSpec : RPG_T = {
 
+  (* WARNING: this RNG does not provide a uniform distribution over its output. *)
+  (* This is fine for correctness but we must implement the proper RNG as described *)
+  (* in the article, to assure security. Still not implemented because the solution *)
+  (* is not lossless, so to facilitate correctness proofs, we use this one *)
   proc rng(range:int) : int = {
     
-    var rand_number:int;
+    var value : int;
     
-    rand_number <$ [0 .. (2^64) - 1];
-    rand_number <- (rand_number %% range);
+    value <$ [0 .. (2^64) - 1];
+    value <- (value %% range);
     
-    return rand_number;
+    return value;
     
   }
 
   
   proc random_char_generator(set:charSet) : char = {
     
-    var char:char;
-    var choice:int;
+    var char : char;
+    var choice : int;
     
     choice <@ rng(size set);
     char <- nth (-1) set choice;
@@ -32,9 +36,9 @@ module RPGSpec : RPG_T = {
   
   proc permutation(string:int list) : int list = {
 
-    var i:int;
-    var j:int;
-    var aux:char;
+    var i : int;
+    var j : int;
+    var aux : char;
     
     i <- size string;
     
@@ -119,7 +123,7 @@ module RPGSpec : RPG_T = {
   
   proc generate_password(policy:policy) : password = {
 
-    var generatedPassword: password;
+    var generatedPassword : password;
     var unionSet, lowercaseSet, uppercaseSet, numbersSet, specialSet : charSet;
     var randomChar : char;
     var i : int;
