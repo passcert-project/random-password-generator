@@ -3,17 +3,20 @@ require (****) RPG.
 
 clone include RPG.
 
-module RPGSpec : RPG_T = {
+module RPGRef : RPG_T = {
 
-  (* WARNING: this RNG does not provide a uniform distribution over its output. *)
-  (* This is fine for correctness but we must implement the proper RNG as described *)
-  (* in the article, to assure security. Still not implemented because the solution *)
-  (* is not lossless, so to facilitate correctness proofs, we use this one *)
   proc rng(range:int) : int = {
     
-    var value : int;
-    
+    var value, maxValue : int;
+
+    maxValue <- ((2^64) %/ range) * range - 1;
+
     value <$ [0 .. (2^64) - 1];
+
+    while (maxValue < value) {
+      value <$ [0 .. (2^64) - 1];
+    }
+    
     value <- (value %% range);
     
     return value;
@@ -240,14 +243,22 @@ module RPGSpec : RPG_T = {
 (*        AUXILIARY LEMMAS        *)
 (**********************************)
 
+(* axiom -> rng always terminates *)
+axiom rng_ll : islossless RPGRef.rng.
+
 
 (* output of rng is smaller than range *)
 lemma rng_range_hl _range :
-  hoare [RPGSpec.rng : 0 < _range /\ range = _range ==> res < _range].
+  hoare [RPGRef.rng : 0 < _range /\ range = _range ==> res < _range].
 proof.
 proc.
 wp.
-rnd.
+seq 1 : (#pre).
+  auto.
+seq 1 : (#pre).
+  auto.
+while true.
+  auto.
 skip.
 move => &m [H1 H2] r Hr.
 rewrite H2.
@@ -258,7 +269,7 @@ qed.
 
 (* permutation of a string doesn't change string size*)
 lemma permutation_size_hl input:
-  hoare [RPGSpec.permutation : string = input ==> size res = size input].
+  hoare [RPGRef.permutation : string = input ==> size res = size input].
 proof.
 proc.
 seq 1 : (size string = size input).
@@ -290,7 +301,7 @@ qed.
 
 (* RPG Spec satisfies the length defined in the policy (HL) *)
 lemma rpgspec_correctness_length_hl (p:policy) :
-  hoare [Correctness(RPGSpec).main_satisfies_length : policy = p /\
+  hoare [Correctness(RPGRef).main_satisfies_length : policy = p /\
          p.`length <= 200 /\
          0 < p.`length /\ 
          0 <= p.`lowercaseMin /\
@@ -310,7 +321,7 @@ lemma rpgspec_correctness_length_hl (p:policy) :
          ==> res].
 proof.
 proc.
-inline RPGSpec.generate_password.
+inline RPGRef.generate_password.
 seq 1 : (#pre /\ policy0 = p).
   auto.
 seq 1 : (#pre /\ size generatedPassword = 0).
@@ -366,6 +377,12 @@ seq 1 : (policy = p /\
       seq 1 : (#pre).
         inline *.
         auto.
+        seq 4 : (#pre).
+          auto.
+        while true.
+          auto.
+        skip.
+        smt.
       auto.
       smt.
       skip => /#.
@@ -400,6 +417,12 @@ seq 1 : (policy = p /\
       seq 1 : (#pre).
         inline *.
         auto.
+        seq 4 : (#pre).
+          auto.
+        while true.
+          auto.
+        skip.
+        smt.
       auto.
       smt.
       skip => /#.
@@ -434,6 +457,12 @@ seq 1 : (policy = p /\
       seq 1 : (#pre).
         inline *.
         auto.
+        seq 4 : (#pre).
+          auto.
+        while true.
+          auto.
+        skip.
+        smt.
       auto.
       smt.
       skip => /#.
@@ -468,6 +497,12 @@ seq 1 : (policy = p /\
       seq 1 : (#pre).
         inline *.
         auto.
+        seq 4 : (#pre).
+          auto.
+        while true.
+          auto.
+        skip.
+        smt.
       auto.
       smt.
       skip => /#.
@@ -480,6 +515,12 @@ seq 1 : (size generatedPassword = p.`length /\ p = policy).
   seq 1 : (#pre).
     inline *.
     auto.
+    seq 4 : (#pre).
+      auto.
+    while true.
+      auto.
+    skip.
+    smt.
   seq 1 : (#pre).
     if.
     - seq 1 : (#pre).  
@@ -536,7 +577,7 @@ qed.
 
 (* RPGSpec satisfies the different set bounds defined in the policy (HL) *)
 lemma rpgspec_correctness_bounds_hl (p:policy) :
-  hoare [Correctness(RPGSpec).main_satisfies_bounds : policy = p /\
+  hoare [Correctness(RPGRef).main_satisfies_bounds : policy = p /\
          p.`length <= 200 /\
          0 < p.`length /\ 
          0 <= p.`lowercaseMin /\
@@ -555,70 +596,133 @@ lemma rpgspec_correctness_bounds_hl (p:policy) :
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
          ==> res].
 proof.
+proc.
 admitted.
 
 
 
 (* RPGSpec always terminates *)
 lemma rpgpec_ll :
-  islossless RPGSpec.generate_password.
+  islossless RPGRef.generate_password.
 proof.
 proc.
-have rng_ll: islossless RPGSpec.rng.
-  proc.
-  islossless.
-  apply dinter_ll.
-  smt.
 islossless.
   while true i.
-  - auto.
-    inline *.
+  - move => z.
+    seq 1 : (#pre).
+      auto.
+      call rng_ll.
+      auto.
     auto.
     smt.
-  - auto.
+    hoare.
+    inline *.
+    auto.
+    seq 3 : (#pre).   
+    auto.
+    while true.
+    - auto.  
+    - skip.
+      smt.
+    smt.
+    skip.
     smt.
   while true (policy.`length - size generatedPassword).
   - auto.
+    inline RPGRef.random_char_generator.
+    seq 1 : (#pre).
+      auto.
+      auto.
+    seq 1 : (#pre).
+      auto.
+      call rng_ll.
+      skip.
+      smt.
     inline *.
     auto.
     smt.
-  - auto.
+    hoare.
+    inline *.
+    auto.
+    seq 3 : (#pre).    
+      auto.
+    while true.
+    - auto.
+    - skip.
+      smt.
+    smt.
+    hoare.
+    auto.
+    smt.
+  - skip.
     smt.
   while true (policy.`specialMin - i).
   - auto.
-    inline *.
+    inline RPGRef.random_char_generator.
+    auto.
+    seq 2 : (#pre).
+      auto.
+      auto.    
+    call rng_ll.
+    auto.
+    smt.
+    hoare.
     auto.
     smt.
   - auto.
     smt.
   while true (policy.`numbersMin - i).
   - auto.
-    inline *.
+    inline RPGRef.random_char_generator.
+    auto.
+    seq 2 : (#pre).
+      auto.
+      auto.    
+    call rng_ll.
+    auto.
+    smt.
+    hoare.
     auto.
     smt.
   - auto.
     smt.
   while true (policy.`uppercaseMin - i).
   - auto.
-    inline *.
+    inline RPGRef.random_char_generator.
+    auto.
+    seq 2 : (#pre).
+      auto.
+      auto.    
+    call rng_ll.
+    auto.
+    smt.
+    hoare.
     auto.
     smt.
   - auto.
     smt.
   while true (policy.`lowercaseMin - i).
   - auto.
-    inline *.
+    inline RPGRef.random_char_generator.
+    auto.
+    seq 2 : (#pre).
+      auto.
+      auto.    
+    call rng_ll.
+    auto.
+    smt.
+    hoare.
     auto.
     smt.
   - auto.
     smt.
- qed.
+qed.
   
 
 
 (* RPGSpec is correct (HL) *)
 lemma rpgspec_correctness_h (p:policy) :
-  hoare [Correctness(RPGSpec).main : policy = p /\
+  hoare [Correctness(RPGRef).main : policy = p /\
          p.`length <= 200 /\
          0 < p.`length /\ 
          0 <= p.`lowercaseMin /\
