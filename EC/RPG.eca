@@ -14,6 +14,14 @@ type policy = {length : int;
                specialMax : int
 }.
 
+op countOccurrences (el:char) (pw:password) : int =
+  count (fun (c:char) => c = el ) pw.
+
+op setOccurrences (set:charSet) (pw:password) : int =
+  with set = []     => 0
+  with set = x :: s => countOccurrences x pw + setOccurrences s pw.
+
+
 
 (* Abstract type of a RPG *)
 module type RPG_T = { 
