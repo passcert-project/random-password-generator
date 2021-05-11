@@ -21,7 +21,11 @@ op setOccurrences (set:charSet) (pw:password) : int =
   with set = []     => 0
   with set = x :: s => countOccurrences x pw + setOccurrences s pw.
 
+op satisfiesMin (min:int) (set:charSet) (pw:password) : bool =
+  min <= setOccurrences set pw.
 
+op satisfiesMax (max:int) (set:charSet) (pw:password) : bool =
+  setOccurrences set pw <= max.
 
 (* Abstract type of a RPG *)
 module type RPG_T = { 
@@ -36,106 +40,32 @@ module type RPG_T = {
 (* Correctness definition for a RPG*)
 module Correctness(RPG : RPG_T) = {
 
-  proc occurrences(password:password, set:charSet) : int = {
-
-    var i, occurrences : int;
-
-    i <- 0;
-    occurrences <- 0;
-
-    while (i < size set) {
-      occurrences <- occurrences + count (fun (e:int) => (nth 0 set i) = e) password;
-      i <- i + 1;
-    }
-    
-    return occurrences;
-    
-  }
-
-
-  proc satisfies_length(password:password, policy:policy) : bool = {
-
-    var output : bool;
-
-    output <- true;
-
-    if (!(size password = policy.`length)) {
-     output <- false;
-    }
-
-    return output;
-
-  }
-
-
-  proc satisfies_bounds(password:password, policy:policy) : bool =  {
-
-    var output : bool;
-    var i, setOccurrences : int;
-    var set : charSet;
-
-    output <- true;
-
-    set <- RPG.get_lowercase();
-    setOccurrences <- occurrences(password, set);
-    if (setOccurrences < policy.`lowercaseMin || policy.`lowercaseMax < setOccurrences) {
-      output <- false;
-    }
-    set <- RPG.get_uppercase();
-    setOccurrences <- occurrences(password, set);
-    if (setOccurrences < policy.`uppercaseMin || policy.`uppercaseMax < setOccurrences) {
-      output <- false;
-    }
-    set <- RPG.get_numbers();
-    setOccurrences <- occurrences(password, set);
-    if (setOccurrences < policy.`numbersMin || policy.`numbersMax < setOccurrences) {
-      output <- false;
-    }
-    set <- RPG.get_special();
-    setOccurrences <- occurrences(password, set);
-    if (setOccurrences < policy.`specialMin || policy.`specialMax < setOccurrences) {
-      output <- false;
-    }
-    
-    return output; 
-
-  }
-
-
-  proc main_satisfies_length(policy:policy) : bool = {
-    
-    var password : password;
-    var satLength : bool;
-
-    password <@ RPG.generate_password(policy);
-    satLength <@ satisfies_length(password, policy);
-
-    return satLength;
-
-  }
-
-
-  proc main_satisfies_bounds(policy:policy) : bool = {
-  
-    var password : password;
-    var satBounds : bool;
-
-    password <@ RPG.generate_password(policy);
-    satBounds <@ satisfies_length(password, policy);
-
-    return satBounds;
-
-  }
 
   proc main(policy:policy) : bool = {
   
-    var password : password;
+    var pw : password;
+    var lowercaseSet, uppercaseSet, numbersSet, specialSet : charSet;
+    var lowercaseOcc, uppercaseOcc, numbersOcc, specialOcc : int;
     var satLength, satBounds : bool;
 
-    password <@ RPG.generate_password(policy);
-    satLength <@ satisfies_length(password, policy);
-    satBounds <@ satisfies_bounds(password, policy);
+    pw <@ RPG.generate_password(policy);
+    satLength <- size pw = policy.`length;
 
+    lowercaseSet <- RPG.get_lowercase();
+    uppercaseSet <- RPG.get_uppercase();
+    numbersSet <- RPG.get_numbers();
+    specialSet <- RPG.get_special();
+    
+    satBounds <- satisfiesMin policy.`lowercaseMin lowercaseSet pw /\
+                 satisfiesMax policy.`lowercaseMax lowercaseSet pw /\
+                 satisfiesMin policy.`uppercaseMin uppercaseSet pw /\
+                 satisfiesMax policy.`uppercaseMax uppercaseSet pw /\
+                 satisfiesMin policy.`numbersMin numbersSet pw /\
+                 satisfiesMax policy.`numbersMax numbersSet pw /\
+                 satisfiesMin policy.`specialMin specialSet pw /\
+                 satisfiesMax policy.`specialMax specialSet pw;
+
+    
     return satLength /\ satBounds;
 
    }

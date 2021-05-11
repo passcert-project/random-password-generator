@@ -5,6 +5,8 @@ clone include RPG.
 
 module RPGRef : RPG_T = {
 
+  var lowercaseSet, uppercaseSet, numbersSet, specialSet : charSet
+
   proc rng(range:int) : int = {
     
     var value, maxValue : int;
@@ -127,18 +129,19 @@ module RPGRef : RPG_T = {
   proc generate_password(policy:policy) : password = {
 
     var generatedPassword : password;
-    var unionSet, lowercaseSet, uppercaseSet, numbersSet, specialSet : charSet;
+    var unionSet : charSet;
     var randomChar : char;
     var i : int;
     var lowercaseAvailable, uppercaseAvailable, numbersAvailable, specialAvailable : int;
-
-    generatedPassword <- [];
 
     (* initializer sets *)
     lowercaseSet <@ get_lowercase();
     uppercaseSet <@ get_uppercase();
     numbersSet <@ get_numbers();
     specialSet <@ get_special();
+
+    (* initialize random password *)
+    generatedPassword <- [];
     
     (* check which sets are available to generate characters from (max > 0) *)
 
@@ -300,8 +303,8 @@ qed.
 
 
 (* RPG Spec satisfies the length defined in the policy (HL) *)
-lemma rpgspec_correctness_length_hl (p:policy) :
-  hoare [Correctness(RPGRef).main_satisfies_length : policy = p /\
+lemma rpg_correctness_length_hl (p:policy) :
+  hoare [RPGRef.generate_password : policy = p /\
          p.`length <= 200 /\
          0 < p.`length /\ 
          0 <= p.`lowercaseMin /\
@@ -318,25 +321,22 @@ lemma rpgspec_correctness_length_hl (p:policy) :
          p.`specialMin <= p.`specialMax /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
-         ==> res].
+         ==> size res = p.`length].
 proof.
 proc.
-inline RPGRef.generate_password.
-seq 1 : (#pre /\ policy0 = p).
+seq 1 : (#pre).
+  inline *.
+  auto.
+seq 1 : (#pre).
+  inline *.
+  auto.
+seq 1 : (#pre).
+  inline *.
+  auto.
+seq 1 : (#pre).
+  inline *.
   auto.
 seq 1 : (#pre /\ size generatedPassword = 0).
-  auto.
-seq 1 : (#pre).
-  inline *.
-  auto.
-seq 1 : (#pre).
-  inline *.
-  auto.
-seq 1 : (#pre).
-  inline *.
-  auto.
-seq 1 : (#pre).
-  inline *.
   auto.
 seq 1 : (#pre /\ lowercaseAvailable = p.`lowercaseMax).
   auto.
@@ -363,7 +363,6 @@ seq 1 : (policy = p /\
          p.`specialMin <= p.`specialMax /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax /\
-         policy0 = p /\
          uppercaseAvailable = p.`uppercaseMax /\
          numbersAvailable = p.`numbersMax /\
          specialAvailable = p.`specialMax /\
@@ -371,7 +370,7 @@ seq 1 : (policy = p /\
   if.
   - seq 1 : (#pre /\ i = 0).
       auto.
-    while (size generatedPassword = i /\ i <= p.`lowercaseMin /\ policy0 = p).
+    while (size generatedPassword = i /\ i <= p.`lowercaseMin /\ policy = p).
       seq 1 : (#pre).
         auto.
       seq 1 : (#pre).
@@ -404,14 +403,13 @@ seq 1 : (policy = p /\
          p.`specialMin <= p.`specialMax /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax /\
-         policy0 = p /\
          numbersAvailable = p.`numbersMax /\
          specialAvailable = p.`specialMax /\
          size generatedPassword = p.`lowercaseMin + p.`uppercaseMin).
   if.
   - seq 1 : (#pre /\ i = 0).
       auto.
-    while (size generatedPassword = p.`lowercaseMin + i /\ i <= p.`uppercaseMin /\ policy0 = p).
+    while (size generatedPassword = p.`lowercaseMin + i /\ i <= p.`uppercaseMin /\ policy = p).
       seq 1 : (#pre).
         auto.
       seq 1 : (#pre).
@@ -444,14 +442,13 @@ seq 1 : (policy = p /\
          p.`specialMin <= p.`specialMax /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax /\
-         policy0 = p /\
          specialAvailable = p.`specialMax /\
          size generatedPassword = p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin).
   if.
   - seq 1 : (#pre /\ i = 0).
       auto.
     while (size generatedPassword = p.`lowercaseMin + p.`uppercaseMin + i /\
-           i <= p.`numbersMin /\ policy0 = p).
+           i <= p.`numbersMin /\ policy = p).
       seq 1 : (#pre).
         auto.
       seq 1 : (#pre).
@@ -484,14 +481,13 @@ seq 1 : (policy = p /\
          p.`specialMin <= p.`specialMax /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax /\
-         policy0 = p /\
          size generatedPassword =
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin).
   if.
   - seq 1 : (#pre /\ i = 0).
       auto.
     while (size generatedPassword = p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + i /\
-           i <= p.`specialMin /\ policy0 = p).
+           i <= p.`specialMin /\ policy = p).
       seq 1 : (#pre).
         auto.
       seq 1 : (#pre).
@@ -510,8 +506,8 @@ seq 1 : (policy = p /\
 seq 1 : (#pre).
   inline *.
   auto.
-seq 1 : (size generatedPassword = p.`length /\ p = policy).
-  while (size generatedPassword <= p.`length /\ p = policy0).
+seq 1 : (size generatedPassword = p.`length /\ policy = p).
+  while (size generatedPassword <= p.`length /\ policy = p).
   seq 1 : (#pre).
     inline *.
     auto.
@@ -555,29 +551,15 @@ seq 1 : (size generatedPassword = p.`length /\ p = policy).
   auto.
   smt.
 skip => /#.
-seq 1 : (#pre).
-  ecall (permutation_size_hl generatedPassword).
-  skip => /#.  
-seq 1 : (#pre /\ password = generatedPassword).
-  auto.
-inline *.
-seq 1 : (#pre /\ password0 = password).
-  auto.  
-seq 1 : (#pre /\ policy1 = policy).
-  auto.
-seq 1 : (size password0  = policy1.`length /\ output  = true).
-  auto.
-if.
-- auto.
-  smt.
-- by auto.
+ecall (permutation_size_hl generatedPassword).
+skip => /#.  
 qed.
 
 
 
 (* RPGSpec satisfies the different set bounds defined in the policy (HL) *)
-lemma rpgspec_correctness_bounds_hl (p:policy) :
-  hoare [Correctness(RPGRef).main_satisfies_bounds : policy = p /\
+lemma rpg_correctness_bounds_hl (p:policy) :
+  hoare [RPGRef.generate_password : policy = p /\
          p.`length <= 200 /\
          0 < p.`length /\ 
          0 <= p.`lowercaseMin /\
@@ -594,15 +576,97 @@ lemma rpgspec_correctness_bounds_hl (p:policy) :
          p.`specialMin <= p.`specialMax /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
-         ==> res].
+         ==> satisfiesMin p.`lowercaseMin RPGRef.lowercaseSet res /\
+             satisfiesMax p.`lowercaseMax RPGRef.lowercaseSet res /\
+             satisfiesMin p.`uppercaseMin RPGRef.uppercaseSet res /\
+             satisfiesMax p.`uppercaseMax RPGRef.uppercaseSet res /\
+             satisfiesMin p.`numbersMin RPGRef.numbersSet res /\
+             satisfiesMax p.`numbersMax RPGRef.numbersSet res /\
+             satisfiesMin p.`specialMin RPGRef.specialSet res /\
+             satisfiesMax p.`specialMax RPGRef.specialSet res].
 proof.
 proc.
-admitted.
+seq 1 : (#pre /\ RPGRef.lowercaseSet = [97; 97; 99; 100; 101; 102; 103; 104; 105; 106; 107; 108;
+         109; 110; 111; 112; 113; 114; 115; 116; 117; 118; 119; 120; 121; 122]).
+  inline *.
+  auto.
+seq 1 : (#pre /\ RPGRef.uppercaseSet = [65; 66; 67; 68; 69; 70; 71; 72; 73; 74; 75; 76; 77; 78;
+         79; 80; 81; 82; 83; 84; 85; 86; 87; 88; 89; 90]).
+  inline *.
+  auto.
+seq 1 : (#pre /\ RPGRef.numbersSet = [48; 49; 50; 51; 52; 53; 54; 55; 56; 57; 58]).
+  inline *.
+  auto.
+seq 1 : (#pre /\ RPGRef.specialSet = [33; 63; 35; 36; 37; 38; 43; 45; 42; 95; 64; 58; 59; 61]).
+  inline *.
+  auto.
+seq 1 : (#pre /\ size generatedPassword = 0 /\
+         satisfiesMax p.`lowercaseMax RPGRef.lowercaseSet generatedPassword /\
+         satisfiesMax p.`uppercaseMax RPGRef.uppercaseSet generatedPassword /\
+         satisfiesMax p.`numbersMax RPGRef.numbersSet generatedPassword /\
+         satisfiesMax p.`specialMax RPGRef.specialSet generatedPassword).
+  auto.         
+seq 1 : (#pre /\ lowercaseAvailable = p.`lowercaseMax).
+  auto.
+seq 1 : (#pre /\ uppercaseAvailable = p.`uppercaseMax).
+  auto.
+seq 1 : (#pre /\ numbersAvailable = p.`numbersMax).
+  auto.
+seq 1 : (#pre /\ specialAvailable = p.`specialMax).
+  auto.
+seq 1 : (policy = p /\
+         p.`length <= 200 /\
+         0 < p.`length /\ 
+         0 <= p.`lowercaseMin /\
+         0 <= p.`uppercaseMin /\
+         0 <= p.`numbersMin /\
+         0 <= p.`specialMin /\
+         0 <= p.`lowercaseMax /\
+         0 <= p.`uppercaseMax /\
+         0 <= p.`numbersMax /\
+         0 <= p.`specialMax /\
+         p.`lowercaseMin <= p.`lowercaseMax /\
+         p.`uppercaseMin <= p.`uppercaseMax /\
+         p.`numbersMin <= p.`numbersMax /\
+         p.`specialMin <= p.`specialMax /\
+         p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
+         p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax /\
+         RPGRef.lowercaseSet = [97; 97; 99; 100; 101; 102; 103; 104; 105; 106; 107; 108;
+         109; 110; 111; 112; 113; 114; 115; 116; 117; 118; 119; 120; 121; 122] /\
+         RPGRef.uppercaseSet = [65; 66; 67; 68; 69; 70; 71; 72; 73; 74; 75; 76; 77; 78;
+         79; 80; 81; 82; 83; 84; 85; 86; 87; 88; 89; 90] /\
+         RPGRef.numbersSet = [48; 49; 50; 51; 52; 53; 54; 55; 56; 57; 58] /\
+         RPGRef.specialSet = [33; 63; 35; 36; 37; 38; 43; 45; 42; 95; 64; 58; 59; 61] /\
+         size generatedPassword = p.`lowercaseMin /\
+         satisfiesMax p.`lowercaseMax RPGRef.lowercaseSet generatedPassword /\
+         satisfiesMax p.`uppercaseMax RPGRef.uppercaseSet generatedPassword /\
+         satisfiesMax p.`numbersMax RPGRef.numbersSet generatedPassword /\
+         satisfiesMax p.`specialMax RPGRef.specialSet generatedPassword /\
+         satisfiesMin p.`lowercaseMin RPGRef.lowercaseSet generatedPassword).
+ if.
+ - seq 1 : (#pre /\ i = 0).
+     auto.
+   while (size generatedPassword = i /\ i <= p.`lowercaseMin /\ policy = p).
+   - seq 1 : (#pre).
+       auto.
+     seq 1 : (#pre).
+       inline *.
+       auto.
+       seq 4 : (#pre).
+         auto.
+       while true.
+          auto.
+        skip.
+        smt.
+     auto.
+     smt.
+   - skip.
+qed.
 
 
 
 (* RPGSpec always terminates *)
-lemma rpgpec_ll :
+lemma rpg_ll :
   islossless RPGRef.generate_password.
 proof.
 proc.
