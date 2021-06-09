@@ -1,4 +1,4 @@
-require import AllCore Distr List.
+require import AllCore Distr List UpdateList.
 
 type char = int.
 type password = int list.
@@ -14,18 +14,149 @@ type policy = {length : int;
                specialMax : int
 }.
 
-op countOccurrences (el:char) (pw:password) : int =
-  count (fun (c:char) => c = el ) pw.
+lemma charset_identity_mem (set:charSet) :
+  all (mem set) set.
+proof.
+smt.
+qed.
+
+lemma charSet_identity_mem_concat (set1 set2:charSet) :
+  all (mem (set1 ++ set2)) set1.
+proof.
+smt.
+qed.
+
+lemma charset_concat_mem (set1 set2 set3:charSet) :
+  all (mem (set1 ++ set3)) set2 =>
+  (forall (x : int), x \in set2 => ! (x \in set3)) =>
+  all (mem set1) set2.
+proof.
+smt.
+qed.
+
+lemma charset_disjoint_mem (set1 set2:charSet) :
+  (forall (x : int), x \in set2 => ! (x \in set1)) =>
+  !(has (mem set1) set2) /\ !(has (mem set2) set1).
+proof.
+smt.
+qed.
+
+lemma not_has_not_all (set1 set2:charSet) :
+  !(has (mem set1) set2) => !(has (mem set1) set2).
+proof.
+smt.
+qed.
+
+lemma set_has_set (set:charSet) :
+  0 < size set =>
+  has (mem set) set.
+proof.
+case set.
+- trivial.
+- trivial.
+qed.
+
+lemma disjoint_set_has_not (set1 set2:charSet) :
+  (forall x, x \in set1 => ! (x \in set2)) =>
+  !(has (mem set2) set1).
+proof.
+move => h1. rewrite hasPn. move => y. apply h1.
+qed.
+
+lemma concat_disjoint (set1 set2 set3:charSet) :
+  (forall x, x \in set1 => ! (x \in set2)) =>
+  (forall x, x \in set1 => ! (x \in set3)) =>
+  forall x, x \in set1 => ! (x \in set2 ++ set3).
+proof.
+move => h1 h2 x h3.
+have eq_not_mem: (!(x \in set2 ++ set3)) = !((mem set2 x) \/ (mem set3 x)).
+  smt.
+rewrite eq_not_mem.
+rewrite negb_or.
+split.
+- apply h1. assumption.
+- apply h2. assumption.
+qed.
+
+
+op setOccurrences_old (set:charSet) (pw:password) : int =
+  with set = []     => 0
+  with set = x :: s => count (fun c, c = x) pw + setOccurrences_old s pw.
 
 op setOccurrences (set:charSet) (pw:password) : int =
-  with set = []     => 0
-  with set = x :: s => countOccurrences x pw + setOccurrences s pw.
+  with pw = []     => 0
+  with pw = x :: s => if x \in set then 1 + setOccurrences set s
+                                   else 0 + setOccurrences set s.
+
+lemma setocc_empty_pw (set:charSet) :
+  setOccurrences set [] = 0.
+proof.
+trivial.
+qed.
+
+lemma setocc_empty_set (pw:password) :
+  setOccurrences [] pw = 0.
+proof.
+elim pw.
+- trivial.
+- move => x l.
+  trivial.
+qed.
+
+lemma setocc_concat (set:charSet) (pw1 pw2:password) :
+  setOccurrences set (pw1 ++ pw2) = setOccurrences set pw1 + setOccurrences set pw2.
+proof.
+elim pw1.
+- rewrite cat0s.
+  trivial.
+- move => x l h1.
+  case (x \in set).
+  + move => h2.
+    smt.    
+  + smt.
+qed.
+
+
+lemma setocc_insert_inset (set:charSet) (pw:password) (x:char) :
+  x \in set =>
+  setOccurrences set (pw ++ [x]) = (setOccurrences set pw) + 1.
+proof.
+smt.
+qed.
+
+lemma setocc_insert_notinset (set:charSet) (pw:password) (x:char) :
+  !(x \in set) =>
+  setOccurrences set (pw ++ [x]) = setOccurrences set pw.
+proof.
+smt.
+qed.
+
+
+lemma setoccurrences_update (set:charSet) (pw:password) (x:char) (i j:int):
+  0 < i =>
+  j < i =>
+setOccurrences set (update (nth x pw (i - 1)) (update (nth x pw j) pw (i - 1)) j) =
+setOccurrences set pw.
+proof.
+admit.
+qed.
+
+lemma satisfies_eq (pwA pwB:password) (set:charSet):
+  pwA = pwB =>
+  setOccurrences set pwA = setOccurrences set pwB.
+proof.
+trivial.
+qed.
+
 
 op satisfiesMin (min:int) (set:charSet) (pw:password) : bool =
   min <= setOccurrences set pw.
 
 op satisfiesMax (max:int) (set:charSet) (pw:password) : bool =
   setOccurrences set pw <= max.
+
+
+
 
 (* Abstract type of a RPG *)
 module type RPG_T = { 
