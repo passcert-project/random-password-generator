@@ -330,13 +330,14 @@ proc.
 seq 1 : (#pre /\ setOccurrences set pw = setOccurrences set input).
   auto.
 while (setOccurrences set pw = setOccurrences set input).
-  seq 1 : (#pre /\ j < i).
+- seq 1 : (#pre /\ j < i).
     ecall (rng_range i).  
     skip => /#.  
-  auto. move => &m /> h1 h2 h3.
-rewrite -h1.
-by apply setoccurrences_update.
-by skip.
+  auto.
+  move => &m /> h1 h2 h3.
+  rewrite -h1.
+  by apply setoccurrences_update.
+-by skip.
 qed.
 
 
@@ -377,10 +378,14 @@ hoare [RPGRef.define_union_set :
            x \in _numbersSet => ! (x \in _specialSet))
          ==>
          (0 < _nLowercase + _nUppercase + _nNumbers + _nSpecial => 0 < size res) /\
-         (all (fun (x) => x \in res) _lowercaseSet  <=> 0 < _nLowercase) /\
-         (all (fun (x) => x \in res) _uppercaseSet <=> 0 < _nUppercase) /\
-         (all (fun (x) => x \in res) _numbersSet  <=> 0 < _nNumbers) /\
-         (all (fun (x) => x \in res) _specialSet <=> 0 < _nSpecial)].
+         (has (fun (x) => x \in res) _lowercaseSet => 0 < _nLowercase) /\
+         (has (fun (x) => x \in res) _uppercaseSet => 0 < _nUppercase) /\
+         (has (fun (x) => x \in res) _numbersSet => 0 < _nNumbers) /\
+         (has (fun (x) => x \in res) _specialSet => 0 < _nSpecial) /\
+         (forall x, x \in res => x \in _lowercaseSet \/
+                                 x \in _uppercaseSet\/
+                                 x \in _numbersSet \/
+                                 x \in _specialSet)].
 proof.
 proc.
 seq 1 : (#pre /\ unionSet = []).
@@ -414,6 +419,7 @@ if.
            0 < _nLowercase + _nUppercase + _nNumbers + _nSpecial /\
            unionSet = lowercaseSet).
     auto.
+    move => &m />.
     smt.
   if.
   + seq 2 : (nLowercase = _nLowercase /\
@@ -509,15 +515,22 @@ if.
                  unionSet = lowercaseSet ++ uppercaseSet ++ numbersSet ++ specialSet).
           auto.
           skip.
-          move => &m />.
-          smt tmo=20.
+          move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+          split.
+          smt.
+          smt.
       + skip.
-        move => &m /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15.
-        split. smt. split. smt. split. smt. split. smt.
-       have has_not: ! has (mem (lowercaseSet{m} ++ uppercaseSet{m} ++ numbersSet{m}))
-                      specialSet{m}.
-       smt tmo=20.
-       smt.
+        move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+        split.
+        smt.
+        split.
+        have disjoint:
+            forall (x:char), x \in specialSet{m} =>
+            !(x \in (lowercaseSet{m} ++ uppercaseSet{m} ++ numbersSet{m})).
+          smt.
+        apply charset_disjoint_hasnot.
+        assumption.
+        smt. 
     - if.
       + seq 2 : (nLowercase = _nLowercase /\
                  nUppercase = _nUppercase /\
@@ -545,27 +558,32 @@ if.
                    x \in _numbersSet => ! (x \in _specialSet)) /\
                  0 < nLowercase /\
                  0 < nUppercase /\
+                 !(0 < nNumbers) /\
                  0 < nSpecial /\
                  0 < _nLowercase + _nUppercase + _nNumbers + _nSpecial /\
                  unionSet = lowercaseSet ++ uppercaseSet ++ specialSet).
           auto.
           skip.
-          move => &m /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14.
+          move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
           split.
           smt.
           split.
+          have disjoint:
+              forall (x:char), x \in numbersSet{m} =>
+              !(x \in (lowercaseSet{m} ++ uppercaseSet{m} ++ specialSet{m})).
+            smt.
+          apply charset_disjoint_hasnot.
+          assumption.
           smt.
-          split.
-          smt.
-          split.
-          split.
-          smt.
-          split.
-
-          smt tmo=20.
        + skip.
-         move => &m />.
-         smt tmo=20.
+         move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+         split.
+         smt.
+         split.
+         smt.
+         split.
+         smt.
+         smt.
    + if.
      - seq 2 : (nLowercase = _nLowercase /\
                  nUppercase = _nUppercase /\
@@ -593,6 +611,7 @@ if.
                    x \in _numbersSet => ! (x \in _specialSet)) /\
                  0 < nLowercase /\
                  0 < nNumbers /\
+                 !(0 < nUppercase) /\
                  0 < _nLowercase + _nUppercase + _nNumbers + _nSpecial /\
                  unionSet = lowercaseSet ++ numbersSet).
           auto.
@@ -622,17 +641,33 @@ if.
                  (forall (x : int),
                    x \in _numbersSet => ! (x \in _specialSet)) /\
                  0 < nLowercase /\
+                 !(0 < nUppercase) /\
                  0 < nNumbers /\
                  0 < nSpecial /\
                  0 < _nLowercase + _nUppercase + _nNumbers + _nSpecial /\
                  unionSet = lowercaseSet ++ numbersSet ++ specialSet).
-            auto.
-         skip.
-         move => &m />.
-         smt tmo=20.
+            auto. 
       + skip.
-        move => &m />.
-        smt tmo=20.
+        move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+        split.
+        smt.
+        split.
+        have disjoint:
+            forall (x:char), x \in uppercaseSet{m} =>
+            !(x \in (lowercaseSet{m} ++ numbersSet{m} ++ specialSet{m})).
+          smt.
+        apply charset_disjoint_hasnot.
+        assumption.
+        smt.
+      skip.
+      move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+      split.
+      smt.
+      split.
+      smt.
+      split.
+      smt.
+      smt.
      - if.
        + seq 2 : (nLowercase = _nLowercase /\
                  nUppercase = _nUppercase /\
@@ -659,14 +694,27 @@ if.
                  (forall (x : int),
                    x \in _numbersSet => ! (x \in _specialSet)) /\
                  0 < nLowercase /\
+                 !(0 < nUppercase) /\
+                 !(0 < nNumbers) /\
                  0 < nSpecial /\
                  0 < _nLowercase + _nUppercase + _nNumbers + _nSpecial /\
                  unionSet = lowercaseSet ++ specialSet).
             auto.
           skip.
-          move => &m />.
-          smt tmo=20.
+          move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+          split.
+          smt.
+          split.
+          smt.
+          split.
+          smt.
+          smt.
        + skip.
+         move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+         split.
+         smt.
+         split.
+         smt.
          smt.
 - if.
   + seq 2 : (nLowercase = _nLowercase /\
@@ -693,6 +741,7 @@ if.
                x \in _uppercaseSet => ! (x \in _specialSet)) /\
              (forall (x : int),
                x \in _numbersSet => ! (x \in _specialSet)) /\
+             !(0 < nLowercase) /\
              0 < nUppercase /\
              0 < _nLowercase + _nUppercase + _nNumbers + _nSpecial /\
              unionSet = uppercaseSet).
@@ -723,6 +772,7 @@ if.
                  x \in _uppercaseSet => ! (x \in _specialSet)) /\
                (forall (x : int),
                  x \in _numbersSet => ! (x \in _specialSet)) /\
+               !(0 < nLowercase) /\
                0 < nUppercase /\
                0 < nNumbers /\
                0 < _nLowercase + _nUppercase + _nNumbers + _nSpecial /\
@@ -753,6 +803,7 @@ if.
                    x \in _uppercaseSet => ! (x \in _specialSet)) /\
                  (forall (x : int),
                    x \in _numbersSet => ! (x \in _specialSet)) /\
+                 !(0 < nLowercase) /\
                  0 < nUppercase /\
                  0 < nNumbers /\
                  0 < nSpecial /\
@@ -760,11 +811,26 @@ if.
                  unionSet = uppercaseSet ++ numbersSet ++ specialSet).
           auto.
           skip.
-          move => &m />.
-          smt tmo=20.
+          move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+          split.
+          smt.
+          split.
+          have disjoint:
+            forall (x:char), x \in lowercaseSet{m} =>
+            !(x \in (uppercaseSet{m} ++ numbersSet{m} ++ specialSet{m})).
+          smt.
+        apply charset_disjoint_hasnot.
+        assumption.   
+        smt.
       + skip.
-        move => &m />.
-        smt tmo=20.
+        move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+        split.
+        smt.
+        split.
+        smt.
+        split.
+        smt.
+        smt.
     - if.
       + seq 2 : (nLowercase = _nLowercase /\
                  nUppercase = _nUppercase /\
@@ -790,16 +856,28 @@ if.
                    x \in _uppercaseSet => ! (x \in _specialSet)) /\
                  (forall (x : int),
                    x \in _numbersSet => ! (x \in _specialSet)) /\
+                 !(0 < nLowercase) /\
                  0 < nUppercase /\
+                 !(0 < nNumbers) /\
                  0 < nSpecial /\
                  0 < _nLowercase + _nUppercase + _nNumbers + _nSpecial /\
                  unionSet = uppercaseSet ++ specialSet).
           auto.
           skip.
-          move => &m />.       
-          smt tmo=20.
+          move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.       
+          split.          
+          smt.
+          split.
+          smt.
+          split.
+          smt.
+          smt tmo=10.
        + skip.
-         move => &m />.
+         move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+         split.
+         smt.
+         split.
+         smt.
          smt.
    + if.
      - seq 2 : (nLowercase = _nLowercase /\
@@ -826,6 +904,8 @@ if.
                    x \in _uppercaseSet => ! (x \in _specialSet)) /\
                  (forall (x : int),
                    x \in _numbersSet => ! (x \in _specialSet)) /\
+                 !(0 < nLowercase) /\
+                 !(0 < nUppercase) /\
                  0 < nNumbers /\
                  0 < _nLowercase + _nUppercase + _nNumbers + _nSpecial /\
                  unionSet = numbersSet).
@@ -856,17 +936,29 @@ if.
                    x \in _uppercaseSet => ! (x \in _specialSet)) /\
                  (forall (x : int),
                    x \in _numbersSet => ! (x \in _specialSet)) /\
+                 !(0 < nLowercase) /\
+                 !(0 < nUppercase) /\
                  0 < nNumbers /\
                  0 < nSpecial /\
                  0 < _nLowercase + _nUppercase + _nNumbers + _nSpecial /\
                  unionSet = numbersSet ++ specialSet).
             auto.
          skip.
-         move => &m />.
-         smt tmo=20.
+         move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+         split.
+         smt.
+         split.
+         smt.
+         split.
+         smt.
+         smt.
       + skip.
-        move => &m.        
-        smt tmo=10.
+        move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+        split.
+        smt.
+        split.
+        smt.
+        smt.
      - if.
        + seq 2 : (nLowercase = _nLowercase /\
                  nUppercase = _nUppercase /\
@@ -892,17 +984,25 @@ if.
                    x \in _uppercaseSet => ! (x \in _specialSet)) /\
                  (forall (x : int),
                    x \in _numbersSet => ! (x \in _specialSet)) /\
+                 !(0 < nLowercase) /\
+                 !(0 < nUppercase) /\
+                 !(0 < nNumbers) /\
                  0 < nSpecial /\
                  0 < _nLowercase + _nUppercase + _nNumbers + _nSpecial /\
                  unionSet = specialSet).
             auto.
             smt.
           skip.
-          move => &m.
+          move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+          split.
+          smt.
+          split.
+          smt.
           smt.
        + skip.
          smt.
 qed.
+
 
 
 (*********************************)
@@ -1783,15 +1883,14 @@ seq 1 : (policy = p /\
 seq 1 : (#pre /\
          (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable =>
             0 < size unionSet) /\
-         (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable =>
-           (all (fun (x) => x \in RPGRef.lowercaseSet) unionSet \/
-            all (fun (x) => x \in RPGRef.uppercaseSet) unionSet \/
-            all (fun (x) => x \in RPGRef.numbersSet) unionSet \/
-            all (fun (x) => x \in RPGRef.specialSet) unionSet)) /\
          (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
          (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
          (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
-         (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable)).
+         (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
+         (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
+                                 x \in RPGRef.uppercaseSet\/
+                                 x \in RPGRef.numbersSet \/
+                                 x \in RPGRef.specialSet)).
   ecall (unionSet_available lowercaseAvailable uppercaseAvailable numbersAvailable
                              specialAvailable RPGRef.lowercaseSet RPGRef.uppercaseSet
                              RPGRef.numbersSet RPGRef.specialSet).
@@ -1828,15 +1927,14 @@ while (policy = p /\
        0 <= specialAvailable /\
        (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable
          => 0 < size unionSet) /\
-       (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable =>
-        (all (fun (x) => x \in RPGRef.lowercaseSet) unionSet \/
-         all (fun (x) => x \in RPGRef.uppercaseSet) unionSet \/
-         all (fun (x) => x \in RPGRef.numbersSet) unionSet \/
-         all (fun (x) => x \in RPGRef.specialSet) unionSet)) /\
        (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
        (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
        (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
        (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
+       (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
+                                 x \in RPGRef.uppercaseSet\/
+                                 x \in RPGRef.numbersSet \/
+                                 x \in RPGRef.specialSet) /\
        p.`length <=
          (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
          size generatedPassword /\
@@ -1859,11 +1957,12 @@ while (policy = p /\
 - seq 0 : (#pre /\
            0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable).
     skip.
+    move => &m />.
     smt.
   seq 1 : (#pre /\ randomChar \in unionSet).
     ecall (random_char_generator_has unionSet).
-    skip.    
-    smt.
+    skip.
+    move => &m />.    
   if.
   + seq 2 : (policy = p /\
              randomChar \in RPGRef.lowercaseSet /\
@@ -1883,15 +1982,14 @@ while (policy = p /\
              0 <= specialAvailable /\
              (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable
                 => 0 < size unionSet) /\
-             (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable =>
-               (all (fun (x) => x \in RPGRef.lowercaseSet) unionSet \/
-                all (fun (x) => x \in RPGRef.uppercaseSet) unionSet \/
-                all (fun (x) => x \in RPGRef.numbersSet) unionSet \/
-                all (fun (x) => x \in RPGRef.specialSet) unionSet)) /\
              (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
              (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
              (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
              (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
+             (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
+                                 x \in RPGRef.uppercaseSet\/
+                                 x \in RPGRef.numbersSet \/
+                                 x \in RPGRef.specialSet) /\
              p.`length <=
                (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
                size generatedPassword + 1 /\
@@ -1930,16 +2028,14 @@ while (policy = p /\
                  0 <= specialAvailable /\
                  (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
                    specialAvailable => 0 < size unionSet) /\
-                 (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
-                  specialAvailable =>
-                    (all (fun (x) => x \in RPGRef.lowercaseSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.uppercaseSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.numbersSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.specialSet) unionSet)) /\
-                (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
-                (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
-                (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
-                (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
+               (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
+               (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
+               (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
+               (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
+               (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
+                                 x \in RPGRef.uppercaseSet\/
+                                 x \in RPGRef.numbersSet \/
+                                 x \in RPGRef.specialSet) /\
                 p.`length <=
                   (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable)+
                    size generatedPassword + 1 /\
@@ -1985,15 +2081,13 @@ while (policy = p /\
                  0 <= specialAvailable /\
                  (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
                    specialAvailable => 0 < size unionSet) /\
-                 (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
-                  specialAvailable =>
-                    (all (fun (x) => x \in RPGRef.lowercaseSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.uppercaseSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.numbersSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.specialSet) unionSet)) /\
-                (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
-                (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
-                (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
+               (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
+               (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
+               (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
+               (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
+                                 x \in RPGRef.uppercaseSet\/
+                                 x \in RPGRef.numbersSet \/
+                                 x \in RPGRef.specialSet) /\
                 p.`length <=
                  (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
                   size generatedPassword + 1 /\
@@ -2044,15 +2138,14 @@ while (policy = p /\
              0 <= specialAvailable /\
              (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable
                 => 0 < size unionSet) /\
-             (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable =>
-               (all (fun (x) => x \in RPGRef.lowercaseSet) unionSet \/
-                all (fun (x) => x \in RPGRef.uppercaseSet) unionSet \/
-                all (fun (x) => x \in RPGRef.numbersSet) unionSet \/
-                all (fun (x) => x \in RPGRef.specialSet) unionSet)) /\
              (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
              (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
              (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
              (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
+             (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
+                                 x \in RPGRef.uppercaseSet\/
+                                 x \in RPGRef.numbersSet \/
+                                 x \in RPGRef.specialSet) /\
              p.`length <=
                (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
                size generatedPassword + 1 /\
@@ -2091,16 +2184,14 @@ while (policy = p /\
                  0 <= specialAvailable /\
                  (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
                    specialAvailable => 0 < size unionSet) /\
-                 (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
-                  specialAvailable =>
-                    (all (fun (x) => x \in RPGRef.lowercaseSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.uppercaseSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.numbersSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.specialSet) unionSet)) /\
                 (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
                 (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
                 (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
                 (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
+                (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
+                                 x \in RPGRef.uppercaseSet\/
+                                 x \in RPGRef.numbersSet \/
+                                 x \in RPGRef.specialSet) /\
                 p.`length <=
                   (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable)+
                    size generatedPassword + 1 /\
@@ -2146,15 +2237,13 @@ while (policy = p /\
                  0 <= specialAvailable /\
                  (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
                    specialAvailable => 0 < size unionSet) /\
-                 (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
-                  specialAvailable =>
-                    (all (fun (x) => x \in RPGRef.lowercaseSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.uppercaseSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.numbersSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.specialSet) unionSet)) /\
                 (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
                 (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
                 (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
+                (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
+                                 x \in RPGRef.uppercaseSet\/
+                                 x \in RPGRef.numbersSet \/
+                                 x \in RPGRef.specialSet) /\
                 p.`length <=
                  (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
                   size generatedPassword + 1 /\
@@ -2205,15 +2294,14 @@ while (policy = p /\
              0 <= specialAvailable /\
              (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable
                 => 0 < size unionSet) /\
-             (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable =>
-               (all (fun (x) => x \in RPGRef.lowercaseSet) unionSet \/
-                all (fun (x) => x \in RPGRef.uppercaseSet) unionSet \/
-                all (fun (x) => x \in RPGRef.numbersSet) unionSet \/
-                all (fun (x) => x \in RPGRef.specialSet) unionSet)) /\
              (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
              (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
              (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
              (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
+             (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
+                                 x \in RPGRef.uppercaseSet\/
+                                 x \in RPGRef.numbersSet \/
+                                 x \in RPGRef.specialSet) /\
              p.`length <=
                (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
                size generatedPassword + 1 /\
@@ -2252,16 +2340,14 @@ while (policy = p /\
                  0 <= specialAvailable /\
                  (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
                    specialAvailable => 0 < size unionSet) /\
-                 (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
-                  specialAvailable =>
-                    (all (fun (x) => x \in RPGRef.lowercaseSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.uppercaseSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.numbersSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.specialSet) unionSet)) /\
                 (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
                 (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
                 (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
                 (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
+                (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
+                                 x \in RPGRef.uppercaseSet\/
+                                 x \in RPGRef.numbersSet \/
+                                 x \in RPGRef.specialSet) /\
                 p.`length <=
                   (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable)+
                    size generatedPassword + 1 /\
@@ -2307,15 +2393,13 @@ while (policy = p /\
                  0 <= specialAvailable /\
                  (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
                    specialAvailable => 0 < size unionSet) /\
-                 (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
-                  specialAvailable =>
-                    (all (fun (x) => x \in RPGRef.lowercaseSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.uppercaseSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.numbersSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.specialSet) unionSet)) /\
                 (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
                 (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
                 (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
+                (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
+                                 x \in RPGRef.uppercaseSet\/
+                                 x \in RPGRef.numbersSet \/
+                                 x \in RPGRef.specialSet) /\
                 p.`length <=
                  (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
                   size generatedPassword + 1 /\
@@ -2366,15 +2450,14 @@ while (policy = p /\
              0 <= specialAvailable /\
              (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable
                 => 0 < size unionSet) /\
-             (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable =>
-               (all (fun (x) => x \in RPGRef.lowercaseSet) unionSet \/
-                all (fun (x) => x \in RPGRef.uppercaseSet) unionSet \/
-                all (fun (x) => x \in RPGRef.numbersSet) unionSet \/
-                all (fun (x) => x \in RPGRef.specialSet) unionSet)) /\
              (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
              (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
              (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
              (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
+             (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
+                                 x \in RPGRef.uppercaseSet\/
+                                 x \in RPGRef.numbersSet \/
+                                 x \in RPGRef.specialSet) /\
              p.`length <=
                (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
                size generatedPassword + 1 /\
@@ -2413,16 +2496,14 @@ while (policy = p /\
                  0 < specialAvailable /\
                  (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
                    specialAvailable => 0 < size unionSet) /\
-                 (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
-                  specialAvailable =>
-                    (all (fun (x) => x \in RPGRef.lowercaseSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.uppercaseSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.numbersSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.specialSet) unionSet)) /\
                 (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
                 (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
                 (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
                 (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
+                (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
+                                 x \in RPGRef.uppercaseSet\/
+                                 x \in RPGRef.numbersSet \/
+                                 x \in RPGRef.specialSet) /\
                 p.`length <=
                   (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable)+
                    size generatedPassword + 1 /\
@@ -2468,15 +2549,13 @@ while (policy = p /\
                  0 = specialAvailable /\
                  (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
                    specialAvailable => 0 < size unionSet) /\
-                 (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
-                  specialAvailable =>
-                    (all (fun (x) => x \in RPGRef.lowercaseSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.uppercaseSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.numbersSet) unionSet \/
-                    all (fun (x) => x \in RPGRef.specialSet) unionSet)) /\
                 (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
                 (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
                 (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
+                (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
+                                 x \in RPGRef.uppercaseSet\/
+                                 x \in RPGRef.numbersSet \/
+                                 x \in RPGRef.specialSet) /\
                 p.`length <=
                  (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
                   size generatedPassword + 1 /\
@@ -2509,16 +2588,45 @@ while (policy = p /\
     move => &m />.
     smt.
 conseq (_: false ==> _).
-  + smt.
+  + move => &m />.
+    smt.
   + auto.
 - skip.
   move => &m />.
   smt.
-
-ecall (permutation_bounds generatedPassword).
-
+inline RPGRef.permutation.
+seq 2 : (#pre /\
+         setOccurrences RPGRef.lowercaseSet generatedPassword =
+         setOccurrences RPGRef.lowercaseSet pw /\
+         setOccurrences RPGRef.uppercaseSet generatedPassword =
+         setOccurrences RPGRef.uppercaseSet pw /\
+         setOccurrences RPGRef.numbersSet generatedPassword =
+         setOccurrences RPGRef.numbersSet pw /\
+         setOccurrences RPGRef.specialSet generatedPassword =
+         setOccurrences RPGRef.specialSet pw).
+auto.
+seq 1 : (#pre).
+  while (#pre).
+  - seq 1 : (#pre /\ j < i0).
+      ecall (rng_range i0).
+      skip => /#.
+    auto.
+    move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+    split.
+    rewrite H7.
+    by rewrite setoccurrences_update.
+    split.
+    rewrite H8.
+    by rewrite setoccurrences_update.
+    split.
+    rewrite H9.
+    by rewrite setoccurrences_update.
+    rewrite H10.
+    by rewrite setoccurrences_update.
+  - by skip.
+auto.
+smt.
 qed.
-
 
 
 (* RPGSpec always terminates *)

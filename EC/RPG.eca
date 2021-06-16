@@ -14,56 +14,38 @@ type policy = {length : int;
                specialMax : int
 }.
 
-lemma charset_identity_mem (set:charSet) :
-  all (mem set) set.
+
+lemma char_in_concat2 (x:char) (set1 set2:charSet) :
+  x \in (set1 ++ set2) =>
+  x \in set1 \/ x \in set2.
 proof.
 smt.
 qed.
 
-lemma charSet_identity_mem_concat (set1 set2:charSet) :
-  all (mem (set1 ++ set2)) set1.
+lemma char_in_concat3 (x:char) (set1 set2 set3:charSet) :
+  x \in (set1 ++ set2 ++ set3) =>
+  x \in set1 \/ x \in set2 \/ x \in set3.
 proof.
 smt.
 qed.
 
-lemma charset_concat_mem (set1 set2 set3:charSet) :
-  all (mem (set1 ++ set3)) set2 =>
-  (forall (x : int), x \in set2 => ! (x \in set3)) =>
-  all (mem set1) set2.
+lemma char_in_concat4 (x:char) (set1 set2 set3 set4:charSet) :
+  x \in (set1 ++ set2 ++ set3 ++ set4) =>
+  x \in set1 \/ x \in set2 \/ x \in set3 \/ x \in set4.
 proof.
 smt.
 qed.
 
-lemma charset_disjoint_mem (set1 set2:charSet) :
-  (forall (x : int), x \in set2 => ! (x \in set1)) =>
-  !(has (mem set1) set2) /\ !(has (mem set2) set1).
+
+(* disjoint props *)
+lemma disjoint_symmetry (set1 set2:charSet) :
+  (forall (x : char), x \in set1 => !(x \in set2)) <=>
+  (forall (x : char), x \in set2 => !(x \in set1)).
 proof.
 smt.
 qed.
 
-lemma not_has_not_all (set1 set2:charSet) :
-  !(has (mem set1) set2) => !(has (mem set1) set2).
-proof.
-smt.
-qed.
-
-lemma set_has_set (set:charSet) :
-  0 < size set =>
-  has (mem set) set.
-proof.
-case set.
-- trivial.
-- trivial.
-qed.
-
-lemma disjoint_set_has_not (set1 set2:charSet) :
-  (forall x, x \in set1 => ! (x \in set2)) =>
-  !(has (mem set2) set1).
-proof.
-move => h1. rewrite hasPn. move => y. apply h1.
-qed.
-
-lemma concat_disjoint (set1 set2 set3:charSet) :
+lemma disjoint_concat (set1 set2 set3:charSet) :
   (forall x, x \in set1 => ! (x \in set2)) =>
   (forall x, x \in set1 => ! (x \in set3)) =>
   forall x, x \in set1 => ! (x \in set2 ++ set3).
@@ -76,6 +58,107 @@ rewrite negb_or.
 split.
 - apply h1. assumption.
 - apply h2. assumption.
+qed.
+
+
+(* all props *)
+lemma charset_all (set:charSet) :
+  all (mem set) set.
+proof.
+smt.
+qed.
+
+lemma charset_all_concat (set1 set2:charSet) :
+  all (mem (set1 ++ set2)) set1.
+proof.
+smt.
+qed.
+
+lemma charset_concat_all (set1 set2 set3:charSet) :
+  all (mem (set1 ++ set3)) set2 =>
+  (forall (x : char), x \in set2 => !(x \in set3)) =>
+  all (mem set1) set2.
+proof.
+smt.
+qed.
+
+lemma charset_disjoint_notall (set1 set2:charSet) :
+  0 < size set1 =>
+  0 < size set2 =>
+  (forall (x : char), x \in set1 => ! (x \in set2)) =>
+  !(all (mem set1) set2) /\ !(all (mem set2) set1).
+proof. 
+case set1.
+- trivial.
+- case set2.
+  + trivial.
+  + move => x2 l2 x1 l1 h1 h2 h3.
+    split.
+    * smt.
+    * have aux : forall (x : char), x \in x2 :: l2 => ! (x \in x1 :: l1).
+      - by apply disjoint_symmetry.
+      smt.        
+qed.
+
+(*lemma char_in_charset_all (x:char) (set1 set2:charSet) :
+  x \in set1 =>
+  all (mem set1) set2 =>
+  x \in set2.
+proof.
+move => h1 h2.
+rewrite allP in h2.
+smt.
+*)
+
+(* has props *)
+lemma charset_has (set:charSet) :
+  0 < size set =>
+  has (mem set) set.
+proof.
+case set.
+- trivial.
+- trivial.
+qed.
+
+lemma charset_has_concat (set1 set2:charSet) :
+  0 < size set1 =>
+  has (mem (set1 ++ set2)) set1.
+proof.
+smt.
+qed.
+
+lemma charset_disjoint_hasnot (set1 set2:charSet) :
+  (forall (x : char), x \in set1 => ! (x \in set2)) =>
+  !(has (mem set2) set1) (*/\ !(has (mem set1) set2)*).
+proof.
+move => h1.
+rewrite hasPn.
+move => x.
+apply h1.
+(*- rewrite hasPn.
+  move => x.
+  apply disjoint_symmetry.
+  apply h1.*)
+qed.
+
+
+(* relations between all and has *)
+lemma allP_hasP (p : 'a -> bool) s :
+  0 < size s =>
+  all p s => has p s.
+proof.
+case s.
+- trivial.
+- smt.
+qed.
+
+lemma hasPn_allPn (p : 'a -> bool) s :
+  0 < size s =>
+  !has p s => !all p s.
+proof.
+case s.
+- trivial.
+- smt.
 qed.
 
 
