@@ -14,19 +14,18 @@ type policy = {length : int;
                specialMax : int
 }.
 
-
 lemma char_in_concat2 (x:char) (set1 set2:charSet) :
   x \in (set1 ++ set2) =>
   x \in set1 \/ x \in set2.
 proof.
-smt.
+exact mem_cat.
 qed.
 
 lemma char_in_concat3 (x:char) (set1 set2 set3:charSet) :
   x \in (set1 ++ set2 ++ set3) =>
   x \in set1 \/ x \in set2 \/ x \in set3.
 proof.
-smt.
+smt(mem_cat).
 qed.
 
 lemma char_in_concat4 (x:char) (set1 set2 set3 set4:charSet) :
@@ -100,15 +99,6 @@ case set1.
       smt.        
 qed.
 
-(*lemma char_in_charset_all (x:char) (set1 set2:charSet) :
-  x \in set1 =>
-  all (mem set1) set2 =>
-  x \in set2.
-proof.
-move => h1 h2.
-rewrite allP in h2.
-smt.
-*)
 
 (* has props *)
 lemma charset_has (set:charSet) :
@@ -149,7 +139,11 @@ lemma allP_hasP (p : 'a -> bool) s :
 proof.
 case s.
 - trivial.
-- smt.
+- move => x l H.
+  rewrite /all /=.
+  move => [H1 H2].
+  left.
+  assumption.
 qed.
 
 lemma hasPn_allPn (p : 'a -> bool) s :
@@ -158,13 +152,19 @@ lemma hasPn_allPn (p : 'a -> bool) s :
 proof.
 case s.
 - trivial.
-- smt.
+- move => x l H.
+  rewrite hasPn.
+  rewrite allP. 
+  move => H1.
+  apply negb_forall.
+  exists (x).
+  have x_in_x_l: x \in x::l.
+    trivial.
+  apply H1 in x_in_x_l.
+  simplify.
+  assumption.
 qed.
 
-
-op setOccurrences_old (set:charSet) (pw:password) : int =
-  with set = []     => 0
-  with set = x :: s => count (fun c, c = x) pw + setOccurrences_old s pw.
 
 op setOccurrences (set:charSet) (pw:password) : int =
   with pw = []     => 0
@@ -194,7 +194,7 @@ elim pw1.
   trivial.
 - move => x l h1.
   case (x \in set).
-  + move => h2.
+  + move => -> /=. (*rewrite h2*) 
     smt.    
   + smt.
 qed.
@@ -211,16 +211,63 @@ lemma setocc_insert_notinset (set:charSet) (pw:password) (x:char) :
   !(x \in set) =>
   setOccurrences set (pw ++ [x]) = setOccurrences set pw.
 proof.
-smt.
+move => ?.
+case pw.
+- smt.
+- smt.
 qed.
 
 
-lemma setoccurrences_update (set:charSet) (pw:password) (x:char) (i j:int):
+lemma setocc_take_drop (set:charSet) (pw:password) (n:int) :
+  setOccurrences set (take n pw) + setOccurrences set (drop n pw) = setOccurrences set pw.
+proof.
+rewrite -setocc_concat.
+rewrite cat_take_drop.
+reflexivity.
+qed.
+
+lemma setocc_drop_plus1 (set:charSet) (pw:password) (n:int) (x:char) :
+  nth x pw (n-1) \in set =>
+  0 < n =>
+  n < size pw =>
+  0 < size pw =>
+  setOccurrences set (drop (n+1) pw) = setOccurrences set (drop n pw) - 1.
+proof.
+case pw.
+- trivial.
+- move => ? ?.
+  admit.
+qed.
+
+lemma setocc_update_inset (set:charSet) (pw:password) (x y:char) (n:int) :
+  0 <= n =
+  n < size pw =>
+  x \in set =>
+  nth y pw n \in set =>
+  setOccurrences set (update x pw n) = setOccurrences set pw.
+proof.
+case pw.
+- move => ? ? ?.
+  rewrite /update.    
+  simplify.
+  smt.
+- move => ? ?. admit.
+qed.
+
+
+
+lemma setoccurrences_update (set:charSet) (pw:password) (x:char) (i j:int) :
   0 < i =>
   j < i =>
+  0 <= j =>
 setOccurrences set (update (nth x pw (i - 1)) (update (nth x pw j) pw (i - 1)) j) =
 setOccurrences set pw.
 proof.
+move => ? ? ?.
+case pw.
+- move => />.
+  rewrite /update.
+- admit.
 admit.
 qed.
 
@@ -260,17 +307,36 @@ module Correctness(RPG : RPG_T) = {
     var pw : password;
     var lowercaseSet, uppercaseSet, numbersSet, specialSet : charSet;
     var lowercaseOcc, uppercaseOcc, numbersOcc, specialOcc : int;
-    var satLength, satBounds : bool;
+    var satisfied : bool;
 
-    pw <@ RPG.generate_password(policy);
-    satLength <- size pw = policy.`length;
+    if(policy.`length <= 200 /\
+       0 < policy.`length /\ 
+       0 <= policy.`lowercaseMin /\
+       0 <= policy.`uppercaseMin /\
+       0 <= policy.`numbersMin /\
+       0 <= policy.`specialMin /\
+       0 <= policy.`lowercaseMax /\
+       0 <= policy.`uppercaseMax /\
+       0 <= policy.`numbersMax /\
+       0 <= policy.`specialMax /\
+       policy.`lowercaseMin <= policy.`lowercaseMax /\
+       policy.`uppercaseMin <= policy.`uppercaseMax /\
+       policy.`numbersMin <= policy.`numbersMax /\
+       policy.`specialMin <= policy.`specialMax /\
+       policy.`lowercaseMin + policy.`uppercaseMin + policy.`numbersMin + policy.`specialMin
+         <= policy.`length /\
+       policy.`length <=
+         policy.`lowercaseMax + policy.`uppercaseMax + policy.`numbersMax + policy.`specialMax) {
 
     lowercaseSet <- RPG.get_lowercase();
     uppercaseSet <- RPG.get_uppercase();
     numbersSet <- RPG.get_numbers();
     specialSet <- RPG.get_special();
+
+    pw <@ RPG.generate_password(policy);
     
-    satBounds <- satisfiesMin policy.`lowercaseMin lowercaseSet pw /\
+    satisfied <- size pw = policy.`length /\
+                 satisfiesMin policy.`lowercaseMin lowercaseSet pw /\
                  satisfiesMax policy.`lowercaseMax lowercaseSet pw /\
                  satisfiesMin policy.`uppercaseMin uppercaseSet pw /\
                  satisfiesMax policy.`uppercaseMax uppercaseSet pw /\
@@ -278,9 +344,15 @@ module Correctness(RPG : RPG_T) = {
                  satisfiesMax policy.`numbersMax numbersSet pw /\
                  satisfiesMin policy.`specialMin specialSet pw /\
                  satisfiesMax policy.`specialMax specialSet pw;
+    }
+
+    else {
+      satisfied <- true;
+    }
+
 
     
-    return satLength /\ satBounds;
+    return satisfied;
 
    }
 

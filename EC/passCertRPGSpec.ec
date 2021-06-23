@@ -261,7 +261,7 @@ axiom rng_ll : islossless RPGRef.rng.
 
 (* output of rng is smaller than range *)
 lemma rng_range _range :
-  hoare [RPGRef.rng : range = _range /\ 0 < _range==> 0 <= res /\ res < _range].
+  hoare [RPGRef.rng : range = _range /\ 0 < _range ==> 0 <= res /\ res < _range].
 proof.
 proc.
 wp.
@@ -289,7 +289,13 @@ seq 1 : (set = _set /\ 0 <= choice /\ choice < size set).
   ecall (rng_range (size set)).
   auto.
 auto.
-smt.
+move => &m [H1 [H2 H3]].
+rewrite -H1.
+apply mem_nth.
+split.
+- assumption.
+- move => H4.
+  assumption.
 qed.
 
 
@@ -317,27 +323,6 @@ while (size pw = size input).
   auto.
   by rewrite -size_update.
   by skip.
-qed.
-
-
-
-(* permutation of the password does not change occurrence os chars *)
-lemma permutation_bounds input set :
-  hoare [RPGRef.permutation : pw = input ==>
-         setOccurrences set res = setOccurrences set input].
-proof.
-proc.
-seq 1 : (#pre /\ setOccurrences set pw = setOccurrences set input).
-  auto.
-while (setOccurrences set pw = setOccurrences set input).
-- seq 1 : (#pre /\ j < i).
-    ecall (rng_range i).  
-    skip => /#.  
-  auto.
-  move => &m /> h1 h2 h3.
-  rewrite -h1.
-  by apply setoccurrences_update.
--by skip.
 qed.
 
 
@@ -1005,6 +990,9 @@ qed.
 
 
 
+
+
+
 (*********************************)
 (*          CORRECTNESS          *)
 (*********************************)
@@ -1013,6 +1001,7 @@ qed.
 (* RPG Spec satisfies the length defined in the policy (HL) *)
 lemma rpg_correctness_length_hl (p:policy) :
   hoare [RPGRef.generate_password : policy = p /\
+         (* assumptions *)
          p.`length <= 200 /\
          0 < p.`length /\ 
          0 <= p.`lowercaseMin /\
@@ -1044,9 +1033,11 @@ seq 1 : (#pre).
 seq 1 : (#pre).
   inline *.
   auto.
-seq 1 : (#pre /\ size generatedPassword = 0).
+seq 1 : ( #pre /\ size generatedPassword = 0).
   auto.
-seq 1 : (#pre /\ lowercaseAvailable = p.`lowercaseMax).
+(*seq 1 : (size generatedPassword = 0 /\ #[/:]pre).
+  auto.*)
+seq 1 : (#[/:]pre /\ lowercaseAvailable = p.`lowercaseMax).
   auto.
 seq 1 : (#pre /\ uppercaseAvailable = p.`uppercaseMax).
   auto.
@@ -1262,6 +1253,9 @@ skip => /#.
 ecall (permutation_size generatedPassword).
 skip => /#.  
 qed.
+
+
+
 
 
 
@@ -2607,11 +2601,11 @@ seq 2 : (#pre /\
 auto.
 seq 1 : (#pre).
   while (#pre).
-  - seq 1 : (#pre /\ j < i0).
+  - seq 1 : (#pre /\ j < i0 /\ 0 <= j).
       ecall (rng_range i0).
       skip => /#.
     auto.
-    move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+    move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
     split.
     rewrite H7.
     by rewrite setoccurrences_update.
@@ -2627,6 +2621,53 @@ seq 1 : (#pre).
 auto.
 smt.
 qed.
+
+
+
+
+
+
+
+(* RPGSpec satisfies both the length and the bounds defined in the policy *)
+lemma rpg_correctness_hl (p:policy) :
+  hoare [RPGRef.generate_password : policy = p /\
+         (* assumptions *)
+         p.`length <= 200 /\
+         0 < p.`length /\ 
+         0 <= p.`lowercaseMin /\
+         0 <= p.`uppercaseMin /\
+         0 <= p.`numbersMin /\
+         0 <= p.`specialMin /\
+         0 <= p.`lowercaseMax /\
+         0 <= p.`uppercaseMax /\
+         0 <= p.`numbersMax /\
+         0 <= p.`specialMax /\
+         p.`lowercaseMin <= p.`lowercaseMax /\
+         p.`uppercaseMin <= p.`uppercaseMax /\
+         p.`numbersMin <= p.`numbersMax /\
+         p.`specialMin <= p.`specialMax /\
+         p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
+         p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
+         ==> size res = p.`length /\
+             satisfiesMin p.`lowercaseMin RPGRef.lowercaseSet res /\
+             satisfiesMax p.`lowercaseMax RPGRef.lowercaseSet res /\
+             satisfiesMin p.`uppercaseMin RPGRef.uppercaseSet res /\
+             satisfiesMax p.`uppercaseMax RPGRef.uppercaseSet res /\
+             satisfiesMin p.`numbersMin RPGRef.numbersSet res /\
+             satisfiesMax p.`numbersMax RPGRef.numbersSet res /\
+             satisfiesMin p.`specialMin RPGRef.specialSet res /\
+             satisfiesMax p.`specialMax RPGRef.specialSet res].
+proof.
+ecall (rpg_correctness_bounds_hl p).
+
+hoare A ==> B
+hoare A ==> C
+
+hoare A ==> B /\ C
+
+
+
+
 
 
 (* RPGSpec always terminates *)
@@ -2745,31 +2786,50 @@ islossless.
   - auto.
     smt.
 qed.
-  
 
 
-(* RPGSpec is correct (HL) *)
-lemma rpgspec_correctness_h (p:policy) :
-  hoare [Correctness(RPGRef).main : policy = p /\
-         p.`length <= 200 /\
-         0 < p.`length /\ 
-         0 <= p.`lowercaseMin /\
-         0 <= p.`uppercaseMin /\
-         0 <= p.`numbersMin /\
-         0 <= p.`specialMin /\
-         0 <= p.`lowercaseMax /\
-         0 <= p.`uppercaseMax /\
-         0 <= p.`numbersMax /\
-         0 <= p.`specialMax /\
-         p.`lowercaseMin <= p.`lowercaseMax /\
-         p.`uppercaseMin <= p.`uppercaseMax /\
-         p.`numbersMin <= p.`numbersMax /\
-         p.`specialMin <= p.`specialMax /\
-         p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
-         p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
-         ==> res].
+
+
+
+
+(* RPGSpec is correct *)
+lemma rpg_correct &m (p:policy) :
+  Pr[Correctness(RPGRef).main(p) @ &m : res] = 1%r.
 proof.
+byphoare.
 proc.
-seq 2 : (#pre /\ satLength = true).
-  ecall (rpgspec_correctness_length_hl p).
-admitted.
+if.
+seq 1 : (#pre /\ lowercaseSet = [97; 97; 99; 100; 101; 102; 103; 104; 105; 106; 107; 108; 109;
+         110; 111; 112; 113; 114; 115; 116; 117; 118; 119; 120; 121; 122]).
+ auto.
+ inline *.
+ auto.
+seq 1 : (#pre /\ uppercaseSet = [65; 66; 67; 68; 69; 70; 71; 72; 73; 74; 75; 76; 77; 78; 79; 80;
+         81; 82; 83; 84; 85; 86; 87; 88; 89; 90]).
+ auto.
+ inline *.
+ auto.
+seq 1 : (#pre /\ numbersSet = [48; 49; 50; 51; 52; 53; 54; 55; 56; 57]).
+ auto.
+ inline *.
+ auto.
+seq 1 : (#pre /\ specialSet = [33; 63; 35; 36; 37; 38; 43; 45; 42; 95; 64; 58; 59; 61]).
+ auto.
+ inline *.
+ auto.
+seq 1 : (#pre /\
+         size pw = policy.`length /\
+         satisfiesMin policy.`lowercaseMin lowercaseSet pw /\
+         satisfiesMax policy.`lowercaseMax lowercaseSet pw /\
+         satisfiesMin policy.`uppercaseMin uppercaseSet pw /\
+         satisfiesMax policy.`uppercaseMax uppercaseSet pw /\
+         satisfiesMin policy.`numbersMin numbersSet pw /\
+         satisfiesMax policy.`numbersMax numbersSet pw /\
+         satisfiesMin policy.`specialMin specialSet pw /\
+         satisfiesMax policy.`specialMax specialSet pw).
+auto.
+ecall ().
+hoare.
+islossless.
+admit. admit. admit. admit. admit.
+by conseq rpg_ll rpg_correctness_hl.
