@@ -258,7 +258,6 @@ module RPGRef : RPG_T = {
 axiom rng_ll : islossless RPGRef.rng.
 
 
-
 (* output of rng is smaller than range *)
 lemma rng_range _range :
   hoare [RPGRef.rng : range = _range /\ 0 < _range ==> 0 <= res /\ res < _range].
@@ -274,7 +273,10 @@ while (0 <= value).
   auto.
   smt.
 skip.
-smt.
+move => &m /> ? v ? ? ?.
+split.
+- by apply modn_ge0.
+- by apply ltz_pmod. 
 qed.
 
 
@@ -319,12 +321,11 @@ while (size pw = size input).
   seq 1 : (size pw = size input).
     auto.
     move => &m /> H1.
-    by rewrite -size_update.
+    by rewrite -update_size.
   auto.
-  by rewrite -size_update.
+  by rewrite -update_size.
   by skip.
 qed.
-
 
 
 (* if the unionSet has characters from a given set, it means that that set is stil 'available'.
@@ -1493,8 +1494,8 @@ seq 1 : (policy = p /\
         move => &m />.
         smt.
       auto.
-      move => &m />.
-      smt.
+      move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+      split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. smt.
     + skip => /#.
   - skip => /#.
 seq 1 : (policy = p /\
@@ -1617,8 +1618,8 @@ seq 1 : (policy = p /\
         move => &m />.
         smt.
       auto.
-      move => &m />.
-      smt.
+      move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+      split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. smt.
     + skip => /#.
   - skip => /#.
 seq 1 : (policy = p /\
@@ -1743,8 +1744,8 @@ seq 1 : (policy = p /\
         move => &m />.
         smt.
       auto.
-      move => &m />.
-      smt.
+      move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+      split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. smt.
     + skip => /#.
   - skip => /#.
 seq 1 : (policy = p /\
@@ -1870,8 +1871,8 @@ seq 1 : (policy = p /\
         move => &m />.
         smt.
       auto.
-      move => &m />.
-      smt.
+      move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+      split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. smt.
     + skip => /#.
   - skip => /#.
 seq 1 : (#pre /\
@@ -2111,8 +2112,8 @@ while (policy = p /\
         by skip.
       + by skip.
     auto.
-    move => &m />.
-    smt.
+    move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+    split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. smt.
 + if.
   - seq 2 : (policy = p /\
              randomChar \in RPGRef.uppercaseSet /\
@@ -2267,8 +2268,8 @@ while (policy = p /\
         by skip.
       - by skip.
     auto.
-    move => &m />.
-    smt.
+    move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+    split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. smt.
 - if.
   + seq 2 : (policy = p /\
              randomChar \in RPGRef.numbersSet /\
@@ -2423,8 +2424,8 @@ while (policy = p /\
         by skip.
       + by skip.
     auto.
-    move => &m />.
-    smt.
+    move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+    split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. smt.
 + if.
   - seq 2 : (policy = p /\
              randomChar \in RPGRef.specialSet /\
@@ -2579,8 +2580,8 @@ while (policy = p /\
         by skip.
       - by skip.
     auto.
-    move => &m />.
-    smt.
+    move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+    split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. smt.
 conseq (_: false ==> _).
   + move => &m />.
     smt.
@@ -2590,6 +2591,7 @@ conseq (_: false ==> _).
   smt.
 inline RPGRef.permutation.
 seq 2 : (#pre /\
+         i0 = size pw /\
          setOccurrences RPGRef.lowercaseSet generatedPassword =
          setOccurrences RPGRef.lowercaseSet pw /\
          setOccurrences RPGRef.uppercaseSet generatedPassword =
@@ -2599,32 +2601,61 @@ seq 2 : (#pre /\
          setOccurrences RPGRef.specialSet generatedPassword =
          setOccurrences RPGRef.specialSet pw).
 auto.
-seq 1 : (#pre).
-  while (#pre).
+seq 1 : (policy = p /\
+         p.`lowercaseMin <= setOccurrences RPGRef.lowercaseSet generatedPassword /\
+         p.`uppercaseMin <= setOccurrences RPGRef.uppercaseSet generatedPassword /\
+         p.`numbersMin <= setOccurrences RPGRef.numbersSet generatedPassword /\
+         p.`specialMin <= setOccurrences RPGRef.specialSet generatedPassword /\
+         setOccurrences RPGRef.lowercaseSet generatedPassword <= p.`lowercaseMax /\
+         setOccurrences RPGRef.uppercaseSet generatedPassword <= p.`uppercaseMax /\
+         setOccurrences RPGRef.numbersSet generatedPassword <= p.`numbersMax /\
+         setOccurrences RPGRef.specialSet generatedPassword <= p.`specialMax /\
+         setOccurrences RPGRef.lowercaseSet generatedPassword =
+         setOccurrences RPGRef.lowercaseSet pw /\
+         setOccurrences RPGRef.uppercaseSet generatedPassword =
+         setOccurrences RPGRef.uppercaseSet pw /\
+         setOccurrences RPGRef.numbersSet generatedPassword =
+         setOccurrences RPGRef.numbersSet pw /\
+         setOccurrences RPGRef.specialSet generatedPassword =
+         setOccurrences RPGRef.specialSet pw).
+  while (policy = p /\
+         p.`lowercaseMin <= setOccurrences RPGRef.lowercaseSet generatedPassword /\
+         p.`uppercaseMin <= setOccurrences RPGRef.uppercaseSet generatedPassword /\
+         p.`numbersMin <= setOccurrences RPGRef.numbersSet generatedPassword /\
+         p.`specialMin <= setOccurrences RPGRef.specialSet generatedPassword /\
+         setOccurrences RPGRef.lowercaseSet generatedPassword <= p.`lowercaseMax /\
+         setOccurrences RPGRef.uppercaseSet generatedPassword <= p.`uppercaseMax /\
+         setOccurrences RPGRef.numbersSet generatedPassword <= p.`numbersMax /\
+         setOccurrences RPGRef.specialSet generatedPassword <= p.`specialMax /\
+         i0 <= size pw /\
+         setOccurrences RPGRef.lowercaseSet generatedPassword =
+         setOccurrences RPGRef.lowercaseSet pw /\
+         setOccurrences RPGRef.uppercaseSet generatedPassword =
+         setOccurrences RPGRef.uppercaseSet pw /\
+         setOccurrences RPGRef.numbersSet generatedPassword =
+         setOccurrences RPGRef.numbersSet pw /\
+         setOccurrences RPGRef.specialSet generatedPassword =
+         setOccurrences RPGRef.specialSet pw).
   - seq 1 : (#pre /\ j < i0 /\ 0 <= j).
       ecall (rng_range i0).
       skip => /#.
     auto.
-    move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+    move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
     split.
-    rewrite H7.
-    by rewrite setoccurrences_update.
+    rewrite -update_size.
+    rewrite -update_size.
+    smt.
     split.
-    rewrite H8.
-    by rewrite setoccurrences_update.
+    rewrite setocc_swap; do! assumption.
     split.
-    rewrite H9.
-    by rewrite setoccurrences_update.
-    rewrite H10.
-    by rewrite setoccurrences_update.
+    rewrite setocc_swap; do! assumption.
+    split.
+    rewrite setocc_swap; do! assumption.
+    rewrite setocc_swap; do! assumption.
   - by skip.
 auto.
 smt.
 qed.
-
-
-
-
 
 
 
@@ -2660,13 +2691,10 @@ lemma rpg_correctness_hl (p:policy) :
 proof.
 ecall (rpg_correctness_bounds_hl p).
 
-hoare A ==> B
+(*hoare A ==> B
 hoare A ==> C
 
-hoare A ==> B /\ C
-
-
-
+hoare A ==> B /\ C*)
 
 
 
