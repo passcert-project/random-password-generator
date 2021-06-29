@@ -405,8 +405,8 @@ if.
            0 < _nLowercase + _nUppercase + _nNumbers + _nSpecial /\
            unionSet = lowercaseSet).
     auto.
-    move => &m />.
-    smt.
+    move => />.
+    smt(addz_gt0).
   if.
   + seq 2 : (nLowercase = _nLowercase /\
              nUppercase = _nUppercase /\
@@ -501,22 +501,10 @@ if.
                  unionSet = lowercaseSet ++ uppercaseSet ++ numbersSet ++ specialSet).
           auto.
           skip.
-          move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-          split.
-          smt.
-          smt.
+          smt(size_cat addz_gt0 char_cat2).
       + skip.
-        move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-        split.
-        smt.
-        split.
-        have disjoint:
-            forall (x:char), x \in specialSet{m} =>
-            !(x \in (lowercaseSet{m} ++ uppercaseSet{m} ++ numbersSet{m})).
-          smt.
-        apply charset_disjoint_hasnot.
-        assumption.
-        smt. 
+        move => />.
+        smt(size_cat addz_gt0 disjoint_cat charset_disjoint_hasnot char_cat3).
     - if.
       + seq 2 : (nLowercase = _nLowercase /\
                  nUppercase = _nUppercase /\
@@ -550,26 +538,11 @@ if.
                  unionSet = lowercaseSet ++ uppercaseSet ++ specialSet).
           auto.
           skip.
-          move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-          split.
-          smt.
-          split.
-          have disjoint:
-              forall (x:char), x \in numbersSet{m} =>
-              !(x \in (lowercaseSet{m} ++ uppercaseSet{m} ++ specialSet{m})).
-            smt.
-          apply charset_disjoint_hasnot.
-          assumption.
-          smt.
+          move => />.
+          smt(size_cat addz_gt0 disjoint_cat charset_disjoint_hasnot char_cat3).
        + skip.
-         move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-         split.
-         smt.
-         split.
-         smt.
-         split.
-         smt.
-         smt.
+         move => &m />.
+         smt(size_cat addz_gt0 disjoint_cat charset_disjoint_hasnot char_cat2).
    + if.
      - seq 2 : (nLowercase = _nLowercase /\
                  nUppercase = _nUppercase /\
@@ -634,26 +607,11 @@ if.
                  unionSet = lowercaseSet ++ numbersSet ++ specialSet).
             auto. 
       + skip.
-        move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-        split.
-        smt.
-        split.
-        have disjoint:
-            forall (x:char), x \in uppercaseSet{m} =>
-            !(x \in (lowercaseSet{m} ++ numbersSet{m} ++ specialSet{m})).
-          smt.
-        apply charset_disjoint_hasnot.
-        assumption.
-        smt.
+        move => &m />.
+        smt(size_cat addz_gt0 disjoint_cat charset_disjoint_hasnot char_cat3).
       skip.
-      move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-      split.
-      smt.
-      split.
-      smt.
-      split.
-      smt.
-      smt.
+      move => &m />.
+      smt(size_cat addz_gt0 disjoint_cat charset_disjoint_hasnot char_cat2).
      - if.
        + seq 2 : (nLowercase = _nLowercase /\
                  nUppercase = _nUppercase /\
@@ -687,21 +645,11 @@ if.
                  unionSet = lowercaseSet ++ specialSet).
             auto.
           skip.
-          move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-          split.
-          smt.
-          split.
-          smt.
-          split.
-          smt.
-          smt.
+          move => &m />.
+          smt(size_cat addz_gt0 disjoint_cat charset_disjoint_hasnot char_cat2).
        + skip.
-         move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-         split.
-         smt.
-         split.
-         smt.
-         smt.
+         move => &m />.
+         smt(charset_disjoint_hasnot).
 - if.
   + seq 2 : (nLowercase = _nLowercase /\
              nUppercase = _nUppercase /\
@@ -732,7 +680,8 @@ if.
              0 < _nLowercase + _nUppercase + _nNumbers + _nSpecial /\
              unionSet = uppercaseSet).
       auto.
-      smt.
+      move => />.
+      smt(addz_gt0).
     if.
     - seq 2 : (nLowercase = _nLowercase /\
                nUppercase = _nUppercase /\
@@ -797,26 +746,11 @@ if.
                  unionSet = uppercaseSet ++ numbersSet ++ specialSet).
           auto.
           skip.
-          move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-          split.
-          smt.
-          split.
-          have disjoint:
-            forall (x:char), x \in lowercaseSet{m} =>
-            !(x \in (uppercaseSet{m} ++ numbersSet{m} ++ specialSet{m})).
-          smt.
-        apply charset_disjoint_hasnot.
-        assumption.   
-        smt.
+          move => &m />.
+          smt(size_cat addz_gt0 disjoint_cat charset_disjoint_hasnot char_cat3).
       + skip.
-        move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-        split.
-        smt.
-        split.
-        smt.
-        split.
-        smt.
-        smt.
+        move => &m />.
+        smt(size_cat addz_gt0 disjoint_cat charset_disjoint_hasnot char_cat2).
     - if.
       + seq 2 : (nLowercase = _nLowercase /\
                  nUppercase = _nUppercase /\
@@ -850,21 +784,11 @@ if.
                  unionSet = uppercaseSet ++ specialSet).
           auto.
           skip.
-          move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.       
-          split.          
-          smt.
-          split.
-          smt.
-          split.
-          smt.
-          smt tmo=10.
+          move => &m />.
+          smt(size_cat addz_gt0 disjoint_cat charset_disjoint_hasnot char_cat2).      
        + skip.
          move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-         split.
-         smt.
-         split.
-         smt.
-         smt.
+         smt(charset_disjoint_hasnot).
    + if.
      - seq 2 : (nLowercase = _nLowercase /\
                  nUppercase = _nUppercase /\
@@ -896,7 +820,8 @@ if.
                  0 < _nLowercase + _nUppercase + _nNumbers + _nSpecial /\
                  unionSet = numbersSet).
           auto.
-          smt.
+          move => />.
+          smt(addz_gt0).
        if.
        + seq 2 : (nLowercase = _nLowercase /\
                  nUppercase = _nUppercase /\
@@ -930,21 +855,11 @@ if.
                  unionSet = numbersSet ++ specialSet).
             auto.
          skip.
-         move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-         split.
-         smt.
-         split.
-         smt.
-         split.
-         smt.
-         smt.
+         move => &m />.
+         smt(size_cat addz_gt0 disjoint_cat charset_disjoint_hasnot char_cat2).
       + skip.
         move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-        split.
-        smt.
-        split.
-        smt.
-        smt.
+        smt(charset_disjoint_hasnot).
      - if.
        + seq 2 : (nLowercase = _nLowercase /\
                  nUppercase = _nUppercase /\
@@ -977,19 +892,15 @@ if.
                  0 < _nLowercase + _nUppercase + _nNumbers + _nSpecial /\
                  unionSet = specialSet).
             auto.
-            smt.
+            move => />.
+            smt(addz_gt0).
           skip.
-          move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-          split.
-          smt.
-          split.
-          smt.
-          smt.
+          move => &m />.
+          smt(charset_disjoint_hasnot).
        + skip.
-         smt.
+         move => /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+         smt tmo=10. (*TODO*)
 qed.
-
-
 
 
 
