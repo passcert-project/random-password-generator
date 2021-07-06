@@ -1,0 +1,45 @@
+require import AllCore Distr Dexcepted List.
+require (****) PG.
+
+clone include PG.
+
+op dpassword : password distr.
+
+axiom dpassword_ll : is_lossless dpassword.
+
+axiom dpassword_uni : is_uniform dpassword.
+
+axiom dpassword_fu : is_full dpassword.
+
+
+module type Orcl = {
+  proc generate_password(p:policy) : password
+}.
+
+module type Orcl_i = {
+  proc init() : unit
+  include Orcl
+}.
+
+
+module TRPG : Orcl_i = {
+
+  proc init() = { 
+
+  } 
+
+  proc generate_password(p:policy) = {
+    var pw;
+    pw <$ dpassword \ (fun pass => !(size pass = p.`length) /\
+                                   !(satisfiesMin p.`lowercaseMin lowercaseSet pw) /\
+                                   !(satisfiesMax p.`lowercaseMax lowercaseSet pw) /\
+                                   !(satisfiesMin p.`uppercaseMin uppercaseSet pw) /\
+                                   !(satisfiesMax p.`uppercaseMax uppercaseSet pw) /\
+                                   !(satisfiesMin p.`numbersMin numbersSet pw) /\
+                                   !(satisfiesMax p.`numbersMax numbersSet pw) /\
+                                   !(satisfiesMin p.`specialMin specialSet pw) /\
+                                   !(satisfiesMax p.`specialMax specialSet pw));
+    return pw;
+  }
+
+}.

@@ -60,7 +60,7 @@ module RPGRef : RPG_T = {
   }
 
 
-  proc get_lowercase() : charSet = {
+  proc get_lowercaseSet() : charSet = {
     
     var set : charSet;
     set <- [97; 97; 99; 100; 101; 102; 103; 104; 105; 106; 107; 108; 109; 110; 111; 112;
@@ -70,7 +70,7 @@ module RPGRef : RPG_T = {
   }
 
 
-  proc get_uppercase() : charSet = {
+  proc get_uppercaseSet() : charSet = {
     
     var set : charSet;
     set <- [65; 66; 67; 68; 69; 70; 71; 72; 73; 74; 75; 76; 77; 78; 79; 80; 81; 82; 83; 84; 85;
@@ -80,7 +80,7 @@ module RPGRef : RPG_T = {
   }
 
 
-  proc get_numbers() : charSet = {
+  proc get_numbersSet() : charSet = {
 
     var set : charSet;
     set <- [48; 49; 50; 51; 52; 53; 54; 55; 56; 57];
@@ -89,7 +89,7 @@ module RPGRef : RPG_T = {
   }
 
 
-  proc get_special() : charSet = {
+  proc get_specialSet() : charSet = {
     
     var set : charSet;
     set <- [33; 63; 35; 36; 37; 38; 43; 45; 42; 95; 64; 58; 59; 61];
@@ -137,10 +137,10 @@ module RPGRef : RPG_T = {
     var lowercaseAvailable, uppercaseAvailable, numbersAvailable, specialAvailable : int;
 
     (* initializer sets *)
-    lowercaseSet <@ get_lowercase();
-    uppercaseSet <@ get_uppercase();
-    numbersSet <@ get_numbers();
-    specialSet <@ get_special();
+    lowercaseSet <@ get_lowercaseSet();
+    uppercaseSet <@ get_uppercaseSet();
+    numbersSet <@ get_numbersSet();
+    specialSet <@ get_specialSet();
 
     (* initialize random password *)
     generatedPassword <- [];
@@ -909,8 +909,9 @@ qed.
 (*          CORRECTNESS          *)
 (*********************************)
 
-
+(* -------------------------------------------------------- *)
 (* RPG Spec satisfies the length defined in the policy (HL) *)
+(* -------------------------------------------------------- *)
 lemma rpg_correctness_length_hl (p:policy) :
   hoare [RPGRef.generate_password : policy = p /\
          (* assumptions *)
@@ -945,7 +946,7 @@ seq 1 : (#pre).
 seq 1 : (#pre).
   inline *.
   auto.
-seq 1 : ( #pre /\ size generatedPassword = 0).
+seq 1 : (#pre /\ size generatedPassword = 0).
   auto.
 (*seq 1 : (size generatedPassword = 0 /\ #[/:]pre).
   auto.*)
@@ -992,9 +993,10 @@ seq 1 : (policy = p /\
         while true.
           auto.
         skip.
-        smt.
+        move => />.
       auto.
-      smt.
+      move => />.
+      smt(size_cat).
       skip => /#.
   - skip => /#.
 seq 1 : (policy = p /\
@@ -1031,9 +1033,10 @@ seq 1 : (policy = p /\
         while true.
           auto.
         skip.
-        smt.
+        move => />.
       auto.
-      smt.
+      move => />.
+      smt(size_cat).
       skip => /#.
   - skip => /#.
 seq 1 : (policy = p /\
@@ -1070,9 +1073,9 @@ seq 1 : (policy = p /\
         while true.
           auto.
         skip.
-        smt.
+        move => />.
       auto.
-      smt.
+      smt(size_cat).
       skip => /#.
   - skip => /#.
 seq 1 : (policy = p /\
@@ -1109,9 +1112,9 @@ seq 1 : (policy = p /\
         while true.
           auto.
         skip.
-        smt.
+        move => />.
       auto.
-      smt.
+      smt(size_cat).
       skip => /#.
   - skip => /#.
 seq 1 : (#pre).
@@ -1127,7 +1130,7 @@ seq 1 : (size generatedPassword = p.`length /\ policy = p).
     while true.
       auto.
     skip.
-    smt.
+    move => />.
   seq 1 : (#pre).
     if.
     - seq 1 : (#pre).  
@@ -1158,20 +1161,19 @@ seq 1 : (size generatedPassword = p.`length /\ policy = p).
               auto.
             + skip => /# .
     skip.
-    smt.
+    move => />.
   auto.
-  smt.
+  move => />.
+  smt(size_cat).
 skip => /#.
 ecall (permutation_size generatedPassword).
 skip => /#.  
 qed.
 
 
-
-
-
-
+(* --------------------------------------------------------------------- *)
 (* RPGSpec satisfies the different set bounds defined in the policy (HL) *)
+(* --------------------------------------------------------------------- *)
 lemma rpg_correctness_bounds_hl (p:policy) :
   hoare [RPGRef.generate_password : policy = p /\
          (* assumptions *)
@@ -1253,41 +1255,46 @@ seq 1 : (policy = p /\
          setOccurrences RPGRef.specialSet generatedPassword = 0).
   auto.
   move => &m />.
-  smt.
+  smt. (* TODO *)
 seq 1 : (#pre /\
          lowercaseAvailable = p.`lowercaseMax /\
          setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
            p.`lowercaseMax).
   auto.
-  move => &m />. 
-  smt.
+  move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+  rewrite H26.
+  ring.
 seq 1 : (#pre /\
          uppercaseAvailable = p.`uppercaseMax /\
          setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
            p.`uppercaseMax).
   auto.
-  move => &m />.
-  smt.
+  move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+  rewrite H27.
+  ring.
 seq 1 : (#pre /\
          numbersAvailable = p.`numbersMax /\
          setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
            p.`numbersMax).
   auto.
-  move => &m />.
-  smt.
+  move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+  rewrite H28.
+  ring.
 seq 1 : (#pre /\
          specialAvailable = p.`specialMax /\
          setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
            p.`specialMax).
   auto.
-  move => &m />.
-  smt.
+  move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+  rewrite H29.
+  ring.
 seq 0 : (#pre /\
          p.`length <=
            (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
            size generatedPassword).
   auto.
-  smt.
+  move => /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+  by rewrite H15 /=.
 seq 1 : (policy = p /\
          p.`length <= 200 /\
          0 < p.`length /\ 
@@ -1394,7 +1401,9 @@ seq 1 : (policy = p /\
                  p.`specialMax /\
                i < policy.`lowercaseMin).
         auto.
-        move => &m />.
+        move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+        split.
+        * auto.
         smt.
       seq 1 : (#pre /\ randomChar \in RPGRef.lowercaseSet /\
              !(randomChar \in RPGRef.uppercaseSet) /\
@@ -2569,6 +2578,13 @@ smt.
 qed.
 
 
+lemma rpg_generate_password_conjunction_rule P Q1 Q2 :
+  hoare [RPGRef.generate_password : P ==> Q1] =>
+  hoare [RPGRef.generate_password : P ==> Q2] =>
+  hoare [RPGRef.generate_password : P ==> Q1 /\ Q2].
+proof.
+move => ? ?.
+
 
 (* RPGSpec satisfies both the length and the bounds defined in the policy *)
 lemma rpg_correctness_hl (p:policy) :
@@ -2600,6 +2616,8 @@ lemma rpg_correctness_hl (p:policy) :
              satisfiesMin p.`specialMin RPGRef.specialSet res /\
              satisfiesMax p.`specialMax RPGRef.specialSet res].
 proof.
+hoare split.
+split.
 ecall (rpg_correctness_bounds_hl p).
 
 (*hoare A ==> B
@@ -2772,3 +2790,9 @@ hoare.
 islossless.
 admit. admit. admit. admit. admit.
 by conseq rpg_ll rpg_correctness_hl.
+
+
+
+(*******************************)
+(*          SECURITY           *)
+(*******************************)
