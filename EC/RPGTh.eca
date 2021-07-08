@@ -1,7 +1,7 @@
 require import AllCore Distr List UpdateList.
-require (****) PG.
+require (****) PasswordGenerationTh.
 
-clone include PG.
+clone include PasswordGenerationTh.
 
 
 (* Abstract type of a RPG *)
@@ -14,13 +14,17 @@ module type RPG_T = {
 }.
 
 
+
+(*******************************)
+(*         CORRECTNESS         *)
+(*******************************)
+
 (* Correctness definition for a RPG*)
 module Correctness(RPG : RPG_T) = {
 
   proc main(policy:policy) : bool = {
   
     var pw : password;
-    (*var lSet, uSet, nSet, sSet : charSet;*)
     var lowercaseOcc, uppercaseOcc, numbersOcc, specialOcc : int;
     var l, satisfied : bool;
 
@@ -43,18 +47,9 @@ module Correctness(RPG : RPG_T) = {
        policy.`length <=
          policy.`lowercaseMax + policy.`uppercaseMax + policy.`numbersMax + policy.`specialMax) {
 
-      (*lSet <- RPG.get_lowercaseSet();
-      uSet <- RPG.get_uppercaseSet();
-      nSet <- RPG.get_numbersSet();
-      lSet <- RPG.get_specialSet();*)
-
       pw <@ RPG.generate_password(policy);
     
-      satisfied <- (*lSet = lowercaseSet /\
-                   uSet = uppercaseSet /\
-                   nSet = numbersSet /\
-                   sSet = specialSet /\*)
-                   size pw = policy.`length /\
+      satisfied <- size pw = policy.`length /\
                    satisfiesMin policy.`lowercaseMin lowercaseSet pw /\
                    satisfiesMax policy.`lowercaseMax lowercaseSet pw /\
                    satisfiesMin policy.`uppercaseMin uppercaseSet pw /\
@@ -73,3 +68,40 @@ module Correctness(RPG : RPG_T) = {
    }
 
 }.
+
+
+
+(*******************************)
+(*          SECURITY           *)
+(*******************************)
+
+
+(* Real RPG Oracle *)
+module RealRPG(RPG : RPG_T) : Orcl = {
+
+  proc generate_password(p:policy) = {
+    var pw;
+    pw <@ RPG.generate_password(p);
+    return pw;
+  }
+
+}.
+
+
+(* The type of adversaries *)
+module type Adv (O:Orcl) = {
+  proc guess() : bool
+}.
+
+
+(* The game: parametric on oracle and adversary *)
+module RPGGame(A:Adv, O:Orcl) = {
+
+  proc main() = {
+    var b;
+    b <@ A(O).guess();
+    return b;
+  }
+
+}.
+

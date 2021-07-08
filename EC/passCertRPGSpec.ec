@@ -1,7 +1,7 @@
 require import AllCore IntDiv DInterval List UpdateList.
-require (****) RPG.
+require (****) RPGTh.
 
-clone include RPG.
+clone include RPGTh.
 
 module RPGRef : RPG_T = {
 
@@ -2586,7 +2586,10 @@ proof.
 move => ? ?.
 
 
+
+(* ---------------------------------------------------------------------- *)
 (* RPGSpec satisfies both the length and the bounds defined in the policy *)
+(* ---------------------------------------------------------------------- *)
 lemma rpg_correctness_hl (p:policy) :
   hoare [RPGRef.generate_password : policy = p /\
          (* assumptions *)
@@ -2620,14 +2623,11 @@ hoare split.
 split.
 ecall (rpg_correctness_bounds_hl p).
 
-(*hoare A ==> B
-hoare A ==> C
-
-hoare A ==> B /\ C*)
 
 
-
+(* ------------------------- *)
 (* RPGSpec always terminates *)
+(* ------------------------- *)
 lemma rpg_ll :
   islossless RPGRef.generate_password.
 proof.
@@ -2747,9 +2747,9 @@ qed.
 
 
 
-
-
+(* ------------------ *)
 (* RPGSpec is correct *)
+(* ------------------ *)
 lemma rpg_correct &m (p:policy) :
   Pr[Correctness(RPGRef).main(p) @ &m : res] = 1%r.
 proof.

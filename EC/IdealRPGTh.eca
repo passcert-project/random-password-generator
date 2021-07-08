@@ -1,32 +1,17 @@
-require import AllCore Distr Dexcepted List.
-require (****) PG.
+require import AllCore Distr Dexcepted List UpdateList.
+require (****) PasswordGenerationTh.
 
-clone include PG.
+clone include PasswordGenerationTh.
 
+
+(* Distribution over passwords *)
 op dpassword : password distr.
 
 axiom dpassword_ll : is_lossless dpassword.
-
 axiom dpassword_uni : is_uniform dpassword.
-
 axiom dpassword_fu : is_full dpassword.
 
-
-module type Orcl = {
-  proc generate_password(p:policy) : password
-}.
-
-module type Orcl_i = {
-  proc init() : unit
-  include Orcl
-}.
-
-
-module TRPG : Orcl_i = {
-
-  proc init() = { 
-
-  } 
+module IdealRPG : Orcl = {
 
   proc generate_password(p:policy) = {
     var pw;
