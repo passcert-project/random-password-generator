@@ -16,7 +16,7 @@ module RPGRef : RPG_T = {
     value <$ [0 .. (2^64) - 1];
 
     while (maxValue < value) {
-      value <$ [0 .. (2^64) - 1];
+      value <$ [0 .. (2^64) - 1]; (* Random Bytes Generator *)
     }
     
     value <- (value %% range);
@@ -787,7 +787,7 @@ if.
           move => &m />.
           smt(size_cat addz_gt0 disjoint_cat charset_disjoint_hasnot char_cat2).      
        + skip.
-         move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+         move => &m />.
          smt(charset_disjoint_hasnot).
    + if.
      - seq 2 : (nLowercase = _nLowercase /\
@@ -858,7 +858,7 @@ if.
          move => &m />.
          smt(size_cat addz_gt0 disjoint_cat charset_disjoint_hasnot char_cat2).
       + skip.
-        move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+        move => &m />.
         smt(charset_disjoint_hasnot).
      - if.
        + seq 2 : (nLowercase = _nLowercase /\
@@ -898,8 +898,8 @@ if.
           move => &m />.
           smt(charset_disjoint_hasnot).
        + skip.
-         move => /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-         smt tmo=10. (*TODO*)
+         move => />.
+         smt(lezNgt charset_has_empty).
 qed.
 
 
@@ -948,15 +948,13 @@ seq 1 : (#pre).
   auto.
 seq 1 : (#pre /\ size generatedPassword = 0).
   auto.
-(*seq 1 : (size generatedPassword = 0 /\ #[/:]pre).
-  auto.*)
 seq 1 : (#[/:]pre /\ lowercaseAvailable = p.`lowercaseMax).
   auto.
-seq 1 : (#pre /\ uppercaseAvailable = p.`uppercaseMax).
+seq 1 : (#[/:]pre /\ uppercaseAvailable = p.`uppercaseMax).
   auto.
-seq 1 : (#pre /\ numbersAvailable = p.`numbersMax).
+seq 1 : (#[/:]pre /\ numbersAvailable = p.`numbersMax).
   auto.
-seq 1 : (#pre /\ specialAvailable = p.`specialMax).
+seq 1 : (#[/:]pre /\ specialAvailable = p.`specialMax).
   auto.
 seq 1 : (policy = p /\
          p.`length <= 200 /\
@@ -1401,10 +1399,8 @@ seq 1 : (policy = p /\
                  p.`specialMax /\
                i < policy.`lowercaseMin).
         auto.
-        move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-        split.
-        * auto.
-        smt.
+        move => &m />.
+        smt. (* int theory *)
       seq 1 : (#pre /\ randomChar \in RPGRef.lowercaseSet /\
              !(randomChar \in RPGRef.uppercaseSet) /\
              !(randomChar \in RPGRef.numbersSet) /\
@@ -1412,10 +1408,10 @@ seq 1 : (policy = p /\
         ecall (random_char_generator_has RPGRef.lowercaseSet).
         skip.
         move => &m />.
-        smt.
+        smt(disjoint_char).
       auto.
-      move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-      split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. smt.
+      move => &m />.
+      smt(size_cat setocc_cat).
     + skip => /#.
   - skip => /#.
 seq 1 : (policy = p /\
@@ -1497,7 +1493,6 @@ seq 1 : (policy = p /\
              p.`specialMax /\
            i <= p.`uppercaseMin).
     + seq 1 : (policy = p /\
-               (* derived from the program *)
                0 < size RPGRef.lowercaseSet /\
                0 < size RPGRef.uppercaseSet /\
                0 < size RPGRef.numbersSet /\
@@ -1528,7 +1523,7 @@ seq 1 : (policy = p /\
                i < policy.`uppercaseMin).
         auto.
         move => &m />.
-        smt.
+        smt. (* int theory *)
       seq 1 : (#pre /\ randomChar \in RPGRef.uppercaseSet /\
              !(randomChar \in RPGRef.lowercaseSet) /\
              !(randomChar \in RPGRef.numbersSet) /\
@@ -1536,10 +1531,10 @@ seq 1 : (policy = p /\
         ecall (random_char_generator_has RPGRef.uppercaseSet).
         skip.
         move => &m />.
-        smt.
+        smt(disjoint_char).
       auto.
-      move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-      split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. smt.
+      move => &m />.
+      smt(size_cat setocc_cat).
     + skip => /#.
   - skip => /#.
 seq 1 : (policy = p /\
@@ -1654,7 +1649,7 @@ seq 1 : (policy = p /\
                i < policy.`numbersMin).
         auto.
         move => &m />.
-        smt.
+        smt. (* int theory *)
       seq 1 : (#pre /\ randomChar \in RPGRef.numbersSet /\
              !(randomChar \in RPGRef.lowercaseSet) /\
              !(randomChar \in RPGRef.uppercaseSet) /\
@@ -1662,10 +1657,10 @@ seq 1 : (policy = p /\
         ecall (random_char_generator_has RPGRef.numbersSet).
         skip.
         move => &m />.
-        smt.
+        smt(disjoint_char).
       auto.
-      move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-      split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. smt.
+      move => &m />.
+      smt(size_cat setocc_cat).
     + skip => /#.
   - skip => /#.
 seq 1 : (policy = p /\
@@ -1781,7 +1776,7 @@ seq 1 : (policy = p /\
                i < policy.`specialMin).
         auto.
         move => &m />.
-        smt.
+        smt. (* int theory *)
       seq 1 : (#pre /\ randomChar \in RPGRef.specialSet /\
              !(randomChar \in RPGRef.lowercaseSet) /\
              !(randomChar \in RPGRef.uppercaseSet) /\
@@ -1789,10 +1784,10 @@ seq 1 : (policy = p /\
         ecall (random_char_generator_has RPGRef.specialSet).
         skip.
         move => &m />.
-        smt.
+        smt(disjoint_char).
       auto.
-      move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-      split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. smt.
+      move => &m />.
+      smt(size_cat setocc_cat).
     + skip => /#.
   - skip => /#.
 seq 1 : (#pre /\
@@ -1810,8 +1805,8 @@ seq 1 : (#pre /\
                              specialAvailable RPGRef.lowercaseSet RPGRef.uppercaseSet
                              RPGRef.numbersSet RPGRef.specialSet).
   skip.
-  move => &m />.
-  smt.
+  move => &m />. 
+  smt. (* int theory *)
 seq 1 : (policy = p /\
          p.`lowercaseMin <= setOccurrences RPGRef.lowercaseSet generatedPassword /\
          p.`uppercaseMin <= setOccurrences RPGRef.uppercaseSet generatedPassword /\
@@ -1873,7 +1868,7 @@ while (policy = p /\
            0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable).
     skip.
     move => &m />.
-    smt.
+    smt. (* int theory *)
   seq 1 : (#pre /\ randomChar \in unionSet).
     ecall (random_char_generator_has unionSet).
     skip.
@@ -1972,7 +1967,7 @@ while (policy = p /\
                  setOccurrences RPGRef.specialSet generatedPassword <= p.`specialMax).
           auto.
           move => &m />.
-          smt.
+          smt(char_charset_size). (* missing int theory *)
         if.
         + conseq (_ : false ==> _).
           smt.
@@ -2032,8 +2027,8 @@ while (policy = p /\
         by skip.
       + by skip.
     auto.
-    move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-    split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. smt.
+    move => &m />.
+    smt(size_cat setocc_cat).
 + if.
   - seq 2 : (policy = p /\
              randomChar \in RPGRef.uppercaseSet /\
@@ -2188,8 +2183,8 @@ while (policy = p /\
         by skip.
       - by skip.
     auto.
-    move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-    split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. smt.
+    move => &m />.
+    smt(size_cat setocc_cat).
 - if.
   + seq 2 : (policy = p /\
              randomChar \in RPGRef.numbersSet /\
@@ -2344,8 +2339,8 @@ while (policy = p /\
         by skip.
       + by skip.
     auto.
-    move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-    split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. smt.
+    move => &m />.
+    smt(size_cat setocc_cat).
 + if.
   - seq 2 : (policy = p /\
              randomChar \in RPGRef.specialSet /\
@@ -2500,8 +2495,8 @@ while (policy = p /\
         by skip.
       - by skip.
     auto.
-    move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-    split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. split. smt. smt.
+    move => &m />.
+    smt(size_cat setocc_cat).
 conseq (_: false ==> _).
   + move => &m />.
     smt.
@@ -2564,17 +2559,16 @@ seq 1 : (policy = p /\
     split.
     rewrite -update_size.
     rewrite -update_size.
-    smt.
-    split.
+    smt. (* int *)
+    do! split.
     rewrite setocc_swap; do! assumption.
-    split.
     rewrite setocc_swap; do! assumption.
-    split.
     rewrite setocc_swap; do! assumption.
     rewrite setocc_swap; do! assumption.
   - by skip.
 auto.
-smt.
+move => &m />.
+smt. (* ez fix *)
 qed.
 
 

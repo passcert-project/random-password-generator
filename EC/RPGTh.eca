@@ -87,21 +87,8 @@ module RealRPG(RPG : RPG_T) : Orcl = {
 
 }.
 
-
-(* The type of adversaries *)
-module type Adv (O:Orcl) = {
-  proc guess() : bool
-}.
-
-
-(* The game: parametric on oracle and adversary *)
-module RPGGame(A:Adv, O:Orcl) = {
-
-  proc main() = {
-    var b;
-    b <@ A(O).guess();
-    return b;
-  }
-
-}.
-
+(* 
+In this case advantage is of the form.
+| Pr[RPGGame(A, RealRPG(Scheme)).main() @ &m : res ] - 
+  Pr[RPGGame(A, IdealRPG).main() @ &m : res ]|
+*)

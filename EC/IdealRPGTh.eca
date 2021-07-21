@@ -1,4 +1,4 @@
-require import AllCore Distr Dexcepted List UpdateList.
+require import AllCore IntDiv Distr DInterval Dexcepted List UpdateList.
 require (****) PasswordGenerationTh.
 
 clone include PasswordGenerationTh.
@@ -15,6 +15,7 @@ module IdealRPG : Orcl = {
 
   proc generate_password(p:policy) = {
     var pw;
+
     pw <$ dpassword \ (fun pass => !(size pass = p.`length) /\
                                    !(satisfiesMin p.`lowercaseMin lowercaseSet pw) /\
                                    !(satisfiesMax p.`lowercaseMax lowercaseSet pw) /\
@@ -24,7 +25,85 @@ module IdealRPG : Orcl = {
                                    !(satisfiesMax p.`numbersMax numbersSet pw) /\
                                    !(satisfiesMin p.`specialMin specialSet pw) /\
                                    !(satisfiesMax p.`specialMax specialSet pw));
+
     return pw;
   }
 
 }.
+
+
+module ModifiedRPG : Orcl = {
+
+
+  proc rng(range:int) : int = {
+    
+    var value, maxValue : int;
+
+    maxValue <- ((2^64) %/ range) * range - 1;
+
+    value <$ [0 .. (2^64) - 1];
+
+    while (maxValue < value) {
+      value <$ [0 .. (2^64) - 1]; (* Random Bytes Generator *)
+    }
+    
+    value <- (value %% range);
+    
+    return value;
+    
+  }
+
+  
+  proc permutation(pw:password) : password = {
+
+    var i : int;
+    var j : int;
+    var aux : char;
+    
+    i <- size pw;
+    
+    while (0 < i) {
+      j <@ rng(i);
+      i <- i - 1;
+      aux <- nth 0 pw i;
+      pw <- update (nth 0 pw j) pw i;
+      pw <- update aux pw j;
+    }
+    
+    return pw;
+ 
+  }
+
+  proc generate_password(p:policy) = {
+    var pw;
+
+    pw <$ dpassword \ (fun pass => !(size pass = p.`length) /\
+                                   !(satisfiesMin p.`lowercaseMin lowercaseSet pw) /\
+                                   !(satisfiesMax p.`lowercaseMax lowercaseSet pw) /\
+                                   !(satisfiesMin p.`uppercaseMin uppercaseSet pw) /\
+                                   !(satisfiesMax p.`uppercaseMax uppercaseSet pw) /\
+                                   !(satisfiesMin p.`numbersMin numbersSet pw) /\
+                                   !(satisfiesMax p.`numbersMax numbersSet pw) /\
+                                   !(satisfiesMin p.`specialMin specialSet pw) /\
+                                   !(satisfiesMax p.`specialMax specialSet pw));
+
+
+    pw <- permutation(pw);
+
+    return pw;
+  }
+
+}.
+
+
+section TEST.
+
+declare module A:Adv.
+
+lemma Ideal_eq_Modified :
+  equiv [ IdealRPG.generate_password ~ ModifiedRPG.generate_password : 
+            true ==> ={res} ].
+proc.
+seq 1 1 : (={pw}).
+auto => />.
+inline1
