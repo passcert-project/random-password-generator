@@ -253,6 +253,15 @@ module RPGRef : RPG_T = {
 (*        AUXILIARY LEMMAS        *)
 (**********************************)
 
+(* helps in combining proofs *)
+(*lemma rpg_generate_password_conjunction_rule P Q1 Q2 :
+  hoare [RPGRef.generate_password : P ==> Q1] =>
+  hoare [RPGRef.generate_password : P ==> Q2] =>
+  hoare [RPGRef.generate_password : P ==> Q1 /\ Q2].
+proof.
+by move => H1 H2; conseq H1 H2.
+qed.*)
+
 
 (* axiom -> rng always terminates *)
 axiom rng_ll : islossless RPGRef.rng.
@@ -1191,32 +1200,30 @@ lemma rpg_correctness_bounds_hl (p:policy) :
          p.`specialMin <= p.`specialMax /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
-         ==> satisfiesMin p.`lowercaseMin RPGRef.lowercaseSet res /\
-             satisfiesMin p.`uppercaseMin RPGRef.uppercaseSet res /\
-             satisfiesMin p.`numbersMin RPGRef.numbersSet res /\
-             satisfiesMin p.`specialMin RPGRef.specialSet res /\
-             satisfiesMax p.`lowercaseMax RPGRef.lowercaseSet res /\
-             satisfiesMax p.`uppercaseMax RPGRef.uppercaseSet res /\   
-             satisfiesMax p.`numbersMax RPGRef.numbersSet res /\
-             satisfiesMax p.`specialMax RPGRef.specialSet res].
+         ==> satisfiesMin p.`lowercaseMin lowercaseSet res /\
+             satisfiesMin p.`uppercaseMin uppercaseSet res /\
+             satisfiesMin p.`numbersMin numbersSet res /\
+             satisfiesMin p.`specialMin specialSet res /\
+             satisfiesMax p.`lowercaseMax lowercaseSet res /\
+             satisfiesMax p.`uppercaseMax uppercaseSet res /\   
+             satisfiesMax p.`numbersMax numbersSet res /\
+             satisfiesMax p.`specialMax specialSet res].
 proof.
 proc.
-seq 1 : (#pre /\ 0 < size RPGRef.lowercaseSet /\
-         RPGRef.lowercaseSet = [97; 97; 99; 100; 101; 102; 103; 104; 105; 106; 107; 108;
-         109; 110; 111; 112; 113; 114; 115; 116; 117; 118; 119; 120; 121; 122]).
+seq 1 : (#pre /\ 0 < size lowercaseSet /\
+         RPGRef.lowercaseSet = lowercaseSet).
   inline *.
   auto.
-seq 1 : (#pre /\ 0 < size RPGRef.uppercaseSet /\
-         RPGRef.uppercaseSet = [65; 66; 67; 68; 69; 70; 71; 72; 73; 74; 75; 76; 77; 78;
-         79; 80; 81; 82; 83; 84; 85; 86; 87; 88; 89; 90]).
+seq 1 : (#pre /\ 0 < size uppercaseSet /\
+         RPGRef.uppercaseSet = uppercaseSet).
   inline *.
   auto.
-seq 1 : (#pre /\ 0 < size RPGRef.numbersSet /\
-         RPGRef.numbersSet = [48; 49; 50; 51; 52; 53; 54; 55; 56; 57]).
+seq 1 : (#pre /\ 0 < size numbersSet /\
+         RPGRef.numbersSet = numbersSet).
   inline *.
   auto.
-seq 1 : (#pre /\ 0 < size RPGRef.specialSet /\
-         RPGRef.specialSet = [33; 63; 35; 36; 37; 38; 43; 45; 42; 95; 64; 58; 59; 61]).
+seq 1 : (#pre /\ 0 < size specialSet /\
+         RPGRef.specialSet = specialSet).
   inline *.
   auto.
 seq 1 : (policy = p /\
@@ -1237,61 +1244,62 @@ seq 1 : (policy = p /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax /\
          size generatedPassword = 0 /\
-         0 < size RPGRef.lowercaseSet /\
-         0 < size RPGRef.uppercaseSet /\
-         0 < size RPGRef.numbersSet /\
-         0 < size RPGRef.specialSet /\
-         (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-         (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-         (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-         (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-         (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-         (forall (x), x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
-         setOccurrences RPGRef.lowercaseSet generatedPassword = 0 /\
-         setOccurrences RPGRef.uppercaseSet generatedPassword = 0 /\
-         setOccurrences RPGRef.numbersSet generatedPassword = 0 /\
-         setOccurrences RPGRef.specialSet generatedPassword = 0).
+         RPGRef.lowercaseSet = lowercaseSet /\
+         RPGRef.uppercaseSet = uppercaseSet /\
+         RPGRef.numbersSet = numbersSet /\
+         RPGRef.specialSet = specialSet /\
+         0 < size lowercaseSet /\
+         0 < size uppercaseSet /\
+         0 < size numbersSet /\
+         0 < size specialSet /\
+         (forall (x), x \in lowercaseSet => !(x \in uppercaseSet)) /\
+         (forall (x), x \in lowercaseSet => !(x \in numbersSet)) /\
+         (forall (x), x \in lowercaseSet => !(x \in specialSet)) /\
+         (forall (x), x \in uppercaseSet => !(x \in numbersSet)) /\
+         (forall (x), x \in uppercaseSet => !(x \in specialSet)) /\
+         (forall (x), x \in numbersSet => !(x \in specialSet)) /\
+         setOccurrences lowercaseSet generatedPassword = 0 /\
+         setOccurrences uppercaseSet generatedPassword = 0 /\
+         setOccurrences numbersSet generatedPassword = 0 /\
+         setOccurrences specialSet generatedPassword = 0).
   auto.
-  move => &m />.
-  smt. (* TODO *)
+  move => &m /> ????????????????????.
+  rewrite /lowercaseSet /uppercaseSet /numbersSet /specialSet.
+  smt tmo=10. (* TODO *)
 seq 1 : (#pre /\
          lowercaseAvailable = p.`lowercaseMax /\
-         setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+         setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
            p.`lowercaseMax).
   auto.
-  move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-  rewrite H26.
-  ring.
+  move => &m /> ???????????????????????????????.
+  by ring.
 seq 1 : (#pre /\
          uppercaseAvailable = p.`uppercaseMax /\
-         setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+         setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
            p.`uppercaseMax).
   auto.
-  move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-  rewrite H27.
-  ring.
+  move => &m /> ????????????????????????????????.
+  by ring.
 seq 1 : (#pre /\
          numbersAvailable = p.`numbersMax /\
-         setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+         setOccurrences numbersSet generatedPassword + numbersAvailable =
            p.`numbersMax).
   auto.
-  move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-  rewrite H28.
-  ring.
+  move => &m /> ?????????????????????????????????.
+  by ring.
 seq 1 : (#pre /\
          specialAvailable = p.`specialMax /\
-         setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+         setOccurrences specialSet generatedPassword + specialAvailable =
            p.`specialMax).
   auto.
-  move => &m /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
-  rewrite H29.
-  ring.
+  move => &m /> ??????????????????????????????????.
+  by ring.
 seq 0 : (#pre /\
          p.`length <=
            (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
            size generatedPassword).
   auto.
-  move => /> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?.
+  move => /> ????????????????????????????????????.
   by rewrite H15 /=.
 seq 1 : (policy = p /\
          p.`length <= 200 /\
@@ -1310,16 +1318,20 @@ seq 1 : (policy = p /\
          p.`specialMin <= p.`specialMax /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax /\
-         0 < size RPGRef.lowercaseSet /\
-         0 < size RPGRef.uppercaseSet /\
-         0 < size RPGRef.numbersSet /\
-         0 < size RPGRef.specialSet /\
-         (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-         (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-         (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-         (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-         (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-         (forall (x), x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+         RPGRef.lowercaseSet = lowercaseSet /\
+         RPGRef.uppercaseSet = uppercaseSet /\
+         RPGRef.numbersSet = numbersSet /\
+         RPGRef.specialSet = specialSet /\
+         0 < size lowercaseSet /\
+         0 < size uppercaseSet /\
+         0 < size numbersSet /\
+         0 < size specialSet /\
+         (forall (x), x \in lowercaseSet => !(x \in uppercaseSet)) /\
+         (forall (x), x \in lowercaseSet => !(x \in numbersSet)) /\
+         (forall (x), x \in lowercaseSet => !(x \in specialSet)) /\
+         (forall (x), x \in uppercaseSet => !(x \in numbersSet)) /\
+         (forall (x), x \in uppercaseSet => !(x \in specialSet)) /\
+         (forall (x), x \in numbersSet => !(x \in specialSet)) /\
          lowercaseAvailable <= p.`lowercaseMax /\
          uppercaseAvailable = p.`uppercaseMax /\
          numbersAvailable = p.`numbersMax /\
@@ -1327,85 +1339,93 @@ seq 1 : (policy = p /\
          p.`length <=
            (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
            size generatedPassword /\
-         setOccurrences RPGRef.lowercaseSet generatedPassword = p.`lowercaseMin /\
-         setOccurrences RPGRef.uppercaseSet generatedPassword = 0 /\
-         setOccurrences RPGRef.numbersSet generatedPassword = 0 /\
-         setOccurrences RPGRef.specialSet generatedPassword = 0 /\
-         setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+         setOccurrences lowercaseSet generatedPassword = p.`lowercaseMin /\
+         setOccurrences uppercaseSet generatedPassword = 0 /\
+         setOccurrences numbersSet generatedPassword = 0 /\
+         setOccurrences specialSet generatedPassword = 0 /\
+         setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
            p.`lowercaseMax /\
-         setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+         setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
            p.`uppercaseMax /\
-         setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+         setOccurrences numbersSet generatedPassword + numbersAvailable =
            p.`numbersMax /\
-         setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+         setOccurrences specialSet generatedPassword + specialAvailable =
            p.`specialMax).
   if.
   - seq 1 : (#pre /\ i = 0).
       auto.
     while (policy = p /\
-           0 < size RPGRef.lowercaseSet /\
-           0 < size RPGRef.uppercaseSet /\
-           0 < size RPGRef.numbersSet /\
-           0 < size RPGRef.specialSet /\
-           (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-           (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-           (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-           (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-           (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-           (forall (x), x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+           RPGRef.lowercaseSet = lowercaseSet /\
+           RPGRef.uppercaseSet = uppercaseSet /\
+           RPGRef.numbersSet = numbersSet /\
+           RPGRef.specialSet = specialSet /\
+           0 < size lowercaseSet /\
+           0 < size uppercaseSet /\
+           0 < size numbersSet /\
+           0 < size specialSet /\
+           (forall (x), x \in lowercaseSet => !(x \in uppercaseSet)) /\
+           (forall (x), x \in lowercaseSet => !(x \in numbersSet)) /\
+           (forall (x), x \in lowercaseSet => !(x \in specialSet)) /\
+           (forall (x), x \in uppercaseSet => !(x \in numbersSet)) /\
+           (forall (x), x \in uppercaseSet => !(x \in specialSet)) /\
+           (forall (x), x \in numbersSet => !(x \in specialSet)) /\
            lowercaseAvailable = p.`lowercaseMax - i /\
            p.`length <=
              (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
              size generatedPassword /\
-           setOccurrences RPGRef.lowercaseSet generatedPassword = i /\
-           setOccurrences RPGRef.uppercaseSet generatedPassword = 0 /\
-           setOccurrences RPGRef.numbersSet generatedPassword = 0 /\
-           setOccurrences RPGRef.specialSet generatedPassword = 0 /\
-           setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+           setOccurrences lowercaseSet generatedPassword = i /\
+           setOccurrences uppercaseSet generatedPassword = 0 /\
+           setOccurrences numbersSet generatedPassword = 0 /\
+           setOccurrences specialSet generatedPassword = 0 /\
+           setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
              p.`lowercaseMax /\
-           setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+           setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
              p.`uppercaseMax /\
-           setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+           setOccurrences numbersSet generatedPassword + numbersAvailable =
              p.`numbersMax /\
-           setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+           setOccurrences specialSet generatedPassword + specialAvailable =
              p.`specialMax /\
            i <= p.`lowercaseMin).
     + seq 1 : (policy = p /\
-               0 < size RPGRef.lowercaseSet /\
-               0 < size RPGRef.uppercaseSet /\
-               0 < size RPGRef.numbersSet /\
-               0 < size RPGRef.specialSet /\              
-               (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-               (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-               (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-               (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-               (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-               (forall (x), x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+               RPGRef.lowercaseSet = lowercaseSet /\
+               RPGRef.uppercaseSet = uppercaseSet /\
+               RPGRef.numbersSet = numbersSet /\
+               RPGRef.specialSet = specialSet /\
+               0 < size lowercaseSet /\
+               0 < size uppercaseSet /\
+               0 < size numbersSet /\
+               0 < size specialSet /\              
+               (forall (x), x \in lowercaseSet => !(x \in uppercaseSet)) /\
+               (forall (x), x \in lowercaseSet => !(x \in numbersSet)) /\
+               (forall (x), x \in lowercaseSet => !(x \in specialSet)) /\
+               (forall (x), x \in uppercaseSet => !(x \in numbersSet)) /\
+               (forall (x), x \in uppercaseSet => !(x \in specialSet)) /\
+               (forall (x), x \in numbersSet => !(x \in specialSet)) /\
                lowercaseAvailable = (p.`lowercaseMax - i) - 1 /\
                p.`length <=
                  (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
                  size generatedPassword + 1 /\
-               setOccurrences RPGRef.lowercaseSet generatedPassword = i /\
-               setOccurrences RPGRef.uppercaseSet generatedPassword = 0 /\
-               setOccurrences RPGRef.numbersSet generatedPassword = 0 /\
-               setOccurrences RPGRef.specialSet generatedPassword = 0 /\
-               setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable + 1 =
+               setOccurrences lowercaseSet generatedPassword = i /\
+               setOccurrences uppercaseSet generatedPassword = 0 /\
+               setOccurrences numbersSet generatedPassword = 0 /\
+               setOccurrences specialSet generatedPassword = 0 /\
+               setOccurrences lowercaseSet generatedPassword + lowercaseAvailable + 1 =
                  p.`lowercaseMax /\
-               setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+               setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
                  p.`uppercaseMax /\
-               setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+               setOccurrences numbersSet generatedPassword + numbersAvailable =
                  p.`numbersMax /\
-               setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+               setOccurrences specialSet generatedPassword + specialAvailable =
                  p.`specialMax /\
                i < policy.`lowercaseMin).
         auto.
         move => &m />.
         smt. (* int theory *)
-      seq 1 : (#pre /\ randomChar \in RPGRef.lowercaseSet /\
-             !(randomChar \in RPGRef.uppercaseSet) /\
-             !(randomChar \in RPGRef.numbersSet) /\
-             !(randomChar \in RPGRef.specialSet)).
-        ecall (random_char_generator_has RPGRef.lowercaseSet).
+      seq 1 : (#pre /\ randomChar \in lowercaseSet /\
+             !(randomChar \in uppercaseSet) /\
+             !(randomChar \in numbersSet) /\
+             !(randomChar \in specialSet)).
+        ecall (random_char_generator_has lowercaseSet).
         skip.
         move => &m />.
         smt(disjoint_char).
@@ -1431,16 +1451,20 @@ seq 1 : (policy = p /\
          p.`specialMin <= p.`specialMax /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax /\
-         0 < size RPGRef.lowercaseSet /\
-         0 < size RPGRef.uppercaseSet /\
-         0 < size RPGRef.numbersSet /\
-         0 < size RPGRef.specialSet /\
-         (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-         (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-         (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-         (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-         (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-         (forall (x), x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+         RPGRef.lowercaseSet = lowercaseSet /\
+         RPGRef.uppercaseSet = uppercaseSet /\
+         RPGRef.numbersSet = numbersSet /\
+         RPGRef.specialSet = specialSet /\
+         0 < size lowercaseSet /\
+         0 < size uppercaseSet /\
+         0 < size numbersSet /\
+         0 < size specialSet /\
+         (forall (x), x \in lowercaseSet => !(x \in uppercaseSet)) /\
+         (forall (x), x \in lowercaseSet => !(x \in numbersSet)) /\
+         (forall (x), x \in lowercaseSet => !(x \in specialSet)) /\
+         (forall (x), x \in uppercaseSet => !(x \in numbersSet)) /\
+         (forall (x), x \in uppercaseSet => !(x \in specialSet)) /\
+         (forall (x), x \in numbersSet => !(x \in specialSet)) /\
          lowercaseAvailable <= p.`lowercaseMax /\
          uppercaseAvailable <= p.`uppercaseMax /\
          numbersAvailable = p.`numbersMax /\
@@ -1448,87 +1472,95 @@ seq 1 : (policy = p /\
          p.`length <=
            (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
            size generatedPassword /\
-         setOccurrences RPGRef.lowercaseSet generatedPassword = p.`lowercaseMin /\
-         setOccurrences RPGRef.uppercaseSet generatedPassword = p.`uppercaseMin /\
-         setOccurrences RPGRef.numbersSet generatedPassword = 0 /\
-         setOccurrences RPGRef.specialSet generatedPassword = 0 /\
-         setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+         setOccurrences lowercaseSet generatedPassword = p.`lowercaseMin /\
+         setOccurrences uppercaseSet generatedPassword = p.`uppercaseMin /\
+         setOccurrences numbersSet generatedPassword = 0 /\
+         setOccurrences specialSet generatedPassword = 0 /\
+         setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
            p.`lowercaseMax /\
-         setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+         setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
            p.`uppercaseMax /\
-         setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+         setOccurrences numbersSet generatedPassword + numbersAvailable =
            p.`numbersMax /\
-         setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+         setOccurrences specialSet generatedPassword + specialAvailable =
            p.`specialMax).
   if.
   - seq 1 : (#pre /\ i = 0).
       auto.
     while (policy = p /\
-           0 < size RPGRef.lowercaseSet /\
-           0 < size RPGRef.uppercaseSet /\
-           0 < size RPGRef.numbersSet /\
-           0 < size RPGRef.specialSet /\
-           (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-           (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-           (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-           (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-           (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-           (forall (x), x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+           RPGRef.lowercaseSet = lowercaseSet /\
+           RPGRef.uppercaseSet = uppercaseSet /\
+           RPGRef.numbersSet = numbersSet /\
+           RPGRef.specialSet = specialSet /\
+           0 < size lowercaseSet /\
+           0 < size uppercaseSet /\
+           0 < size numbersSet /\
+           0 < size specialSet /\
+           (forall (x), x \in lowercaseSet => !(x \in uppercaseSet)) /\
+           (forall (x), x \in lowercaseSet => !(x \in numbersSet)) /\
+           (forall (x), x \in lowercaseSet => !(x \in specialSet)) /\
+           (forall (x), x \in uppercaseSet => !(x \in numbersSet)) /\
+           (forall (x), x \in uppercaseSet => !(x \in specialSet)) /\
+           (forall (x), x \in numbersSet => !(x \in specialSet)) /\
            lowercaseAvailable <= p.`lowercaseMax /\
            uppercaseAvailable = p.`uppercaseMax - i /\
            p.`length <=
              (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
              size generatedPassword /\
-           setOccurrences RPGRef.lowercaseSet generatedPassword = p.`lowercaseMin /\
-           setOccurrences RPGRef.uppercaseSet generatedPassword = i /\
-           setOccurrences RPGRef.numbersSet generatedPassword = 0 /\
-           setOccurrences RPGRef.specialSet generatedPassword = 0 /\
-           setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+           setOccurrences lowercaseSet generatedPassword = p.`lowercaseMin /\
+           setOccurrences uppercaseSet generatedPassword = i /\
+           setOccurrences numbersSet generatedPassword = 0 /\
+           setOccurrences specialSet generatedPassword = 0 /\
+           setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
              p.`lowercaseMax /\
-           setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+           setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
              p.`uppercaseMax /\
-           setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+           setOccurrences numbersSet generatedPassword + numbersAvailable =
              p.`numbersMax /\
-           setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+           setOccurrences specialSet generatedPassword + specialAvailable =
              p.`specialMax /\
            i <= p.`uppercaseMin).
     + seq 1 : (policy = p /\
-               0 < size RPGRef.lowercaseSet /\
-               0 < size RPGRef.uppercaseSet /\
-               0 < size RPGRef.numbersSet /\
-               0 < size RPGRef.specialSet /\              
-               (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-               (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-               (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-               (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-               (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-               (forall (x), x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+               RPGRef.lowercaseSet = lowercaseSet /\
+               RPGRef.uppercaseSet = uppercaseSet /\
+               RPGRef.numbersSet = numbersSet /\
+               RPGRef.specialSet = specialSet /\
+               0 < size lowercaseSet /\
+               0 < size uppercaseSet /\
+               0 < size numbersSet /\
+               0 < size specialSet /\              
+               (forall (x), x \in lowercaseSet => !(x \in uppercaseSet)) /\
+               (forall (x), x \in lowercaseSet => !(x \in numbersSet)) /\
+               (forall (x), x \in lowercaseSet => !(x \in specialSet)) /\
+               (forall (x), x \in uppercaseSet => !(x \in numbersSet)) /\
+               (forall (x), x \in uppercaseSet => !(x \in specialSet)) /\
+               (forall (x), x \in numbersSet => !(x \in specialSet)) /\
                lowercaseAvailable <= p.`lowercaseMax /\
                uppercaseAvailable = (p.`uppercaseMax - i) - 1 /\
                p.`length <=
                  (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
                  size generatedPassword + 1 /\
-               setOccurrences RPGRef.lowercaseSet generatedPassword = p.`lowercaseMin /\
-               setOccurrences RPGRef.uppercaseSet generatedPassword = i /\
-               setOccurrences RPGRef.numbersSet generatedPassword = 0 /\
-               setOccurrences RPGRef.specialSet generatedPassword = 0 /\
-               setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+               setOccurrences lowercaseSet generatedPassword = p.`lowercaseMin /\
+               setOccurrences uppercaseSet generatedPassword = i /\
+               setOccurrences numbersSet generatedPassword = 0 /\
+               setOccurrences specialSet generatedPassword = 0 /\
+               setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
                  p.`lowercaseMax /\
-               setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable + 1 =
+               setOccurrences uppercaseSet generatedPassword + uppercaseAvailable + 1 =
                  p.`uppercaseMax /\
-               setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+               setOccurrences numbersSet generatedPassword + numbersAvailable =
                  p.`numbersMax /\
-               setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+               setOccurrences specialSet generatedPassword + specialAvailable =
                  p.`specialMax /\
                i < policy.`uppercaseMin).
         auto.
         move => &m />.
         smt. (* int theory *)
-      seq 1 : (#pre /\ randomChar \in RPGRef.uppercaseSet /\
-             !(randomChar \in RPGRef.lowercaseSet) /\
-             !(randomChar \in RPGRef.numbersSet) /\
-             !(randomChar \in RPGRef.specialSet)).
-        ecall (random_char_generator_has RPGRef.uppercaseSet).
+      seq 1 : (#pre /\ randomChar \in uppercaseSet /\
+             !(randomChar \in lowercaseSet) /\
+             !(randomChar \in numbersSet) /\
+             !(randomChar \in specialSet)).
+        ecall (random_char_generator_has uppercaseSet).
         skip.
         move => &m />.
         smt(disjoint_char).
@@ -1554,16 +1586,20 @@ seq 1 : (policy = p /\
          p.`specialMin <= p.`specialMax /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax /\
-         0 < size RPGRef.lowercaseSet /\
-         0 < size RPGRef.uppercaseSet /\
-         0 < size RPGRef.numbersSet /\
-         0 < size RPGRef.specialSet /\
-         (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-         (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-         (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-         (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-         (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-         (forall (x), x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+         RPGRef.lowercaseSet = lowercaseSet /\
+         RPGRef.uppercaseSet = uppercaseSet /\
+         RPGRef.numbersSet = numbersSet /\
+         RPGRef.specialSet = specialSet /\
+         0 < size lowercaseSet /\
+         0 < size uppercaseSet /\
+         0 < size numbersSet /\
+         0 < size specialSet /\
+         (forall (x), x \in lowercaseSet => !(x \in uppercaseSet)) /\
+         (forall (x), x \in lowercaseSet => !(x \in numbersSet)) /\
+         (forall (x), x \in lowercaseSet => !(x \in specialSet)) /\
+         (forall (x), x \in uppercaseSet => !(x \in numbersSet)) /\
+         (forall (x), x \in uppercaseSet => !(x \in specialSet)) /\
+         (forall (x), x \in numbersSet => !(x \in specialSet)) /\
          lowercaseAvailable <= p.`lowercaseMax /\
          uppercaseAvailable <= p.`uppercaseMax /\
          numbersAvailable <= p.`numbersMax /\
@@ -1571,90 +1607,97 @@ seq 1 : (policy = p /\
          p.`length <=
            (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
            size generatedPassword /\
-         setOccurrences RPGRef.lowercaseSet generatedPassword = p.`lowercaseMin /\
-         setOccurrences RPGRef.uppercaseSet generatedPassword = p.`uppercaseMin /\
-         setOccurrences RPGRef.numbersSet generatedPassword = p.`numbersMin /\
-         setOccurrences RPGRef.specialSet generatedPassword = 0 /\
-         setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+         setOccurrences lowercaseSet generatedPassword = p.`lowercaseMin /\
+         setOccurrences uppercaseSet generatedPassword = p.`uppercaseMin /\
+         setOccurrences numbersSet generatedPassword = p.`numbersMin /\
+         setOccurrences specialSet generatedPassword = 0 /\
+         setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
            p.`lowercaseMax /\
-         setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+         setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
            p.`uppercaseMax /\
-         setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+         setOccurrences numbersSet generatedPassword + numbersAvailable =
            p.`numbersMax /\
-         setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+         setOccurrences specialSet generatedPassword + specialAvailable =
            p.`specialMax).
   if.
   - seq 1 : (#pre /\ i = 0).
       auto.
     while (policy = p /\
-           0 < size RPGRef.lowercaseSet /\
-           0 < size RPGRef.uppercaseSet /\
-           0 < size RPGRef.numbersSet /\
-           0 < size RPGRef.specialSet /\
-           (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-           (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-           (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-           (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-           (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-           (forall (x), x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+           RPGRef.lowercaseSet = lowercaseSet /\
+           RPGRef.uppercaseSet = uppercaseSet /\
+           RPGRef.numbersSet = numbersSet /\
+           RPGRef.specialSet = specialSet /\
+           0 < size lowercaseSet /\
+           0 < size uppercaseSet /\
+           0 < size numbersSet /\
+           0 < size specialSet /\
+           (forall (x), x \in lowercaseSet => !(x \in uppercaseSet)) /\
+           (forall (x), x \in lowercaseSet => !(x \in numbersSet)) /\
+           (forall (x), x \in lowercaseSet => !(x \in specialSet)) /\
+           (forall (x), x \in uppercaseSet => !(x \in numbersSet)) /\
+           (forall (x), x \in uppercaseSet => !(x \in specialSet)) /\
+           (forall (x), x \in numbersSet => !(x \in specialSet)) /\
            lowercaseAvailable <= p.`lowercaseMax /\
            uppercaseAvailable <= p.`uppercaseMax /\
            numbersAvailable = p.`numbersMax - i /\
            p.`length <=
              (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
              size generatedPassword /\
-           setOccurrences RPGRef.lowercaseSet generatedPassword = p.`lowercaseMin /\
-           setOccurrences RPGRef.uppercaseSet generatedPassword = p.`uppercaseMin /\
-           setOccurrences RPGRef.numbersSet generatedPassword = i /\
-           setOccurrences RPGRef.specialSet generatedPassword = 0 /\
-           setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+           setOccurrences lowercaseSet generatedPassword = p.`lowercaseMin /\
+           setOccurrences uppercaseSet generatedPassword = p.`uppercaseMin /\
+           setOccurrences numbersSet generatedPassword = i /\
+           setOccurrences specialSet generatedPassword = 0 /\
+           setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
              p.`lowercaseMax /\
-           setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+           setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
              p.`uppercaseMax /\
-           setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+           setOccurrences numbersSet generatedPassword + numbersAvailable =
              p.`numbersMax /\
-           setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+           setOccurrences specialSet generatedPassword + specialAvailable =
              p.`specialMax /\
            i <= p.`numbersMin).
     + seq 1 : (policy = p /\
-               (* derived from the program *)
-               0 < size RPGRef.lowercaseSet /\
-               0 < size RPGRef.uppercaseSet /\
-               0 < size RPGRef.numbersSet /\
-               0 < size RPGRef.specialSet /\              
-               (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-               (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-               (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-               (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-               (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-               (forall (x), x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+               RPGRef.lowercaseSet = lowercaseSet /\
+               RPGRef.uppercaseSet = uppercaseSet /\
+               RPGRef.numbersSet = numbersSet /\
+               RPGRef.specialSet = specialSet /\
+               0 < size lowercaseSet /\
+               0 < size uppercaseSet /\
+               0 < size numbersSet /\
+               0 < size specialSet /\              
+               (forall (x), x \in lowercaseSet => !(x \in uppercaseSet)) /\
+               (forall (x), x \in lowercaseSet => !(x \in numbersSet)) /\
+               (forall (x), x \in lowercaseSet => !(x \in specialSet)) /\
+               (forall (x), x \in uppercaseSet => !(x \in numbersSet)) /\
+               (forall (x), x \in uppercaseSet => !(x \in specialSet)) /\
+               (forall (x), x \in numbersSet => !(x \in specialSet)) /\
                lowercaseAvailable <= p.`lowercaseMax /\
                uppercaseAvailable <= p.`uppercaseMax /\
                numbersAvailable = (p.`numbersMax - i) - 1 /\
                p.`length <=
                  (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
                  size generatedPassword + 1 /\
-               setOccurrences RPGRef.lowercaseSet generatedPassword = p.`lowercaseMin /\
-               setOccurrences RPGRef.uppercaseSet generatedPassword = p.`uppercaseMin /\
-               setOccurrences RPGRef.numbersSet generatedPassword = i /\
-               setOccurrences RPGRef.specialSet generatedPassword = 0 /\
-               setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+               setOccurrences lowercaseSet generatedPassword = p.`lowercaseMin /\
+               setOccurrences uppercaseSet generatedPassword = p.`uppercaseMin /\
+               setOccurrences numbersSet generatedPassword = i /\
+               setOccurrences specialSet generatedPassword = 0 /\
+               setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
                  p.`lowercaseMax /\
-               setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+               setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
                  p.`uppercaseMax /\
-               setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable + 1 =
+               setOccurrences numbersSet generatedPassword + numbersAvailable + 1 =
                  p.`numbersMax /\
-               setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+               setOccurrences specialSet generatedPassword + specialAvailable =
                  p.`specialMax /\
                i < policy.`numbersMin).
         auto.
         move => &m />.
         smt. (* int theory *)
-      seq 1 : (#pre /\ randomChar \in RPGRef.numbersSet /\
-             !(randomChar \in RPGRef.lowercaseSet) /\
-             !(randomChar \in RPGRef.uppercaseSet) /\
-             !(randomChar \in RPGRef.specialSet)).
-        ecall (random_char_generator_has RPGRef.numbersSet).
+      seq 1 : (#pre /\ randomChar \in numbersSet /\
+             !(randomChar \in lowercaseSet) /\
+             !(randomChar \in uppercaseSet) /\
+             !(randomChar \in specialSet)).
+        ecall (random_char_generator_has numbersSet).
         skip.
         move => &m />.
         smt(disjoint_char).
@@ -1680,16 +1723,20 @@ seq 1 : (policy = p /\
          p.`specialMin <= p.`specialMax /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax /\
-         0 < size RPGRef.lowercaseSet /\
-         0 < size RPGRef.uppercaseSet /\
-         0 < size RPGRef.numbersSet /\
-         0 < size RPGRef.specialSet /\
-         (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-         (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-         (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-         (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-         (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-         (forall (x), x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+         RPGRef.lowercaseSet = lowercaseSet /\
+         RPGRef.uppercaseSet = uppercaseSet /\
+         RPGRef.numbersSet = numbersSet /\
+         RPGRef.specialSet = specialSet /\
+         0 < size lowercaseSet /\
+         0 < size uppercaseSet /\
+         0 < size numbersSet /\
+         0 < size specialSet /\
+         (forall (x), x \in lowercaseSet => !(x \in uppercaseSet)) /\
+         (forall (x), x \in lowercaseSet => !(x \in numbersSet)) /\
+         (forall (x), x \in lowercaseSet => !(x \in specialSet)) /\
+         (forall (x), x \in uppercaseSet => !(x \in numbersSet)) /\
+         (forall (x), x \in uppercaseSet => !(x \in specialSet)) /\
+         (forall (x), x \in numbersSet => !(x \in specialSet)) /\
          lowercaseAvailable <= p.`lowercaseMax /\
          uppercaseAvailable <= p.`uppercaseMax /\
          numbersAvailable <= p.`numbersMax /\
@@ -1697,32 +1744,36 @@ seq 1 : (policy = p /\
          p.`length <=
            (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
            size generatedPassword /\
-         setOccurrences RPGRef.lowercaseSet generatedPassword = p.`lowercaseMin /\
-         setOccurrences RPGRef.uppercaseSet generatedPassword = p.`uppercaseMin /\
-         setOccurrences RPGRef.numbersSet generatedPassword = p.`numbersMin /\
-         setOccurrences RPGRef.specialSet generatedPassword = p.`specialMin /\
-         setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+         setOccurrences lowercaseSet generatedPassword = p.`lowercaseMin /\
+         setOccurrences uppercaseSet generatedPassword = p.`uppercaseMin /\
+         setOccurrences numbersSet generatedPassword = p.`numbersMin /\
+         setOccurrences specialSet generatedPassword = p.`specialMin /\
+         setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
            p.`lowercaseMax /\
-         setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+         setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
            p.`uppercaseMax /\
-         setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+         setOccurrences numbersSet generatedPassword + numbersAvailable =
            p.`numbersMax /\
-         setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+         setOccurrences specialSet generatedPassword + specialAvailable =
            p.`specialMax).
   if.
   - seq 1 : (#pre /\ i = 0).
       auto.
     while (policy = p /\
-           0 < size RPGRef.lowercaseSet /\
-           0 < size RPGRef.uppercaseSet /\
-           0 < size RPGRef.numbersSet /\
-           0 < size RPGRef.specialSet /\
-           (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-           (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-           (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-           (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-           (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-           (forall (x), x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+           RPGRef.lowercaseSet = lowercaseSet /\
+           RPGRef.uppercaseSet = uppercaseSet /\
+           RPGRef.numbersSet = numbersSet /\
+           RPGRef.specialSet = specialSet /\
+           0 < size lowercaseSet /\
+           0 < size uppercaseSet /\
+           0 < size numbersSet /\
+           0 < size specialSet /\
+           (forall (x), x \in lowercaseSet => !(x \in uppercaseSet)) /\
+           (forall (x), x \in lowercaseSet => !(x \in numbersSet)) /\
+           (forall (x), x \in lowercaseSet => !(x \in specialSet)) /\
+           (forall (x), x \in uppercaseSet => !(x \in numbersSet)) /\
+           (forall (x), x \in uppercaseSet => !(x \in specialSet)) /\
+           (forall (x), x \in numbersSet => !(x \in specialSet)) /\
            lowercaseAvailable <= p.`lowercaseMax /\
            uppercaseAvailable <= p.`uppercaseMax /\
            numbersAvailable <= p.`numbersMax /\
@@ -1730,30 +1781,34 @@ seq 1 : (policy = p /\
            p.`length <=
              (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
              size generatedPassword /\
-           setOccurrences RPGRef.lowercaseSet generatedPassword = p.`lowercaseMin /\
-           setOccurrences RPGRef.uppercaseSet generatedPassword = p.`uppercaseMin /\
-           setOccurrences RPGRef.numbersSet generatedPassword = p.`numbersMin /\
-           setOccurrences RPGRef.specialSet generatedPassword = i /\
-           setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+           setOccurrences lowercaseSet generatedPassword = p.`lowercaseMin /\
+           setOccurrences uppercaseSet generatedPassword = p.`uppercaseMin /\
+           setOccurrences numbersSet generatedPassword = p.`numbersMin /\
+           setOccurrences specialSet generatedPassword = i /\
+           setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
              p.`lowercaseMax /\
-           setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+           setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
              p.`uppercaseMax /\
-           setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+           setOccurrences numbersSet generatedPassword + numbersAvailable =
              p.`numbersMax /\
-           setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+           setOccurrences specialSet generatedPassword + specialAvailable =
              p.`specialMax /\
            i <= p.`specialMin).
     + seq 1 : (policy = p /\
-               0 < size RPGRef.lowercaseSet /\
-               0 < size RPGRef.uppercaseSet /\
-               0 < size RPGRef.numbersSet /\
-               0 < size RPGRef.specialSet /\              
-               (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-               (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-               (forall (x), x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-               (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-               (forall (x), x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-               (forall (x), x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+               RPGRef.lowercaseSet = lowercaseSet /\
+               RPGRef.uppercaseSet = uppercaseSet /\
+               RPGRef.numbersSet = numbersSet /\
+               RPGRef.specialSet = specialSet /\
+               0 < size lowercaseSet /\
+               0 < size uppercaseSet /\
+               0 < size numbersSet /\
+               0 < size specialSet /\              
+               (forall (x), x \in lowercaseSet => !(x \in uppercaseSet)) /\
+               (forall (x), x \in lowercaseSet => !(x \in numbersSet)) /\
+               (forall (x), x \in lowercaseSet => !(x \in specialSet)) /\
+               (forall (x), x \in uppercaseSet => !(x \in numbersSet)) /\
+               (forall (x), x \in uppercaseSet => !(x \in specialSet)) /\
+               (forall (x), x \in numbersSet => !(x \in specialSet)) /\
                lowercaseAvailable <= p.`lowercaseMax /\
                uppercaseAvailable <= p.`uppercaseMax /\
                numbersAvailable <= p.`numbersMax /\
@@ -1761,27 +1816,27 @@ seq 1 : (policy = p /\
                p.`length <=
                  (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
                  size generatedPassword + 1 /\
-               setOccurrences RPGRef.lowercaseSet generatedPassword = p.`lowercaseMin /\
-               setOccurrences RPGRef.uppercaseSet generatedPassword = p.`uppercaseMin /\
-               setOccurrences RPGRef.numbersSet generatedPassword = p.`numbersMin /\
-               setOccurrences RPGRef.specialSet generatedPassword = i /\
-               setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+               setOccurrences lowercaseSet generatedPassword = p.`lowercaseMin /\
+               setOccurrences uppercaseSet generatedPassword = p.`uppercaseMin /\
+               setOccurrences numbersSet generatedPassword = p.`numbersMin /\
+               setOccurrences specialSet generatedPassword = i /\
+               setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
                  p.`lowercaseMax /\
-               setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+               setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
                  p.`uppercaseMax /\
-               setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+               setOccurrences numbersSet generatedPassword + numbersAvailable =
                  p.`numbersMax /\
-               setOccurrences RPGRef.specialSet generatedPassword + specialAvailable + 1 =
+               setOccurrences specialSet generatedPassword + specialAvailable + 1 =
                  p.`specialMax /\
                i < policy.`specialMin).
         auto.
         move => &m />.
         smt. (* int theory *)
-      seq 1 : (#pre /\ randomChar \in RPGRef.specialSet /\
-             !(randomChar \in RPGRef.lowercaseSet) /\
-             !(randomChar \in RPGRef.uppercaseSet) /\
-             !(randomChar \in RPGRef.numbersSet)).
-        ecall (random_char_generator_has RPGRef.specialSet).
+      seq 1 : (#pre /\ randomChar \in specialSet /\
+             !(randomChar \in lowercaseSet) /\
+             !(randomChar \in uppercaseSet) /\
+             !(randomChar \in numbersSet)).
+        ecall (random_char_generator_has specialSet).
         skip.
         move => &m />.
         smt(disjoint_char).
@@ -1793,77 +1848,81 @@ seq 1 : (policy = p /\
 seq 1 : (#pre /\
          (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable =>
             0 < size unionSet) /\
-         (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
-         (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
-         (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
-         (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
-         (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
-                                 x \in RPGRef.uppercaseSet\/
-                                 x \in RPGRef.numbersSet \/
-                                 x \in RPGRef.specialSet)).
+         (has (fun (x) => x \in unionSet) lowercaseSet => 0 < lowercaseAvailable) /\
+         (has (fun (x) => x \in unionSet) uppercaseSet => 0 < uppercaseAvailable) /\
+         (has (fun (x) => x \in unionSet) numbersSet => 0 < numbersAvailable) /\
+         (has (fun (x) => x \in unionSet) specialSet => 0 < specialAvailable) /\
+         (forall x, x \in unionSet => x \in lowercaseSet \/
+                                      x \in uppercaseSet \/
+                                      x \in numbersSet \/
+                                      x \in specialSet)).
   ecall (unionSet_available lowercaseAvailable uppercaseAvailable numbersAvailable
-                             specialAvailable RPGRef.lowercaseSet RPGRef.uppercaseSet
-                             RPGRef.numbersSet RPGRef.specialSet).
+                             specialAvailable lowercaseSet uppercaseSet
+                             numbersSet specialSet).
   skip.
   move => &m />. 
   smt. (* int theory *)
 seq 1 : (policy = p /\
-         p.`lowercaseMin <= setOccurrences RPGRef.lowercaseSet generatedPassword /\
-         p.`uppercaseMin <= setOccurrences RPGRef.uppercaseSet generatedPassword /\
-         p.`numbersMin <= setOccurrences RPGRef.numbersSet generatedPassword /\
-         p.`specialMin <= setOccurrences RPGRef.specialSet generatedPassword /\
-         setOccurrences RPGRef.lowercaseSet generatedPassword <= p.`lowercaseMax /\
-         setOccurrences RPGRef.uppercaseSet generatedPassword <= p.`uppercaseMax /\
-         setOccurrences RPGRef.numbersSet generatedPassword <= p.`numbersMax /\
-         setOccurrences RPGRef.specialSet generatedPassword <= p.`specialMax).
+         p.`lowercaseMin <= setOccurrences lowercaseSet generatedPassword /\
+         p.`uppercaseMin <= setOccurrences uppercaseSet generatedPassword /\
+         p.`numbersMin <= setOccurrences numbersSet generatedPassword /\
+         p.`specialMin <= setOccurrences specialSet generatedPassword /\
+         setOccurrences lowercaseSet generatedPassword <= p.`lowercaseMax /\
+         setOccurrences uppercaseSet generatedPassword <= p.`uppercaseMax /\
+         setOccurrences numbersSet generatedPassword <= p.`numbersMax /\
+         setOccurrences specialSet generatedPassword <= p.`specialMax).
 while (policy = p /\
        p.`lowercaseMin <= p.`lowercaseMax /\
        p.`uppercaseMin <= p.`uppercaseMax /\
        p.`numbersMin <= p.`numbersMax /\
        p.`specialMin <= p.`specialMax /\
-       0 < size RPGRef.lowercaseSet /\
-       0 < size RPGRef.uppercaseSet /\
-       0 < size RPGRef.numbersSet /\
-       0 < size RPGRef.specialSet /\
-       (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-       (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-       (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-       (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-       (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-       (forall x, x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+       RPGRef.lowercaseSet = lowercaseSet /\
+       RPGRef.uppercaseSet = uppercaseSet /\
+       RPGRef.numbersSet = numbersSet /\
+       RPGRef.specialSet = specialSet /\
+       0 < size lowercaseSet /\
+       0 < size uppercaseSet /\
+       0 < size numbersSet /\
+       0 < size specialSet /\
+       (forall x, x \in lowercaseSet => !(x \in uppercaseSet)) /\
+       (forall x, x \in lowercaseSet => !(x \in numbersSet)) /\
+       (forall x, x \in lowercaseSet => !(x \in specialSet)) /\
+       (forall x, x \in uppercaseSet => !(x \in numbersSet)) /\
+       (forall x, x \in uppercaseSet => !(x \in specialSet)) /\
+       (forall x, x \in numbersSet => !(x \in specialSet)) /\
        0 <= lowercaseAvailable /\
        0 <= uppercaseAvailable/\
        0 <= numbersAvailable /\
        0 <= specialAvailable /\
        (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable
          => 0 < size unionSet) /\
-       (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
-       (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
-       (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
-       (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
-       (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
-                                 x \in RPGRef.uppercaseSet\/
-                                 x \in RPGRef.numbersSet \/
-                                 x \in RPGRef.specialSet) /\
+       (has (fun (x) => x \in unionSet) lowercaseSet => 0 < lowercaseAvailable) /\
+       (has (fun (x) => x \in unionSet) uppercaseSet => 0 < uppercaseAvailable) /\
+       (has (fun (x) => x \in unionSet) numbersSet => 0 < numbersAvailable) /\
+       (has (fun (x) => x \in unionSet) specialSet => 0 < specialAvailable) /\
+       (forall x, x \in unionSet => x \in lowercaseSet \/
+                                    x \in uppercaseSet \/
+                                    x \in numbersSet \/
+                                    x \in specialSet) /\
        p.`length <=
          (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
          size generatedPassword /\
-       setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+       setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
          p.`lowercaseMax /\
-       setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+       setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
          p.`uppercaseMax /\
-       setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+       setOccurrences numbersSet generatedPassword + numbersAvailable =
          p.`numbersMax /\
-       setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+       setOccurrences specialSet generatedPassword + specialAvailable =
          p.`specialMax /\
-       p.`lowercaseMin <= setOccurrences RPGRef.lowercaseSet generatedPassword /\
-       p.`uppercaseMin <= setOccurrences RPGRef.uppercaseSet generatedPassword /\
-       p.`numbersMin <= setOccurrences RPGRef.numbersSet generatedPassword /\
-       p.`specialMin <= setOccurrences RPGRef.specialSet generatedPassword /\
-       setOccurrences RPGRef.lowercaseSet generatedPassword <= p.`lowercaseMax /\
-       setOccurrences RPGRef.uppercaseSet generatedPassword <= p.`uppercaseMax /\
-       setOccurrences RPGRef.numbersSet generatedPassword <= p.`numbersMax /\
-       setOccurrences RPGRef.specialSet generatedPassword <= p.`specialMax).
+       p.`lowercaseMin <= setOccurrences lowercaseSet generatedPassword /\
+       p.`uppercaseMin <= setOccurrences uppercaseSet generatedPassword /\
+       p.`numbersMin <= setOccurrences numbersSet generatedPassword /\
+       p.`specialMin <= setOccurrences specialSet generatedPassword /\
+       setOccurrences lowercaseSet generatedPassword <= p.`lowercaseMax /\
+       setOccurrences uppercaseSet generatedPassword <= p.`uppercaseMax /\
+       setOccurrences numbersSet generatedPassword <= p.`numbersMax /\
+       setOccurrences specialSet generatedPassword <= p.`specialMax).
 - seq 0 : (#pre /\
            0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable).
     skip.
@@ -1875,98 +1934,106 @@ while (policy = p /\
     move => &m />.    
   if.
   + seq 2 : (policy = p /\
-             randomChar \in RPGRef.lowercaseSet /\
-             0 < size RPGRef.lowercaseSet /\
-             0 < size RPGRef.uppercaseSet /\
-             0 < size RPGRef.numbersSet /\
-             0 < size RPGRef.specialSet /\
-             (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-             (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-             (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-             (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-             (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-             (forall x, x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+             randomChar \in lowercaseSet /\
+             RPGRef.lowercaseSet = lowercaseSet /\
+             RPGRef.uppercaseSet = uppercaseSet /\
+             RPGRef.numbersSet = numbersSet /\
+             RPGRef.specialSet = specialSet /\
+             0 < size lowercaseSet /\
+             0 < size uppercaseSet /\
+             0 < size numbersSet /\
+             0 < size specialSet /\
+             (forall x, x \in lowercaseSet => !(x \in uppercaseSet)) /\
+             (forall x, x \in lowercaseSet => !(x \in numbersSet)) /\
+             (forall x, x \in lowercaseSet => !(x \in specialSet)) /\
+             (forall x, x \in uppercaseSet => !(x \in numbersSet)) /\
+             (forall x, x \in uppercaseSet => !(x \in specialSet)) /\
+             (forall x, x \in numbersSet => !(x \in specialSet)) /\
              0 <= lowercaseAvailable /\
              0 <= uppercaseAvailable /\
              0 <= numbersAvailable /\
              0 <= specialAvailable /\
              (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable
                 => 0 < size unionSet) /\
-             (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
-             (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
-             (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
-             (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
-             (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
-                                 x \in RPGRef.uppercaseSet\/
-                                 x \in RPGRef.numbersSet \/
-                                 x \in RPGRef.specialSet) /\
+             (has (fun (x) => x \in unionSet) lowercaseSet => 0 < lowercaseAvailable) /\
+             (has (fun (x) => x \in unionSet) uppercaseSet => 0 < uppercaseAvailable) /\
+             (has (fun (x) => x \in unionSet) numbersSet => 0 < numbersAvailable) /\
+             (has (fun (x) => x \in unionSet) specialSet => 0 < specialAvailable) /\
+             (forall x, x \in unionSet => x \in lowercaseSet \/
+                                 x \in uppercaseSet\/
+                                 x \in numbersSet \/
+                                 x \in specialSet) /\
              p.`length <=
                (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
                size generatedPassword + 1 /\
-             setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable + 1 =
+             setOccurrences lowercaseSet generatedPassword + lowercaseAvailable + 1 =
                p.`lowercaseMax /\
-             setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+             setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
                p.`uppercaseMax /\
-             setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+             setOccurrences numbersSet generatedPassword + numbersAvailable =
                p.`numbersMax /\
-             setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+             setOccurrences specialSet generatedPassword + specialAvailable =
                p.`specialMax /\
-             p.`lowercaseMin <= setOccurrences RPGRef.lowercaseSet generatedPassword /\
-             p.`uppercaseMin <= setOccurrences RPGRef.uppercaseSet generatedPassword /\
-             p.`numbersMin <= setOccurrences RPGRef.numbersSet generatedPassword /\
-             p.`specialMin <= setOccurrences RPGRef.specialSet generatedPassword /\
-             setOccurrences RPGRef.lowercaseSet generatedPassword <= p.`lowercaseMax /\
-             setOccurrences RPGRef.uppercaseSet generatedPassword <= p.`uppercaseMax /\
-             setOccurrences RPGRef.numbersSet generatedPassword <= p.`numbersMax /\
-             setOccurrences RPGRef.specialSet generatedPassword <= p.`specialMax).
+             p.`lowercaseMin <= setOccurrences lowercaseSet generatedPassword /\
+             p.`uppercaseMin <= setOccurrences uppercaseSet generatedPassword /\
+             p.`numbersMin <= setOccurrences numbersSet generatedPassword /\
+             p.`specialMin <= setOccurrences specialSet generatedPassword /\
+             setOccurrences lowercaseSet generatedPassword <= p.`lowercaseMax /\
+             setOccurrences uppercaseSet generatedPassword <= p.`uppercaseMax /\
+             setOccurrences numbersSet generatedPassword <= p.`numbersMax /\
+             setOccurrences specialSet generatedPassword <= p.`specialMax).
       case (1 < lowercaseAvailable).
       - seq 1 : (policy = p /\
-                 randomChar \in RPGRef.lowercaseSet /\
-                 0 < size RPGRef.lowercaseSet /\
-                 0 < size RPGRef.uppercaseSet /\
-                 0 < size RPGRef.numbersSet /\
-                 0 < size RPGRef.specialSet /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-                 (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-                 (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-                 (forall x, x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+                 randomChar \in lowercaseSet /\
+                 RPGRef.lowercaseSet = lowercaseSet /\
+                 RPGRef.uppercaseSet = uppercaseSet /\
+                 RPGRef.numbersSet = numbersSet /\
+                 RPGRef.specialSet = specialSet /\
+                 0 < size lowercaseSet /\
+                 0 < size uppercaseSet /\
+                 0 < size numbersSet /\
+                 0 < size specialSet /\
+                 (forall x, x \in lowercaseSet => !(x \in uppercaseSet)) /\
+                 (forall x, x \in lowercaseSet => !(x \in numbersSet)) /\
+                 (forall x, x \in lowercaseSet => !(x \in specialSet)) /\
+                 (forall x, x \in uppercaseSet => !(x \in numbersSet)) /\
+                 (forall x, x \in uppercaseSet => !(x \in specialSet)) /\
+                 (forall x, x \in numbersSet => !(x \in specialSet)) /\
                  0 < lowercaseAvailable /\
                  0 <= uppercaseAvailable /\
                  0 <= numbersAvailable /\
                  0 <= specialAvailable /\
                  (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
                    specialAvailable => 0 < size unionSet) /\
-               (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
-               (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
-               (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
-               (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
-               (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
-                                 x \in RPGRef.uppercaseSet\/
-                                 x \in RPGRef.numbersSet \/
-                                 x \in RPGRef.specialSet) /\
+               (has (fun (x) => x \in unionSet) lowercaseSet => 0 < lowercaseAvailable) /\
+               (has (fun (x) => x \in unionSet) uppercaseSet => 0 < uppercaseAvailable) /\
+               (has (fun (x) => x \in unionSet) numbersSet => 0 < numbersAvailable) /\
+               (has (fun (x) => x \in unionSet) specialSet => 0 < specialAvailable) /\
+               (forall x, x \in unionSet => x \in lowercaseSet \/
+                                 x \in uppercaseSet\/
+                                 x \in numbersSet \/
+                                 x \in specialSet) /\
                 p.`length <=
                   (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable)+
                    size generatedPassword + 1 /\
-                 setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable + 1 =
+                 setOccurrences lowercaseSet generatedPassword + lowercaseAvailable + 1 =
                    p.`lowercaseMax /\
-                 setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+                 setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
                    p.`uppercaseMax /\
-                 setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+                 setOccurrences numbersSet generatedPassword + numbersAvailable =
                    p.`numbersMax /\
-                 setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+                 setOccurrences specialSet generatedPassword + specialAvailable =
                    p.`specialMax /\
-                 p.`lowercaseMin <= setOccurrences RPGRef.lowercaseSet generatedPassword /\
-                 p.`uppercaseMin <= setOccurrences RPGRef.uppercaseSet generatedPassword /\
-                 p.`numbersMin <= setOccurrences RPGRef.numbersSet generatedPassword /\
-                 p.`specialMin <= setOccurrences RPGRef.specialSet generatedPassword /\
-                 setOccurrences RPGRef.lowercaseSet generatedPassword <= p.`lowercaseMax /\
-                 setOccurrences RPGRef.uppercaseSet generatedPassword <= p.`uppercaseMax /\
-                 setOccurrences RPGRef.numbersSet generatedPassword <= p.`numbersMax /\
-                 setOccurrences RPGRef.specialSet generatedPassword <= p.`specialMax).
+                 p.`lowercaseMin <= setOccurrences lowercaseSet generatedPassword /\
+                 p.`uppercaseMin <= setOccurrences uppercaseSet generatedPassword /\
+                 p.`numbersMin <= setOccurrences numbersSet generatedPassword /\
+                 p.`specialMin <= setOccurrences specialSet generatedPassword /\
+                 setOccurrences lowercaseSet generatedPassword <= p.`lowercaseMax /\
+                 setOccurrences uppercaseSet generatedPassword <= p.`uppercaseMax /\
+                 setOccurrences numbersSet generatedPassword <= p.`numbersMax /\
+                 setOccurrences specialSet generatedPassword <= p.`specialMax).
           auto.
-          move => &m />.
+          move => &m /> ??????????????????????????????????????????.
           smt(char_charset_size). (* missing int theory *)
         if.
         + conseq (_ : false ==> _).
@@ -1974,529 +2041,569 @@ while (policy = p /\
           auto.
         + skip => /#.
       - seq 1 : (policy = p /\
-                 randomChar \in RPGRef.lowercaseSet /\
-                 0 < size RPGRef.lowercaseSet /\
-                 0 < size RPGRef.uppercaseSet /\
-                 0 < size RPGRef.numbersSet /\
-                 0 < size RPGRef.specialSet /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-                 (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-                 (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-                 (forall x, x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+                 randomChar \in lowercaseSet /\
+                 RPGRef.lowercaseSet = lowercaseSet /\
+                 RPGRef.uppercaseSet = uppercaseSet /\
+                 RPGRef.numbersSet = numbersSet /\
+                 RPGRef.specialSet = specialSet /\
+                 0 < size lowercaseSet /\
+                 0 < size uppercaseSet /\
+                 0 < size numbersSet /\
+                 0 < size specialSet /\
+                 (forall x, x \in lowercaseSet => !(x \in uppercaseSet)) /\
+                 (forall x, x \in lowercaseSet => !(x \in numbersSet)) /\
+                 (forall x, x \in lowercaseSet => !(x \in specialSet)) /\
+                 (forall x, x \in uppercaseSet => !(x \in numbersSet)) /\
+                 (forall x, x \in uppercaseSet => !(x \in specialSet)) /\
+                 (forall x, x \in numbersSet => !(x \in specialSet)) /\
                  0 = lowercaseAvailable /\
                  0 <= uppercaseAvailable /\
                  0 <= numbersAvailable /\
                  0 <= specialAvailable /\
                  (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
                    specialAvailable => 0 < size unionSet) /\
-               (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
-               (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
-               (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
-               (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
-                                 x \in RPGRef.uppercaseSet\/
-                                 x \in RPGRef.numbersSet \/
-                                 x \in RPGRef.specialSet) /\
+               (has (fun (x) => x \in unionSet) uppercaseSet => 0 < uppercaseAvailable) /\
+               (has (fun (x) => x \in unionSet) numbersSet => 0 < numbersAvailable) /\
+               (has (fun (x) => x \in unionSet) specialSet => 0 < specialAvailable) /\
+               (forall x, x \in unionSet => x \in lowercaseSet \/
+                                 x \in uppercaseSet\/
+                                 x \in numbersSet \/
+                                 x \in specialSet) /\
                 p.`length <=
                  (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
                   size generatedPassword + 1 /\
-                 setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable + 1 =
+                 setOccurrences lowercaseSet generatedPassword + lowercaseAvailable + 1 =
                    p.`lowercaseMax /\
-                 setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+                 setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
                    p.`uppercaseMax /\
-                 setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+                 setOccurrences numbersSet generatedPassword + numbersAvailable =
                    p.`numbersMax /\
-                 setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+                 setOccurrences specialSet generatedPassword + specialAvailable =
                    p.`specialMax /\
-                 p.`lowercaseMin <= setOccurrences RPGRef.lowercaseSet generatedPassword /\
-                 p.`uppercaseMin <= setOccurrences RPGRef.uppercaseSet generatedPassword /\
-                 p.`numbersMin <= setOccurrences RPGRef.numbersSet generatedPassword /\
-                 p.`specialMin <= setOccurrences RPGRef.specialSet generatedPassword /\
-                 setOccurrences RPGRef.lowercaseSet generatedPassword <= p.`lowercaseMax /\
-                 setOccurrences RPGRef.uppercaseSet generatedPassword <= p.`uppercaseMax /\
-                 setOccurrences RPGRef.numbersSet generatedPassword <= p.`numbersMax /\
-                 setOccurrences RPGRef.specialSet generatedPassword <= p.`specialMax).
+                 p.`lowercaseMin <= setOccurrences lowercaseSet generatedPassword /\
+                 p.`uppercaseMin <= setOccurrences uppercaseSet generatedPassword /\
+                 p.`numbersMin <= setOccurrences numbersSet generatedPassword /\
+                 p.`specialMin <= setOccurrences specialSet generatedPassword /\
+                 setOccurrences lowercaseSet generatedPassword <= p.`lowercaseMax /\
+                 setOccurrences uppercaseSet generatedPassword <= p.`uppercaseMax /\
+                 setOccurrences numbersSet generatedPassword <= p.`numbersMax /\
+                 setOccurrences specialSet generatedPassword <= p.`specialMax).
           auto.
           move => &m />.
-          smt.
+          smt(charset_mem_has).
       if.
       + ecall (unionSet_available lowercaseAvailable uppercaseAvailable numbersAvailable
-                                  specialAvailable RPGRef.lowercaseSet RPGRef.uppercaseSet
-                                  RPGRef.numbersSet RPGRef.specialSet).
+                                  specialAvailable lowercaseSet uppercaseSet
+                                  numbersSet specialSet).
         by skip.
       + by skip.
     auto.
     move => &m />.
-    smt(size_cat setocc_cat).
+    smt(size_cat setocc_cat setocc_insert_inset setocc_insert_notinset).
 + if.
   - seq 2 : (policy = p /\
-             randomChar \in RPGRef.uppercaseSet /\
-             0 < size RPGRef.lowercaseSet /\
-             0 < size RPGRef.uppercaseSet /\
-             0 < size RPGRef.numbersSet /\
-             0 < size RPGRef.specialSet /\
-             (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-             (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-             (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-             (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-             (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-             (forall x, x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+             randomChar \in uppercaseSet /\
+             RPGRef.lowercaseSet = lowercaseSet /\
+             RPGRef.uppercaseSet = uppercaseSet /\
+             RPGRef.numbersSet = numbersSet /\
+             RPGRef.specialSet = specialSet /\
+             0 < size lowercaseSet /\
+             0 < size uppercaseSet /\
+             0 < size numbersSet /\
+             0 < size specialSet /\
+             (forall x, x \in lowercaseSet => !(x \in uppercaseSet)) /\
+             (forall x, x \in lowercaseSet => !(x \in numbersSet)) /\
+             (forall x, x \in lowercaseSet => !(x \in specialSet)) /\
+             (forall x, x \in uppercaseSet => !(x \in numbersSet)) /\
+             (forall x, x \in uppercaseSet => !(x \in specialSet)) /\
+             (forall x, x \in numbersSet => !(x \in specialSet)) /\
              0 <= lowercaseAvailable /\
              0 <= uppercaseAvailable /\
              0 <= numbersAvailable /\
              0 <= specialAvailable /\
              (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable
                 => 0 < size unionSet) /\
-             (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
-             (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
-             (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
-             (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
-             (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
-                                 x \in RPGRef.uppercaseSet\/
-                                 x \in RPGRef.numbersSet \/
-                                 x \in RPGRef.specialSet) /\
+             (has (fun (x) => x \in unionSet) lowercaseSet => 0 < lowercaseAvailable) /\
+             (has (fun (x) => x \in unionSet) uppercaseSet => 0 < uppercaseAvailable) /\
+             (has (fun (x) => x \in unionSet) numbersSet => 0 < numbersAvailable) /\
+             (has (fun (x) => x \in unionSet) specialSet => 0 < specialAvailable) /\
+             (forall x, x \in unionSet => x \in lowercaseSet \/
+                                 x \in uppercaseSet\/
+                                 x \in numbersSet \/
+                                 x \in specialSet) /\
              p.`length <=
                (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
                size generatedPassword + 1 /\
-             setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+             setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
                p.`lowercaseMax /\
-             setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable + 1 =
+             setOccurrences uppercaseSet generatedPassword + uppercaseAvailable + 1 =
                p.`uppercaseMax /\
-             setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+             setOccurrences numbersSet generatedPassword + numbersAvailable =
                p.`numbersMax /\
-             setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+             setOccurrences specialSet generatedPassword + specialAvailable =
                p.`specialMax /\
-             p.`lowercaseMin <= setOccurrences RPGRef.lowercaseSet generatedPassword /\
-             p.`uppercaseMin <= setOccurrences RPGRef.uppercaseSet generatedPassword /\
-             p.`numbersMin <= setOccurrences RPGRef.numbersSet generatedPassword /\
-             p.`specialMin <= setOccurrences RPGRef.specialSet generatedPassword /\
-             setOccurrences RPGRef.lowercaseSet generatedPassword <= p.`lowercaseMax /\
-             setOccurrences RPGRef.uppercaseSet generatedPassword <= p.`uppercaseMax /\
-             setOccurrences RPGRef.numbersSet generatedPassword <= p.`numbersMax /\
-             setOccurrences RPGRef.specialSet generatedPassword <= p.`specialMax).
+             p.`lowercaseMin <= setOccurrences lowercaseSet generatedPassword /\
+             p.`uppercaseMin <= setOccurrences uppercaseSet generatedPassword /\
+             p.`numbersMin <= setOccurrences numbersSet generatedPassword /\
+             p.`specialMin <= setOccurrences specialSet generatedPassword /\
+             setOccurrences lowercaseSet generatedPassword <= p.`lowercaseMax /\
+             setOccurrences uppercaseSet generatedPassword <= p.`uppercaseMax /\
+             setOccurrences numbersSet generatedPassword <= p.`numbersMax /\
+             setOccurrences specialSet generatedPassword <= p.`specialMax).
       case (1 < uppercaseAvailable).
       + seq 1 : (policy = p /\
-                 randomChar \in RPGRef.uppercaseSet /\
-                 0 < size RPGRef.lowercaseSet /\
-                 0 < size RPGRef.uppercaseSet /\
-                 0 < size RPGRef.numbersSet /\
-                 0 < size RPGRef.specialSet /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-                 (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-                 (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-                 (forall x, x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+                 randomChar \in uppercaseSet /\
+                 RPGRef.lowercaseSet = lowercaseSet /\
+                 RPGRef.uppercaseSet = uppercaseSet /\
+                 RPGRef.numbersSet = numbersSet /\
+                 RPGRef.specialSet = specialSet /\
+                 0 < size lowercaseSet /\
+                 0 < size uppercaseSet /\
+                 0 < size numbersSet /\
+                 0 < size specialSet /\
+                 (forall x, x \in lowercaseSet => !(x \in uppercaseSet)) /\
+                 (forall x, x \in lowercaseSet => !(x \in numbersSet)) /\
+                 (forall x, x \in lowercaseSet => !(x \in specialSet)) /\
+                 (forall x, x \in uppercaseSet => !(x \in numbersSet)) /\
+                 (forall x, x \in uppercaseSet => !(x \in specialSet)) /\
+                 (forall x, x \in numbersSet => !(x \in specialSet)) /\
                  0 <= lowercaseAvailable /\
                  0 < uppercaseAvailable /\
                  0 <= numbersAvailable /\
                  0 <= specialAvailable /\
                  (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
                    specialAvailable => 0 < size unionSet) /\
-                (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
-                (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
-                (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
-                (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
-                (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
-                                 x \in RPGRef.uppercaseSet\/
-                                 x \in RPGRef.numbersSet \/
-                                 x \in RPGRef.specialSet) /\
+                (has (fun (x) => x \in unionSet) lowercaseSet => 0 < lowercaseAvailable) /\
+                (has (fun (x) => x \in unionSet) uppercaseSet => 0 < uppercaseAvailable) /\
+                (has (fun (x) => x \in unionSet) numbersSet => 0 < numbersAvailable) /\
+                (has (fun (x) => x \in unionSet) specialSet => 0 < specialAvailable) /\
+                (forall x, x \in unionSet => x \in lowercaseSet \/
+                                 x \in uppercaseSet\/
+                                 x \in numbersSet \/
+                                 x \in specialSet) /\
                 p.`length <=
                   (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable)+
                    size generatedPassword + 1 /\
-                 setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+                 setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
                    p.`lowercaseMax /\
-                 setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable + 1 =
+                 setOccurrences uppercaseSet generatedPassword + uppercaseAvailable + 1 =
                    p.`uppercaseMax /\
-                 setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+                 setOccurrences numbersSet generatedPassword + numbersAvailable =
                    p.`numbersMax /\
-                 setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+                 setOccurrences specialSet generatedPassword + specialAvailable =
                    p.`specialMax /\
-                 p.`lowercaseMin <= setOccurrences RPGRef.lowercaseSet generatedPassword /\
-                 p.`uppercaseMin <= setOccurrences RPGRef.uppercaseSet generatedPassword /\
-                 p.`numbersMin <= setOccurrences RPGRef.numbersSet generatedPassword /\
-                 p.`specialMin <= setOccurrences RPGRef.specialSet generatedPassword /\
-                 setOccurrences RPGRef.lowercaseSet generatedPassword <= p.`lowercaseMax /\
-                 setOccurrences RPGRef.uppercaseSet generatedPassword <= p.`uppercaseMax /\
-                 setOccurrences RPGRef.numbersSet generatedPassword <= p.`numbersMax /\
-                 setOccurrences RPGRef.specialSet generatedPassword <= p.`specialMax).
+                 p.`lowercaseMin <= setOccurrences lowercaseSet generatedPassword /\
+                 p.`uppercaseMin <= setOccurrences uppercaseSet generatedPassword /\
+                 p.`numbersMin <= setOccurrences numbersSet generatedPassword /\
+                 p.`specialMin <= setOccurrences specialSet generatedPassword /\
+                 setOccurrences lowercaseSet generatedPassword <= p.`lowercaseMax /\
+                 setOccurrences uppercaseSet generatedPassword <= p.`uppercaseMax /\
+                 setOccurrences numbersSet generatedPassword <= p.`numbersMax /\
+                 setOccurrences specialSet generatedPassword <= p.`specialMax).
           auto.
           move => &m />.
-          smt.
+          smt(char_charset_size).
         if.
         - conseq (_ : false ==> _).
           smt.
           auto.
         - skip => /#.
       + seq 1 : (policy = p /\
-                 randomChar \in RPGRef.uppercaseSet /\
-                 0 < size RPGRef.lowercaseSet /\
-                 0 < size RPGRef.uppercaseSet /\
-                 0 < size RPGRef.numbersSet /\
-                 0 < size RPGRef.specialSet /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-                 (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-                 (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-                 (forall x, x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+                 randomChar \in uppercaseSet /\
+                 RPGRef.lowercaseSet = lowercaseSet /\
+                 RPGRef.uppercaseSet = uppercaseSet /\
+                 RPGRef.numbersSet = numbersSet /\
+                 RPGRef.specialSet = specialSet /\
+                 0 < size lowercaseSet /\
+                 0 < size uppercaseSet /\
+                 0 < size numbersSet /\
+                 0 < size specialSet /\
+                 (forall x, x \in lowercaseSet => !(x \in uppercaseSet)) /\
+                 (forall x, x \in lowercaseSet => !(x \in numbersSet)) /\
+                 (forall x, x \in lowercaseSet => !(x \in specialSet)) /\
+                 (forall x, x \in uppercaseSet => !(x \in numbersSet)) /\
+                 (forall x, x \in uppercaseSet => !(x \in specialSet)) /\
+                 (forall x, x \in numbersSet => !(x \in specialSet)) /\
                  0 <= lowercaseAvailable /\
                  0 = uppercaseAvailable /\
                  0 <= numbersAvailable /\
                  0 <= specialAvailable /\
                  (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
                    specialAvailable => 0 < size unionSet) /\
-                (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
-                (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
-                (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
-                (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
-                                 x \in RPGRef.uppercaseSet\/
-                                 x \in RPGRef.numbersSet \/
-                                 x \in RPGRef.specialSet) /\
+                (has (fun (x) => x \in unionSet) lowercaseSet => 0 < lowercaseAvailable) /\
+                (has (fun (x) => x \in unionSet) numbersSet => 0 < numbersAvailable) /\
+                (has (fun (x) => x \in unionSet) specialSet => 0 < specialAvailable) /\
+                (forall x, x \in unionSet => x \in lowercaseSet \/
+                                 x \in uppercaseSet\/
+                                 x \in numbersSet \/
+                                 x \in specialSet) /\
                 p.`length <=
                  (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
                   size generatedPassword + 1 /\
-                 setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+                 setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
                    p.`lowercaseMax /\
-                 setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable + 1 =
+                 setOccurrences uppercaseSet generatedPassword + uppercaseAvailable + 1 =
                    p.`uppercaseMax /\
-                 setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+                 setOccurrences numbersSet generatedPassword + numbersAvailable =
                    p.`numbersMax /\
-                 setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+                 setOccurrences specialSet generatedPassword + specialAvailable =
                    p.`specialMax /\
-                 p.`lowercaseMin <= setOccurrences RPGRef.lowercaseSet generatedPassword /\
-                 p.`uppercaseMin <= setOccurrences RPGRef.uppercaseSet generatedPassword /\
-                 p.`numbersMin <= setOccurrences RPGRef.numbersSet generatedPassword /\
-                 p.`specialMin <= setOccurrences RPGRef.specialSet generatedPassword /\
-                 setOccurrences RPGRef.lowercaseSet generatedPassword <= p.`lowercaseMax /\
-                 setOccurrences RPGRef.uppercaseSet generatedPassword <= p.`uppercaseMax /\
-                 setOccurrences RPGRef.numbersSet generatedPassword <= p.`numbersMax /\
-                 setOccurrences RPGRef.specialSet generatedPassword <= p.`specialMax).
+                 p.`lowercaseMin <= setOccurrences lowercaseSet generatedPassword /\
+                 p.`uppercaseMin <= setOccurrences uppercaseSet generatedPassword /\
+                 p.`numbersMin <= setOccurrences numbersSet generatedPassword /\
+                 p.`specialMin <= setOccurrences specialSet generatedPassword /\
+                 setOccurrences lowercaseSet generatedPassword <= p.`lowercaseMax /\
+                 setOccurrences uppercaseSet generatedPassword <= p.`uppercaseMax /\
+                 setOccurrences numbersSet generatedPassword <= p.`numbersMax /\
+                 setOccurrences specialSet generatedPassword <= p.`specialMax).
           auto.
           move => &m />.
-          smt.
+          smt(charset_mem_has).
       if.
       - ecall (unionSet_available lowercaseAvailable uppercaseAvailable numbersAvailable
-                                  specialAvailable RPGRef.lowercaseSet RPGRef.uppercaseSet
-                                  RPGRef.numbersSet RPGRef.specialSet).
+                                  specialAvailable lowercaseSet uppercaseSet
+                                  numbersSet specialSet).
         by skip.
       - by skip.
     auto.
     move => &m />.
-    smt(size_cat setocc_cat).
+    smt(size_cat setocc_cat setocc_insert_inset setocc_insert_notinset).
 - if.
   + seq 2 : (policy = p /\
-             randomChar \in RPGRef.numbersSet /\
-             0 < size RPGRef.lowercaseSet /\
-             0 < size RPGRef.uppercaseSet /\
-             0 < size RPGRef.numbersSet /\
-             0 < size RPGRef.specialSet /\
-             (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-             (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-             (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-             (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-             (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-             (forall x, x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+             randomChar \in numbersSet /\
+             RPGRef.lowercaseSet = lowercaseSet /\
+             RPGRef.uppercaseSet = uppercaseSet /\
+             RPGRef.numbersSet = numbersSet /\
+             RPGRef.specialSet = specialSet /\
+             0 < size lowercaseSet /\
+             0 < size uppercaseSet /\
+             0 < size numbersSet /\
+             0 < size specialSet /\
+             (forall x, x \in lowercaseSet => !(x \in uppercaseSet)) /\
+             (forall x, x \in lowercaseSet => !(x \in numbersSet)) /\
+             (forall x, x \in lowercaseSet => !(x \in specialSet)) /\
+             (forall x, x \in uppercaseSet => !(x \in numbersSet)) /\
+             (forall x, x \in uppercaseSet => !(x \in specialSet)) /\
+             (forall x, x \in numbersSet => !(x \in specialSet)) /\
              0 <= lowercaseAvailable /\
              0 <= uppercaseAvailable /\
              0 <= numbersAvailable /\
              0 <= specialAvailable /\
              (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable
                 => 0 < size unionSet) /\
-             (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
-             (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
-             (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
-             (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
-             (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
-                                 x \in RPGRef.uppercaseSet\/
-                                 x \in RPGRef.numbersSet \/
-                                 x \in RPGRef.specialSet) /\
+             (has (fun (x) => x \in unionSet) lowercaseSet => 0 < lowercaseAvailable) /\
+             (has (fun (x) => x \in unionSet) uppercaseSet => 0 < uppercaseAvailable) /\
+             (has (fun (x) => x \in unionSet) numbersSet => 0 < numbersAvailable) /\
+             (has (fun (x) => x \in unionSet) specialSet => 0 < specialAvailable) /\
+             (forall x, x \in unionSet => x \in lowercaseSet \/
+                                 x \in uppercaseSet\/
+                                 x \in numbersSet \/
+                                 x \in specialSet) /\
              p.`length <=
                (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
                size generatedPassword + 1 /\
-             setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+             setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
                p.`lowercaseMax /\
-             setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+             setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
                p.`uppercaseMax /\
-             setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable + 1 =
+             setOccurrences numbersSet generatedPassword + numbersAvailable + 1 =
                p.`numbersMax /\
-             setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+             setOccurrences specialSet generatedPassword + specialAvailable =
                p.`specialMax /\
-             p.`lowercaseMin <= setOccurrences RPGRef.lowercaseSet generatedPassword /\
-             p.`uppercaseMin <= setOccurrences RPGRef.uppercaseSet generatedPassword /\
-             p.`numbersMin <= setOccurrences RPGRef.numbersSet generatedPassword /\
-             p.`specialMin <= setOccurrences RPGRef.specialSet generatedPassword /\
-             setOccurrences RPGRef.lowercaseSet generatedPassword <= p.`lowercaseMax /\
-             setOccurrences RPGRef.uppercaseSet generatedPassword <= p.`uppercaseMax /\
-             setOccurrences RPGRef.numbersSet generatedPassword <= p.`numbersMax /\
-             setOccurrences RPGRef.specialSet generatedPassword <= p.`specialMax).
+             p.`lowercaseMin <= setOccurrences lowercaseSet generatedPassword /\
+             p.`uppercaseMin <= setOccurrences uppercaseSet generatedPassword /\
+             p.`numbersMin <= setOccurrences numbersSet generatedPassword /\
+             p.`specialMin <= setOccurrences specialSet generatedPassword /\
+             setOccurrences lowercaseSet generatedPassword <= p.`lowercaseMax /\
+             setOccurrences uppercaseSet generatedPassword <= p.`uppercaseMax /\
+             setOccurrences numbersSet generatedPassword <= p.`numbersMax /\
+             setOccurrences specialSet generatedPassword <= p.`specialMax).
       case (1 < numbersAvailable).
       - seq 1 : (policy = p /\
-                 randomChar \in RPGRef.numbersSet /\
-                 0 < size RPGRef.lowercaseSet /\
-                 0 < size RPGRef.uppercaseSet /\
-                 0 < size RPGRef.numbersSet /\
-                 0 < size RPGRef.specialSet /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-                 (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-                 (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-                 (forall x, x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+                 randomChar \in numbersSet /\
+                 RPGRef.lowercaseSet = lowercaseSet /\
+                 RPGRef.uppercaseSet = uppercaseSet /\
+                 RPGRef.numbersSet = numbersSet /\
+                 RPGRef.specialSet = specialSet /\
+                 0 < size lowercaseSet /\
+                 0 < size uppercaseSet /\
+                 0 < size numbersSet /\
+                 0 < size specialSet /\
+                 (forall x, x \in lowercaseSet => !(x \in uppercaseSet)) /\
+                 (forall x, x \in lowercaseSet => !(x \in numbersSet)) /\
+                 (forall x, x \in lowercaseSet => !(x \in specialSet)) /\
+                 (forall x, x \in uppercaseSet => !(x \in numbersSet)) /\
+                 (forall x, x \in uppercaseSet => !(x \in specialSet)) /\
+                 (forall x, x \in numbersSet => !(x \in specialSet)) /\
                  0 <= lowercaseAvailable /\
                  0 <= uppercaseAvailable /\
                  0 < numbersAvailable /\
                  0 <= specialAvailable /\
                  (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
                    specialAvailable => 0 < size unionSet) /\
-                (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
-                (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
-                (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
-                (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
-                (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
-                                 x \in RPGRef.uppercaseSet\/
-                                 x \in RPGRef.numbersSet \/
-                                 x \in RPGRef.specialSet) /\
+                (has (fun (x) => x \in unionSet) lowercaseSet => 0 < lowercaseAvailable) /\
+                (has (fun (x) => x \in unionSet) uppercaseSet => 0 < uppercaseAvailable) /\
+                (has (fun (x) => x \in unionSet) numbersSet => 0 < numbersAvailable) /\
+                (has (fun (x) => x \in unionSet) specialSet => 0 < specialAvailable) /\
+                (forall x, x \in unionSet => x \in lowercaseSet \/
+                                 x \in uppercaseSet\/
+                                 x \in numbersSet \/
+                                 x \in specialSet) /\
                 p.`length <=
                   (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable)+
                    size generatedPassword + 1 /\
-                 setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+                 setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
                    p.`lowercaseMax /\
-                 setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+                 setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
                    p.`uppercaseMax /\
-                 setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable + 1 =
+                 setOccurrences numbersSet generatedPassword + numbersAvailable + 1 =
                    p.`numbersMax /\
-                 setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+                 setOccurrences specialSet generatedPassword + specialAvailable =
                    p.`specialMax /\
-                 p.`lowercaseMin <= setOccurrences RPGRef.lowercaseSet generatedPassword /\
-                 p.`uppercaseMin <= setOccurrences RPGRef.uppercaseSet generatedPassword /\
-                 p.`numbersMin <= setOccurrences RPGRef.numbersSet generatedPassword /\
-                 p.`specialMin <= setOccurrences RPGRef.specialSet generatedPassword /\
-                 setOccurrences RPGRef.lowercaseSet generatedPassword <= p.`lowercaseMax /\
-                 setOccurrences RPGRef.uppercaseSet generatedPassword <= p.`uppercaseMax /\
-                 setOccurrences RPGRef.numbersSet generatedPassword <= p.`numbersMax /\
-                 setOccurrences RPGRef.specialSet generatedPassword <= p.`specialMax).
+                 p.`lowercaseMin <= setOccurrences lowercaseSet generatedPassword /\
+                 p.`uppercaseMin <= setOccurrences uppercaseSet generatedPassword /\
+                 p.`numbersMin <= setOccurrences numbersSet generatedPassword /\
+                 p.`specialMin <= setOccurrences specialSet generatedPassword /\
+                 setOccurrences lowercaseSet generatedPassword <= p.`lowercaseMax /\
+                 setOccurrences uppercaseSet generatedPassword <= p.`uppercaseMax /\
+                 setOccurrences numbersSet generatedPassword <= p.`numbersMax /\
+                 setOccurrences specialSet generatedPassword <= p.`specialMax).
           auto.
           move => &m />.
-          smt.
+          smt(char_charset_size).
         if.
         + conseq (_ : false ==> _).
           smt.
           auto.
         + skip => /#.
       - seq 1 : (policy = p /\
-                 randomChar \in RPGRef.numbersSet /\
-                 0 < size RPGRef.lowercaseSet /\
-                 0 < size RPGRef.uppercaseSet /\
-                 0 < size RPGRef.numbersSet /\
-                 0 < size RPGRef.specialSet /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-                 (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-                 (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-                 (forall x, x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+                 randomChar \in numbersSet /\
+                 RPGRef.lowercaseSet = lowercaseSet /\
+                 RPGRef.uppercaseSet = uppercaseSet /\
+                 RPGRef.numbersSet = numbersSet /\
+                 RPGRef.specialSet = specialSet /\
+                 0 < size lowercaseSet /\
+                 0 < size uppercaseSet /\
+                 0 < size numbersSet /\
+                 0 < size specialSet /\
+                 (forall x, x \in lowercaseSet => !(x \in uppercaseSet)) /\
+                 (forall x, x \in lowercaseSet => !(x \in numbersSet)) /\
+                 (forall x, x \in lowercaseSet => !(x \in specialSet)) /\
+                 (forall x, x \in uppercaseSet => !(x \in numbersSet)) /\
+                 (forall x, x \in uppercaseSet => !(x \in specialSet)) /\
+                 (forall x, x \in numbersSet => !(x \in specialSet)) /\
                  0 <= lowercaseAvailable /\
                  0 <= uppercaseAvailable /\
                  0 = numbersAvailable /\
                  0 <= specialAvailable /\
                  (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
                    specialAvailable => 0 < size unionSet) /\
-                (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
-                (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
-                (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
-                (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
-                                 x \in RPGRef.uppercaseSet\/
-                                 x \in RPGRef.numbersSet \/
-                                 x \in RPGRef.specialSet) /\
+                (has (fun (x) => x \in unionSet) lowercaseSet => 0 < lowercaseAvailable) /\
+                (has (fun (x) => x \in unionSet) uppercaseSet => 0 < uppercaseAvailable) /\
+                (has (fun (x) => x \in unionSet) specialSet => 0 < specialAvailable) /\
+                (forall x, x \in unionSet => x \in lowercaseSet \/
+                                 x \in uppercaseSet\/
+                                 x \in numbersSet \/
+                                 x \in specialSet) /\
                 p.`length <=
                  (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
                   size generatedPassword + 1 /\
-                 setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+                 setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
                    p.`lowercaseMax /\
-                 setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+                 setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
                    p.`uppercaseMax /\
-                 setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable + 1 =
+                 setOccurrences numbersSet generatedPassword + numbersAvailable + 1 =
                    p.`numbersMax /\
-                 setOccurrences RPGRef.specialSet generatedPassword + specialAvailable =
+                 setOccurrences specialSet generatedPassword + specialAvailable =
                    p.`specialMax /\
-                 p.`lowercaseMin <= setOccurrences RPGRef.lowercaseSet generatedPassword /\
-                 p.`uppercaseMin <= setOccurrences RPGRef.uppercaseSet generatedPassword /\
-                 p.`numbersMin <= setOccurrences RPGRef.numbersSet generatedPassword /\
-                 p.`specialMin <= setOccurrences RPGRef.specialSet generatedPassword /\
-                 setOccurrences RPGRef.lowercaseSet generatedPassword <= p.`lowercaseMax /\
-                 setOccurrences RPGRef.uppercaseSet generatedPassword <= p.`uppercaseMax /\
-                 setOccurrences RPGRef.numbersSet generatedPassword <= p.`numbersMax /\
-                 setOccurrences RPGRef.specialSet generatedPassword <= p.`specialMax).
+                 p.`lowercaseMin <= setOccurrences lowercaseSet generatedPassword /\
+                 p.`uppercaseMin <= setOccurrences uppercaseSet generatedPassword /\
+                 p.`numbersMin <= setOccurrences numbersSet generatedPassword /\
+                 p.`specialMin <= setOccurrences specialSet generatedPassword /\
+                 setOccurrences lowercaseSet generatedPassword <= p.`lowercaseMax /\
+                 setOccurrences uppercaseSet generatedPassword <= p.`uppercaseMax /\
+                 setOccurrences numbersSet generatedPassword <= p.`numbersMax /\
+                 setOccurrences specialSet generatedPassword <= p.`specialMax).
           auto.
           move => &m />.
-          smt.
+          smt(charset_mem_has).
       if.
       + ecall (unionSet_available lowercaseAvailable uppercaseAvailable numbersAvailable
-                                  specialAvailable RPGRef.lowercaseSet RPGRef.uppercaseSet
-                                  RPGRef.numbersSet RPGRef.specialSet).
+                                  specialAvailable lowercaseSet uppercaseSet
+                                  numbersSet specialSet).
         by skip.
       + by skip.
     auto.
     move => &m />.
-    smt(size_cat setocc_cat).
+    smt(size_cat setocc_cat setocc_insert_inset setocc_insert_notinset).
 + if.
   - seq 2 : (policy = p /\
-             randomChar \in RPGRef.specialSet /\
-             0 < size RPGRef.lowercaseSet /\
-             0 < size RPGRef.uppercaseSet /\
-             0 < size RPGRef.numbersSet /\
-             0 < size RPGRef.specialSet /\
-             (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-             (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-             (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-             (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-             (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-             (forall x, x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+             randomChar \in specialSet /\
+             RPGRef.lowercaseSet = lowercaseSet /\
+             RPGRef.uppercaseSet = uppercaseSet /\
+             RPGRef.numbersSet = numbersSet /\
+             RPGRef.specialSet = specialSet /\
+             0 < size lowercaseSet /\
+             0 < size uppercaseSet /\
+             0 < size numbersSet /\
+             0 < size specialSet /\
+             (forall x, x \in lowercaseSet => !(x \in uppercaseSet)) /\
+             (forall x, x \in lowercaseSet => !(x \in numbersSet)) /\
+             (forall x, x \in lowercaseSet => !(x \in specialSet)) /\
+             (forall x, x \in uppercaseSet => !(x \in numbersSet)) /\
+             (forall x, x \in uppercaseSet => !(x \in specialSet)) /\
+             (forall x, x \in numbersSet => !(x \in specialSet)) /\
              0 <= lowercaseAvailable /\
              0 <= uppercaseAvailable /\
              0 <= numbersAvailable /\
              0 <= specialAvailable /\
              (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable
                 => 0 < size unionSet) /\
-             (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
-             (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
-             (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
-             (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
-             (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
-                                 x \in RPGRef.uppercaseSet\/
-                                 x \in RPGRef.numbersSet \/
-                                 x \in RPGRef.specialSet) /\
+             (has (fun (x) => x \in unionSet) lowercaseSet => 0 < lowercaseAvailable) /\
+             (has (fun (x) => x \in unionSet) uppercaseSet => 0 < uppercaseAvailable) /\
+             (has (fun (x) => x \in unionSet) numbersSet => 0 < numbersAvailable) /\
+             (has (fun (x) => x \in unionSet) specialSet => 0 < specialAvailable) /\
+             (forall x, x \in unionSet => x \in lowercaseSet \/
+                                 x \in uppercaseSet\/
+                                 x \in numbersSet \/
+                                 x \in specialSet) /\
              p.`length <=
                (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
                size generatedPassword + 1 /\
-             setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+             setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
                p.`lowercaseMax /\
-             setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+             setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
                p.`uppercaseMax /\
-             setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+             setOccurrences numbersSet generatedPassword + numbersAvailable =
                p.`numbersMax /\
-             setOccurrences RPGRef.specialSet generatedPassword + specialAvailable + 1 =
+             setOccurrences specialSet generatedPassword + specialAvailable + 1 =
                p.`specialMax /\
-             p.`lowercaseMin <= setOccurrences RPGRef.lowercaseSet generatedPassword /\
-             p.`uppercaseMin <= setOccurrences RPGRef.uppercaseSet generatedPassword /\
-             p.`numbersMin <= setOccurrences RPGRef.numbersSet generatedPassword /\
-             p.`specialMin <= setOccurrences RPGRef.specialSet generatedPassword /\
-             setOccurrences RPGRef.lowercaseSet generatedPassword <= p.`lowercaseMax /\
-             setOccurrences RPGRef.uppercaseSet generatedPassword <= p.`uppercaseMax /\
-             setOccurrences RPGRef.numbersSet generatedPassword <= p.`numbersMax /\
-             setOccurrences RPGRef.specialSet generatedPassword <= p.`specialMax).
+             p.`lowercaseMin <= setOccurrences lowercaseSet generatedPassword /\
+             p.`uppercaseMin <= setOccurrences uppercaseSet generatedPassword /\
+             p.`numbersMin <= setOccurrences numbersSet generatedPassword /\
+             p.`specialMin <= setOccurrences specialSet generatedPassword /\
+             setOccurrences lowercaseSet generatedPassword <= p.`lowercaseMax /\
+             setOccurrences uppercaseSet generatedPassword <= p.`uppercaseMax /\
+             setOccurrences numbersSet generatedPassword <= p.`numbersMax /\
+             setOccurrences specialSet generatedPassword <= p.`specialMax).
       case (1 < specialAvailable).
       + seq 1 : (policy = p /\
-                 randomChar \in RPGRef.specialSet /\
-                 0 < size RPGRef.lowercaseSet /\
-                 0 < size RPGRef.uppercaseSet /\
-                 0 < size RPGRef.numbersSet /\
-                 0 < size RPGRef.specialSet /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-                 (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-                 (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-                 (forall x, x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+                 randomChar \in specialSet /\
+                 RPGRef.lowercaseSet = lowercaseSet /\
+                 RPGRef.uppercaseSet = uppercaseSet /\
+                 RPGRef.numbersSet = numbersSet /\
+                 RPGRef.specialSet = specialSet /\
+                 0 < size lowercaseSet /\
+                 0 < size uppercaseSet /\
+                 0 < size numbersSet /\
+                 0 < size specialSet /\
+                 (forall x, x \in lowercaseSet => !(x \in uppercaseSet)) /\
+                 (forall x, x \in lowercaseSet => !(x \in numbersSet)) /\
+                 (forall x, x \in lowercaseSet => !(x \in specialSet)) /\
+                 (forall x, x \in uppercaseSet => !(x \in numbersSet)) /\
+                 (forall x, x \in uppercaseSet => !(x \in specialSet)) /\
+                 (forall x, x \in numbersSet => !(x \in specialSet)) /\
                  0 <= lowercaseAvailable /\
                  0 <= uppercaseAvailable /\
                  0 <= numbersAvailable /\
                  0 < specialAvailable /\
                  (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
                    specialAvailable => 0 < size unionSet) /\
-                (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
-                (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
-                (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
-                (has (fun (x) => x \in unionSet) RPGRef.specialSet => 0 < specialAvailable) /\
-                (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
-                                 x \in RPGRef.uppercaseSet\/
-                                 x \in RPGRef.numbersSet \/
-                                 x \in RPGRef.specialSet) /\
+                (has (fun (x) => x \in unionSet) lowercaseSet => 0 < lowercaseAvailable) /\
+                (has (fun (x) => x \in unionSet) uppercaseSet => 0 < uppercaseAvailable) /\
+                (has (fun (x) => x \in unionSet) numbersSet => 0 < numbersAvailable) /\
+                (has (fun (x) => x \in unionSet) specialSet => 0 < specialAvailable) /\
+                (forall x, x \in unionSet => x \in lowercaseSet \/
+                                 x \in uppercaseSet\/
+                                 x \in numbersSet \/
+                                 x \in specialSet) /\
                 p.`length <=
                   (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable)+
                    size generatedPassword + 1 /\
-                 setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+                 setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
                    p.`lowercaseMax /\
-                 setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+                 setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
                    p.`uppercaseMax /\
-                 setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+                 setOccurrences numbersSet generatedPassword + numbersAvailable =
                    p.`numbersMax /\
-                 setOccurrences RPGRef.specialSet generatedPassword + specialAvailable + 1 =
+                 setOccurrences specialSet generatedPassword + specialAvailable + 1 =
                    p.`specialMax /\
-                 p.`lowercaseMin <= setOccurrences RPGRef.lowercaseSet generatedPassword /\
-                 p.`uppercaseMin <= setOccurrences RPGRef.uppercaseSet generatedPassword /\
-                 p.`numbersMin <= setOccurrences RPGRef.numbersSet generatedPassword /\
-                 p.`specialMin <= setOccurrences RPGRef.specialSet generatedPassword /\
-                 setOccurrences RPGRef.lowercaseSet generatedPassword <= p.`lowercaseMax /\
-                 setOccurrences RPGRef.uppercaseSet generatedPassword <= p.`uppercaseMax /\
-                 setOccurrences RPGRef.numbersSet generatedPassword <= p.`numbersMax /\
-                 setOccurrences RPGRef.specialSet generatedPassword <= p.`specialMax).
+                 p.`lowercaseMin <= setOccurrences lowercaseSet generatedPassword /\
+                 p.`uppercaseMin <= setOccurrences uppercaseSet generatedPassword /\
+                 p.`numbersMin <= setOccurrences numbersSet generatedPassword /\
+                 p.`specialMin <= setOccurrences specialSet generatedPassword /\
+                 setOccurrences lowercaseSet generatedPassword <= p.`lowercaseMax /\
+                 setOccurrences uppercaseSet generatedPassword <= p.`uppercaseMax /\
+                 setOccurrences numbersSet generatedPassword <= p.`numbersMax /\
+                 setOccurrences specialSet generatedPassword <= p.`specialMax).
           auto.
           move => &m />.
-          smt.
+          smt(char_charset_size).
         if.
         - conseq (_ : false ==> _).
           smt.
           auto.
         - skip => /#.
       + seq 1 : (policy = p /\
-                 randomChar \in RPGRef.specialSet /\
-                 0 < size RPGRef.lowercaseSet /\
-                 0 < size RPGRef.uppercaseSet /\
-                 0 < size RPGRef.numbersSet /\
-                 0 < size RPGRef.specialSet /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.uppercaseSet)) /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.numbersSet)) /\
-                 (forall x, x \in RPGRef.lowercaseSet => !(x \in RPGRef.specialSet)) /\
-                 (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.numbersSet)) /\
-                 (forall x, x \in RPGRef.uppercaseSet => !(x \in RPGRef.specialSet)) /\
-                 (forall x, x \in RPGRef.numbersSet => !(x \in RPGRef.specialSet)) /\
+                 randomChar \in specialSet /\
+                 RPGRef.lowercaseSet = lowercaseSet /\
+                 RPGRef.uppercaseSet = uppercaseSet /\
+                 RPGRef.numbersSet = numbersSet /\
+                 RPGRef.specialSet = specialSet /\
+                 0 < size lowercaseSet /\
+                 0 < size uppercaseSet /\
+                 0 < size numbersSet /\
+                 0 < size specialSet /\
+                 (forall x, x \in lowercaseSet => !(x \in uppercaseSet)) /\
+                 (forall x, x \in lowercaseSet => !(x \in numbersSet)) /\
+                 (forall x, x \in lowercaseSet => !(x \in specialSet)) /\
+                 (forall x, x \in uppercaseSet => !(x \in numbersSet)) /\
+                 (forall x, x \in uppercaseSet => !(x \in specialSet)) /\
+                 (forall x, x \in numbersSet => !(x \in specialSet)) /\
                  0 <= lowercaseAvailable /\
                  0 <= uppercaseAvailable /\
                  0 <= numbersAvailable /\
                  0 = specialAvailable /\
                  (0 < lowercaseAvailable + uppercaseAvailable + numbersAvailable +
                    specialAvailable => 0 < size unionSet) /\
-                (has (fun (x) => x \in unionSet) RPGRef.lowercaseSet => 0 < lowercaseAvailable) /\
-                (has (fun (x) => x \in unionSet) RPGRef.uppercaseSet => 0 < uppercaseAvailable) /\
-                (has (fun (x) => x \in unionSet) RPGRef.numbersSet => 0 < numbersAvailable) /\
-                (forall x, x \in unionSet => x \in RPGRef.lowercaseSet \/
-                                 x \in RPGRef.uppercaseSet\/
-                                 x \in RPGRef.numbersSet \/
-                                 x \in RPGRef.specialSet) /\
+                (has (fun (x) => x \in unionSet) lowercaseSet => 0 < lowercaseAvailable) /\
+                (has (fun (x) => x \in unionSet) uppercaseSet => 0 < uppercaseAvailable) /\
+                (has (fun (x) => x \in unionSet) numbersSet => 0 < numbersAvailable) /\
+                (forall x, x \in unionSet => x \in lowercaseSet \/
+                                 x \in uppercaseSet\/
+                                 x \in numbersSet \/
+                                 x \in specialSet) /\
                 p.`length <=
                  (lowercaseAvailable + uppercaseAvailable + numbersAvailable + specialAvailable) +
                   size generatedPassword + 1 /\
-                 setOccurrences RPGRef.lowercaseSet generatedPassword + lowercaseAvailable =
+                 setOccurrences lowercaseSet generatedPassword + lowercaseAvailable =
                    p.`lowercaseMax /\
-                 setOccurrences RPGRef.uppercaseSet generatedPassword + uppercaseAvailable =
+                 setOccurrences uppercaseSet generatedPassword + uppercaseAvailable =
                    p.`uppercaseMax /\
-                 setOccurrences RPGRef.numbersSet generatedPassword + numbersAvailable =
+                 setOccurrences numbersSet generatedPassword + numbersAvailable =
                    p.`numbersMax /\
-                 setOccurrences RPGRef.specialSet generatedPassword + specialAvailable + 1 =
+                 setOccurrences specialSet generatedPassword + specialAvailable + 1 =
                    p.`specialMax /\
-                 p.`lowercaseMin <= setOccurrences RPGRef.lowercaseSet generatedPassword /\
-                 p.`uppercaseMin <= setOccurrences RPGRef.uppercaseSet generatedPassword /\
-                 p.`numbersMin <= setOccurrences RPGRef.numbersSet generatedPassword /\
-                 p.`specialMin <= setOccurrences RPGRef.specialSet generatedPassword /\
-                 setOccurrences RPGRef.lowercaseSet generatedPassword <= p.`lowercaseMax /\
-                 setOccurrences RPGRef.uppercaseSet generatedPassword <= p.`uppercaseMax /\
-                 setOccurrences RPGRef.numbersSet generatedPassword <= p.`numbersMax /\
-                 setOccurrences RPGRef.specialSet generatedPassword <= p.`specialMax).
+                 p.`lowercaseMin <= setOccurrences lowercaseSet generatedPassword /\
+                 p.`uppercaseMin <= setOccurrences uppercaseSet generatedPassword /\
+                 p.`numbersMin <= setOccurrences numbersSet generatedPassword /\
+                 p.`specialMin <= setOccurrences specialSet generatedPassword /\
+                 setOccurrences lowercaseSet generatedPassword <= p.`lowercaseMax /\
+                 setOccurrences uppercaseSet generatedPassword <= p.`uppercaseMax /\
+                 setOccurrences numbersSet generatedPassword <= p.`numbersMax /\
+                 setOccurrences specialSet generatedPassword <= p.`specialMax).
           auto.
           move => &m />.
-          smt.
+          smt(charset_mem_has).
       if.
       - ecall (unionSet_available lowercaseAvailable uppercaseAvailable numbersAvailable
-                                  specialAvailable RPGRef.lowercaseSet RPGRef.uppercaseSet
-                                  RPGRef.numbersSet RPGRef.specialSet).
+                                  specialAvailable lowercaseSet uppercaseSet
+                                  numbersSet specialSet).
         by skip.
       - by skip.
     auto.
     move => &m />.
-    smt(size_cat setocc_cat).
+    smt(size_cat setocc_cat setocc_insert_inset setocc_insert_notinset).
 conseq (_: false ==> _).
   + move => &m />.
     smt.
@@ -2507,50 +2614,50 @@ conseq (_: false ==> _).
 inline RPGRef.permutation.
 seq 2 : (#pre /\
          i0 = size pw /\
-         setOccurrences RPGRef.lowercaseSet generatedPassword =
-         setOccurrences RPGRef.lowercaseSet pw /\
-         setOccurrences RPGRef.uppercaseSet generatedPassword =
-         setOccurrences RPGRef.uppercaseSet pw /\
-         setOccurrences RPGRef.numbersSet generatedPassword =
-         setOccurrences RPGRef.numbersSet pw /\
-         setOccurrences RPGRef.specialSet generatedPassword =
-         setOccurrences RPGRef.specialSet pw).
+         setOccurrences lowercaseSet generatedPassword =
+         setOccurrences lowercaseSet pw /\
+         setOccurrences uppercaseSet generatedPassword =
+         setOccurrences uppercaseSet pw /\
+         setOccurrences numbersSet generatedPassword =
+         setOccurrences numbersSet pw /\
+         setOccurrences specialSet generatedPassword =
+         setOccurrences specialSet pw).
 auto.
 seq 1 : (policy = p /\
-         p.`lowercaseMin <= setOccurrences RPGRef.lowercaseSet generatedPassword /\
-         p.`uppercaseMin <= setOccurrences RPGRef.uppercaseSet generatedPassword /\
-         p.`numbersMin <= setOccurrences RPGRef.numbersSet generatedPassword /\
-         p.`specialMin <= setOccurrences RPGRef.specialSet generatedPassword /\
-         setOccurrences RPGRef.lowercaseSet generatedPassword <= p.`lowercaseMax /\
-         setOccurrences RPGRef.uppercaseSet generatedPassword <= p.`uppercaseMax /\
-         setOccurrences RPGRef.numbersSet generatedPassword <= p.`numbersMax /\
-         setOccurrences RPGRef.specialSet generatedPassword <= p.`specialMax /\
-         setOccurrences RPGRef.lowercaseSet generatedPassword =
-         setOccurrences RPGRef.lowercaseSet pw /\
-         setOccurrences RPGRef.uppercaseSet generatedPassword =
-         setOccurrences RPGRef.uppercaseSet pw /\
-         setOccurrences RPGRef.numbersSet generatedPassword =
-         setOccurrences RPGRef.numbersSet pw /\
-         setOccurrences RPGRef.specialSet generatedPassword =
-         setOccurrences RPGRef.specialSet pw).
+         p.`lowercaseMin <= setOccurrences lowercaseSet generatedPassword /\
+         p.`uppercaseMin <= setOccurrences uppercaseSet generatedPassword /\
+         p.`numbersMin <= setOccurrences numbersSet generatedPassword /\
+         p.`specialMin <= setOccurrences specialSet generatedPassword /\
+         setOccurrences lowercaseSet generatedPassword <= p.`lowercaseMax /\
+         setOccurrences uppercaseSet generatedPassword <= p.`uppercaseMax /\
+         setOccurrences numbersSet generatedPassword <= p.`numbersMax /\
+         setOccurrences specialSet generatedPassword <= p.`specialMax /\
+         setOccurrences lowercaseSet generatedPassword =
+         setOccurrences lowercaseSet pw /\
+         setOccurrences uppercaseSet generatedPassword =
+         setOccurrences uppercaseSet pw /\
+         setOccurrences numbersSet generatedPassword =
+         setOccurrences numbersSet pw /\
+         setOccurrences specialSet generatedPassword =
+         setOccurrences specialSet pw).
   while (policy = p /\
-         p.`lowercaseMin <= setOccurrences RPGRef.lowercaseSet generatedPassword /\
-         p.`uppercaseMin <= setOccurrences RPGRef.uppercaseSet generatedPassword /\
-         p.`numbersMin <= setOccurrences RPGRef.numbersSet generatedPassword /\
-         p.`specialMin <= setOccurrences RPGRef.specialSet generatedPassword /\
-         setOccurrences RPGRef.lowercaseSet generatedPassword <= p.`lowercaseMax /\
-         setOccurrences RPGRef.uppercaseSet generatedPassword <= p.`uppercaseMax /\
-         setOccurrences RPGRef.numbersSet generatedPassword <= p.`numbersMax /\
-         setOccurrences RPGRef.specialSet generatedPassword <= p.`specialMax /\
+         p.`lowercaseMin <= setOccurrences lowercaseSet generatedPassword /\
+         p.`uppercaseMin <= setOccurrences uppercaseSet generatedPassword /\
+         p.`numbersMin <= setOccurrences numbersSet generatedPassword /\
+         p.`specialMin <= setOccurrences specialSet generatedPassword /\
+         setOccurrences lowercaseSet generatedPassword <= p.`lowercaseMax /\
+         setOccurrences uppercaseSet generatedPassword <= p.`uppercaseMax /\
+         setOccurrences numbersSet generatedPassword <= p.`numbersMax /\
+         setOccurrences specialSet generatedPassword <= p.`specialMax /\
          i0 <= size pw /\
-         setOccurrences RPGRef.lowercaseSet generatedPassword =
-         setOccurrences RPGRef.lowercaseSet pw /\
-         setOccurrences RPGRef.uppercaseSet generatedPassword =
-         setOccurrences RPGRef.uppercaseSet pw /\
-         setOccurrences RPGRef.numbersSet generatedPassword =
-         setOccurrences RPGRef.numbersSet pw /\
-         setOccurrences RPGRef.specialSet generatedPassword =
-         setOccurrences RPGRef.specialSet pw).
+         setOccurrences lowercaseSet generatedPassword =
+         setOccurrences lowercaseSet pw /\
+         setOccurrences uppercaseSet generatedPassword =
+         setOccurrences uppercaseSet pw /\
+         setOccurrences numbersSet generatedPassword =
+         setOccurrences numbersSet pw /\
+         setOccurrences specialSet generatedPassword =
+         setOccurrences specialSet pw).
   - seq 1 : (#pre /\ j < i0 /\ 0 <= j).
       ecall (rng_range i0).
       skip => /#.
@@ -2570,14 +2677,6 @@ auto.
 move => &m />.
 smt. (* ez fix *)
 qed.
-
-
-lemma rpg_generate_password_conjunction_rule P Q1 Q2 :
-  hoare [RPGRef.generate_password : P ==> Q1] =>
-  hoare [RPGRef.generate_password : P ==> Q2] =>
-  hoare [RPGRef.generate_password : P ==> Q1 /\ Q2].
-proof.
-move => ? ?.
 
 
 
@@ -2604,19 +2703,69 @@ lemma rpg_correctness_hl (p:policy) :
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
          ==> size res = p.`length /\
-             satisfiesMin p.`lowercaseMin RPGRef.lowercaseSet res /\
-             satisfiesMax p.`lowercaseMax RPGRef.lowercaseSet res /\
-             satisfiesMin p.`uppercaseMin RPGRef.uppercaseSet res /\
-             satisfiesMax p.`uppercaseMax RPGRef.uppercaseSet res /\
-             satisfiesMin p.`numbersMin RPGRef.numbersSet res /\
-             satisfiesMax p.`numbersMax RPGRef.numbersSet res /\
-             satisfiesMin p.`specialMin RPGRef.specialSet res /\
-             satisfiesMax p.`specialMax RPGRef.specialSet res].
+             satisfiesMin p.`lowercaseMin lowercaseSet res /\
+             satisfiesMax p.`lowercaseMax lowercaseSet res /\
+             satisfiesMin p.`uppercaseMin uppercaseSet res /\
+             satisfiesMax p.`uppercaseMax uppercaseSet res /\
+             satisfiesMin p.`numbersMin numbersSet res /\
+             satisfiesMax p.`numbersMax numbersSet res /\
+             satisfiesMin p.`specialMin specialSet res /\
+             satisfiesMax p.`specialMax specialSet res].
 proof.
-hoare split.
+have length_proof : (hoare [RPGRef.generate_password : policy = p /\
+         (* assumptions *)
+         p.`length <= 200 /\
+         0 < p.`length /\ 
+         0 <= p.`lowercaseMin /\
+         0 <= p.`uppercaseMin /\
+         0 <= p.`numbersMin /\
+         0 <= p.`specialMin /\
+         0 <= p.`lowercaseMax /\
+         0 <= p.`uppercaseMax /\
+         0 <= p.`numbersMax /\
+         0 <= p.`specialMax /\
+         p.`lowercaseMin <= p.`lowercaseMax /\
+         p.`uppercaseMin <= p.`uppercaseMax /\
+         p.`numbersMin <= p.`numbersMax /\
+         p.`specialMin <= p.`specialMax /\
+         p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
+         p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
+         ==> size res = p.`length]).
+exact rpg_correctness_length_hl.
+have bounds_proof : (hoare [RPGRef.generate_password : policy = p /\
+         (* assumptions *)
+         p.`length <= 200 /\
+         0 < p.`length /\ 
+         0 <= p.`lowercaseMin /\
+         0 <= p.`uppercaseMin /\
+         0 <= p.`numbersMin /\
+         0 <= p.`specialMin /\
+         0 <= p.`lowercaseMax /\
+         0 <= p.`uppercaseMax /\
+         0 <= p.`numbersMax /\
+         0 <= p.`specialMax /\
+         p.`lowercaseMin <= p.`lowercaseMax /\
+         p.`uppercaseMin <= p.`uppercaseMax /\
+         p.`numbersMin <= p.`numbersMax /\
+         p.`specialMin <= p.`specialMax /\
+         p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
+         p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
+         ==> satisfiesMin p.`lowercaseMin lowercaseSet res /\
+             satisfiesMin p.`uppercaseMin uppercaseSet res /\
+             satisfiesMin p.`numbersMin numbersSet res /\
+             satisfiesMin p.`specialMin specialSet res /\
+             satisfiesMax p.`lowercaseMax lowercaseSet res /\
+             satisfiesMax p.`uppercaseMax uppercaseSet res /\   
+             satisfiesMax p.`numbersMax numbersSet res /\
+             satisfiesMax p.`specialMax specialSet res]).
+exact rpg_correctness_bounds_hl.
+conseq length_proof bounds_proof.
+move => &m ?.
 split.
-ecall (rpg_correctness_bounds_hl p).
-
+assumption.
+assumption.
+trivial.
+qed.
 
 
 (* ------------------------- *)
@@ -2747,43 +2896,24 @@ qed.
 lemma rpg_correct &m (p:policy) :
   Pr[Correctness(RPGRef).main(p) @ &m : res] = 1%r.
 proof.
-byphoare.
-proc.
-if.
-seq 1 : (#pre /\ lowercaseSet = [97; 97; 99; 100; 101; 102; 103; 104; 105; 106; 107; 108; 109;
-         110; 111; 112; 113; 114; 115; 116; 117; 118; 119; 120; 121; 122]).
- auto.
- inline *.
- auto.
-seq 1 : (#pre /\ uppercaseSet = [65; 66; 67; 68; 69; 70; 71; 72; 73; 74; 75; 76; 77; 78; 79; 80;
-         81; 82; 83; 84; 85; 86; 87; 88; 89; 90]).
- auto.
- inline *.
- auto.
-seq 1 : (#pre /\ numbersSet = [48; 49; 50; 51; 52; 53; 54; 55; 56; 57]).
- auto.
- inline *.
- auto.
-seq 1 : (#pre /\ specialSet = [33; 63; 35; 36; 37; 38; 43; 45; 42; 95; 64; 58; 59; 61]).
- auto.
- inline *.
- auto.
-seq 1 : (#pre /\
-         size pw = policy.`length /\
-         satisfiesMin policy.`lowercaseMin lowercaseSet pw /\
-         satisfiesMax policy.`lowercaseMax lowercaseSet pw /\
-         satisfiesMin policy.`uppercaseMin uppercaseSet pw /\
-         satisfiesMax policy.`uppercaseMax uppercaseSet pw /\
-         satisfiesMin policy.`numbersMin numbersSet pw /\
-         satisfiesMax policy.`numbersMax numbersSet pw /\
-         satisfiesMin policy.`specialMin specialSet pw /\
-         satisfiesMax policy.`specialMax specialSet pw).
-auto.
-ecall ().
-hoare.
-islossless.
-admit. admit. admit. admit. admit.
-by conseq rpg_ll rpg_correctness_hl.
+byphoare (_: policy = p ==> _).
+have lossless: islossless Correctness(RPGRef).main.
+- proc.
+  if.
+  + wp.
+    by call rpg_ll.
+  + islossless.
+have correct: hoare[Correctness(RPGRef).main : policy = p ==> res].
+- proc.    
+  if.
+  + wp.
+    call (rpg_correctness_hl p).
+    by skip.
+  + by wp.
+by conseq lossless correct.
+reflexivity.
+trivial.
+qed.
 
 
 

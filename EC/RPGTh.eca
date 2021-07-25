@@ -25,8 +25,7 @@ module Correctness(RPG : RPG_T) = {
   proc main(policy:policy) : bool = {
   
     var pw : password;
-    var lowercaseOcc, uppercaseOcc, numbersOcc, specialOcc : int;
-    var l, satisfied : bool;
+    var satisfied : bool;
 
     if(policy.`length <= 200 /\
        0 < policy.`length /\ 
