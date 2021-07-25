@@ -940,7 +940,7 @@ lemma rpg_correctness_length_hl (p:policy) :
          p.`specialMin <= p.`specialMax /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
-         ==> size res = p.`length].
+         ==> satisfiesLength p res].
 proof.
 proc.
 seq 1 : (#pre).
@@ -1200,14 +1200,7 @@ lemma rpg_correctness_bounds_hl (p:policy) :
          p.`specialMin <= p.`specialMax /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
-         ==> satisfiesMin p.`lowercaseMin lowercaseSet res /\
-             satisfiesMin p.`uppercaseMin uppercaseSet res /\
-             satisfiesMin p.`numbersMin numbersSet res /\
-             satisfiesMin p.`specialMin specialSet res /\
-             satisfiesMax p.`lowercaseMax lowercaseSet res /\
-             satisfiesMax p.`uppercaseMax uppercaseSet res /\   
-             satisfiesMax p.`numbersMax numbersSet res /\
-             satisfiesMax p.`specialMax specialSet res].
+         ==> satisfiesBounds p res].
 proof.
 proc.
 seq 1 : (#pre /\ 0 < size lowercaseSet /\
@@ -2702,15 +2695,7 @@ lemma rpg_correctness_hl (p:policy) :
          p.`specialMin <= p.`specialMax /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
-         ==> size res = p.`length /\
-             satisfiesMin p.`lowercaseMin lowercaseSet res /\
-             satisfiesMax p.`lowercaseMax lowercaseSet res /\
-             satisfiesMin p.`uppercaseMin uppercaseSet res /\
-             satisfiesMax p.`uppercaseMax uppercaseSet res /\
-             satisfiesMin p.`numbersMin numbersSet res /\
-             satisfiesMax p.`numbersMax numbersSet res /\
-             satisfiesMin p.`specialMin specialSet res /\
-             satisfiesMax p.`specialMax specialSet res].
+         ==> satisfiesLength p res /\ satisfiesBounds p res].
 proof.
 have length_proof : (hoare [RPGRef.generate_password : policy = p /\
          (* assumptions *)
@@ -2730,7 +2715,7 @@ have length_proof : (hoare [RPGRef.generate_password : policy = p /\
          p.`specialMin <= p.`specialMax /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
-         ==> size res = p.`length]).
+         ==> satisfiesLength p res]).
 exact rpg_correctness_length_hl.
 have bounds_proof : (hoare [RPGRef.generate_password : policy = p /\
          (* assumptions *)
@@ -2750,21 +2735,13 @@ have bounds_proof : (hoare [RPGRef.generate_password : policy = p /\
          p.`specialMin <= p.`specialMax /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
-         ==> satisfiesMin p.`lowercaseMin lowercaseSet res /\
-             satisfiesMin p.`uppercaseMin uppercaseSet res /\
-             satisfiesMin p.`numbersMin numbersSet res /\
-             satisfiesMin p.`specialMin specialSet res /\
-             satisfiesMax p.`lowercaseMax lowercaseSet res /\
-             satisfiesMax p.`uppercaseMax uppercaseSet res /\   
-             satisfiesMax p.`numbersMax numbersSet res /\
-             satisfiesMax p.`specialMax specialSet res]).
+         ==> satisfiesBounds p res]).
 exact rpg_correctness_bounds_hl.
 conseq length_proof bounds_proof.
 move => &m ?.
 split.
 assumption.
 assumption.
-trivial.
 qed.
 
 

@@ -48,15 +48,7 @@ module Correctness(RPG : RPG_T) = {
 
       pw <@ RPG.generate_password(policy);
     
-      satisfied <- size pw = policy.`length /\
-                   satisfiesMin policy.`lowercaseMin lowercaseSet pw /\
-                   satisfiesMax policy.`lowercaseMax lowercaseSet pw /\
-                   satisfiesMin policy.`uppercaseMin uppercaseSet pw /\
-                   satisfiesMax policy.`uppercaseMax uppercaseSet pw /\
-                   satisfiesMin policy.`numbersMin numbersSet pw /\
-                   satisfiesMax policy.`numbersMax numbersSet pw /\
-                   satisfiesMin policy.`specialMin specialSet pw /\
-                   satisfiesMax policy.`specialMax specialSet pw;
+      satisfied <- satisfiesLength policy pw /\ satisfiesBounds policy pw;
     }
     else {
       satisfied <- true;
