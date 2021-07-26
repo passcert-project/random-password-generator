@@ -1,7 +1,8 @@
 require import AllCore IntDiv DInterval List UpdateList.
-require (****) RPGTh.
+require (****) RPGTh IdealRPGTh.
 
 clone include RPGTh.
+clone include IdealRPGTh.
 
 module RPGRef : RPG_T = {
 
