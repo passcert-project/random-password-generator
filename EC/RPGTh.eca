@@ -1,25 +1,33 @@
-require import AllCore Distr List UpdateList.
+require import AllCore Distr Dexcepted List UpdateList.
 require (****) PasswordGenerationTh.
 
 clone include PasswordGenerationTh.
 
-
-(* Abstract type of a RPG *)
+(* Abstract type of an RPG *)
 module type RPG_T = { 
   proc generate_password(policy:policy) : password
-  proc get_lowercaseSet() : charSet
-  proc get_uppercaseSet() : charSet
-  proc get_numbersSet() : charSet
-  proc get_specialSet() : charSet
 }.
-
 
 
 (*******************************)
 (*         CORRECTNESS         *)
 (*******************************)
 
-(* Correctness definition for a RPG*)
+op satisfiesLength (p:policy) (pw:password) : bool =
+  size pw = p.`length.
+
+op satisfiesSetBounds (min max:int) (set:charSet) (pw:password) : bool =
+ min <= setOccurrences set pw <= max.
+
+op satisfiesBounds (p:policy) (pw:password) : bool =
+  p.`lowercaseMin <= setOccurrences lowercaseSet pw <= p.`lowercaseMax /\
+  p.`uppercaseMin <= setOccurrences uppercaseSet pw <= p.`uppercaseMax /\
+  p.`numbersMin <= setOccurrences numbersSet pw <= p.`numbersMax /\
+  p.`specialMin <= setOccurrences specialSet pw <= p.`specialMax.
+
+
+
+(* Correctness definition for an RPG *)
 module Correctness(RPG : RPG_T) = {
 
   proc main(policy:policy) : bool = {
@@ -66,6 +74,34 @@ module Correctness(RPG : RPG_T) = {
 (*          SECURITY           *)
 (*******************************)
 
+(* Distribution over passwords *)
+op dpassword : password distr.
+
+axiom dpassword_ll : is_lossless dpassword.
+axiom dpassword_uni : is_uniform dpassword.
+axiom dpassword_fu : is_full dpassword.
+
+
+(* Orcl : define the adversary view of a RPG *)
+module type Orcl = {
+  proc generate_password(p:policy) : password
+}.
+
+(* The type of adversaries *)
+module type Adv (O:Orcl) = {
+  proc guess() : bool
+}.
+
+(* The game: parametric on oracle and adversary *)
+module RPGGame(A:Adv, O:Orcl) = {
+
+  proc main() = {
+    var b;
+    b <@ A(O).guess();
+    return b;
+  }
+
+}.
 
 (* Real RPG Oracle *)
 module RealRPG(RPG : RPG_T) : Orcl = {
@@ -78,8 +114,90 @@ module RealRPG(RPG : RPG_T) : Orcl = {
 
 }.
 
+(* Ideal RPG Oracle *)
+module IdealRPG : Orcl = {
+
+  proc generate_password(p:policy) = {
+    var pw;
+
+    pw <$ dpassword \ (fun pass => !(satisfiesLength p pw) /\ !(satisfiesBounds p pw));
+
+    return pw;
+  }
+
+}.
+
 (* 
 In this case advantage is of the form.
 | Pr[RPGGame(A, RealRPG(Scheme)).main() @ &m : res ] - 
   Pr[RPGGame(A, IdealRPG).main() @ &m : res ]|
 *)
+
+(*module ModifiedRPG : Orcl = {
+
+
+  proc rng(range:int) : int = {
+    
+    var value, maxValue : int;
+
+    maxValue <- ((2^64) %/ range) * range - 1;
+
+    value <$ [0 .. (2^64) - 1];
+
+    while (maxValue < value) {
+      value <$ [0 .. (2^64) - 1]; (* Random Bytes Generator *)
+    }
+    
+    value <- (value %% range);
+    
+    return value;
+    
+  }
+
+  
+  proc permutation(pw:password) : password = {
+
+    var i : int;
+    var j : int;
+    var aux : char;
+    
+    i <- size pw;
+    
+    while (0 < i) {
+      j <@ rng(i);
+      i <- i - 1;
+      aux <- nth 0 pw i;
+      pw <- update (nth 0 pw j) pw i;
+      pw <- update aux pw j;
+    }
+    
+    return pw;
+ 
+  }
+
+  proc generate_password(p:policy) = {
+    var pw;
+
+    pw <$ dpassword \ (fun pass => !(satisfiesLength p pw) /\ !(satisfiesBounds p pw));
+
+
+    pw <- permutation(pw);
+
+    return pw;
+  }
+
+}.
+
+
+ction TEST.
+
+declare module A:Adv.
+
+lemma Ideal_eq_Modified :
+  equiv [ IdealRPG.generate_password ~ ModifiedRPG.generate_password : 
+            true ==> ={res} ].
+proc.
+seq 1 1 : (={pw}).
+admitted.
+
+section end.*)
