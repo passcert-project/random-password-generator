@@ -128,121 +128,156 @@ module RPGRef : RPG_T = {
   }
 
   
-  proc generate_password(policy:policy) : password = {
+  proc generate_password(policy:policy) : password option = {
 
+    var outputPassword : password option;
     var generatedPassword : password;
     var unionSet : charSet;
     var randomChar : char;
     var i : int;
     var lowercaseAvailable, uppercaseAvailable, numbersAvailable, specialAvailable : int;
 
-    (* initializer sets *)
-    lowercaseSet <@ get_lowercaseSet();
-    uppercaseSet <@ get_uppercaseSet();
-    numbersSet <@ get_numbersSet();
-    specialSet <@ get_specialSet();
+    (* ---------------------------------------------- *)
+    (* If policy is satisfiable, return Some password *)
+    (* ---------------------------------------------- *)
+    if(policy.`length <= 200 /\
+       0 < policy.`length /\ 
+       0 <= policy.`lowercaseMin /\
+       0 <= policy.`uppercaseMin /\
+       0 <= policy.`numbersMin /\
+       0 <= policy.`specialMin /\
+       0 <= policy.`lowercaseMax /\
+       0 <= policy.`uppercaseMax /\
+       0 <= policy.`numbersMax /\
+       0 <= policy.`specialMax /\
+       policy.`lowercaseMin <= policy.`lowercaseMax /\
+       policy.`uppercaseMin <= policy.`uppercaseMax /\
+       policy.`numbersMin <= policy.`numbersMax /\
+       policy.`specialMin <= policy.`specialMax /\
+       policy.`lowercaseMin + policy.`uppercaseMin + policy.`numbersMin + policy.`specialMin <=
+         policy.`length /\
+       policy.`length <=
+         policy.`lowercaseMax + policy.`uppercaseMax + policy.`numbersMax + policy.`specialMax) {
 
-    (* initialize random password *)
-    generatedPassword <- [];
+      (* initializer sets *)
+      lowercaseSet <@ get_lowercaseSet();
+      uppercaseSet <@ get_uppercaseSet();
+      numbersSet <@ get_numbersSet();
+      specialSet <@ get_specialSet();
+
+      (* initialize random password *)
+      generatedPassword <- [];
     
-    (* check which sets are available to generate characters from (max > 0) *)
+      (* check which sets are available to generate characters from (max > 0) *)
 
-    lowercaseAvailable <- policy.`lowercaseMax;
-    uppercaseAvailable <- policy.`uppercaseMax;
-    numbersAvailable <- policy.`numbersMax;
-    specialAvailable <- policy.`specialMax;
+      lowercaseAvailable <- policy.`lowercaseMax;
+      uppercaseAvailable <- policy.`uppercaseMax;
+      numbersAvailable <- policy.`numbersMax;
+      specialAvailable <- policy.`specialMax;
 
-    (* generate characters with min values defined *)     
+      (* generate characters with min values defined *)     
  
-    if (0 < lowercaseAvailable) {
-      i <- 0;
-      while (i < policy.`lowercaseMin) {
-        lowercaseAvailable <- lowercaseAvailable - 1;
-        randomChar <@ random_char_generator(lowercaseSet);
-        generatedPassword <- generatedPassword ++ [randomChar];
-        i <- i + 1;
-      }
-    }
-    if (0 < uppercaseAvailable) {
-      i <- 0;
-      while (i < policy.`uppercaseMin) {
-        uppercaseAvailable <- uppercaseAvailable - 1;
-        randomChar <@ random_char_generator(uppercaseSet);
-        generatedPassword <- generatedPassword ++ [randomChar];
-        i <- i + 1;
-      }
-    }
-    if (0 < numbersAvailable) {
-      i <- 0;
-      while (i < policy.`numbersMin) {
-        numbersAvailable <- numbersAvailable - 1;
-        randomChar <@ random_char_generator(numbersSet);
-        generatedPassword <- generatedPassword ++ [randomChar];
-        i <- i + 1;
-      }
-    }
-    if (0 < specialAvailable) {
-      i <- 0;
-      while (i < policy.`specialMin) {
-        specialAvailable <- specialAvailable - 1;
-        randomChar <@ random_char_generator(specialSet);
-        generatedPassword <- generatedPassword ++ [randomChar];
-        i <- i + 1;
-      }
-    }
-
-    (* generate characters from the available sets of characters *)
-
-    unionSet <@ define_union_set(lowercaseAvailable, uppercaseAvailable, numbersAvailable,
-                                 specialAvailable, lowercaseSet, uppercaseSet, numbersSet,
-                                 specialSet);
-
-    while (size generatedPassword < policy.`length) {
-
-      randomChar <@ random_char_generator(unionSet);
-
-      if (randomChar \in lowercaseSet) {
-        lowercaseAvailable <- lowercaseAvailable - 1;
-        if (lowercaseAvailable = 0) {
-          unionSet <@ define_union_set(lowercaseAvailable, uppercaseAvailable, numbersAvailable,
-                                       specialAvailable, lowercaseSet, uppercaseSet, numbersSet,
-                                       specialSet);
+      if (0 < lowercaseAvailable) {
+        i <- 0;
+        while (i < policy.`lowercaseMin) {
+          lowercaseAvailable <- lowercaseAvailable - 1;
+          randomChar <@ random_char_generator(lowercaseSet);
+          generatedPassword <- generatedPassword ++ [randomChar];
+          i <- i + 1;
         }
       }
-      elif (randomChar \in uppercaseSet) {
-        uppercaseAvailable <- uppercaseAvailable - 1;
-        if (uppercaseAvailable = 0) {
-          unionSet <@ define_union_set(lowercaseAvailable, uppercaseAvailable, numbersAvailable,
-                                       specialAvailable, lowercaseSet, uppercaseSet, numbersSet,
-                                       specialSet);
+      if (0 < uppercaseAvailable) {
+        i <- 0;
+        while (i < policy.`uppercaseMin) {
+          uppercaseAvailable <- uppercaseAvailable - 1;
+          randomChar <@ random_char_generator(uppercaseSet);
+          generatedPassword <- generatedPassword ++ [randomChar];
+          i <- i + 1;
         }
       }
-      elif (randomChar \in numbersSet) {
-        numbersAvailable <- numbersAvailable - 1;
-        if (numbersAvailable = 0) {
-          unionSet <@ define_union_set(lowercaseAvailable, uppercaseAvailable, numbersAvailable,
-                                       specialAvailable, lowercaseSet, uppercaseSet, numbersSet,
-                                       specialSet);
+      if (0 < numbersAvailable) {
+        i <- 0;
+        while (i < policy.`numbersMin) {
+          numbersAvailable <- numbersAvailable - 1;
+          randomChar <@ random_char_generator(numbersSet);
+          generatedPassword <- generatedPassword ++ [randomChar];
+          i <- i + 1;
         }
       }
-      elif (randomChar \in specialSet) {
-        specialAvailable <- specialAvailable - 1;
-        if (specialAvailable = 0) {
-          unionSet <@ define_union_set(lowercaseAvailable, uppercaseAvailable, numbersAvailable,
-                                       specialAvailable, lowercaseSet, uppercaseSet, numbersSet,
-                                       specialSet);
+      if (0 < specialAvailable) {
+        i <- 0;
+        while (i < policy.`specialMin) {
+          specialAvailable <- specialAvailable - 1;
+          randomChar <@ random_char_generator(specialSet);
+          generatedPassword <- generatedPassword ++ [randomChar];
+          i <- i + 1;
         }
       }
 
-      generatedPassword <- generatedPassword ++ [randomChar];
+      (* generate characters from the available sets of characters *)
+
+      unionSet <@ define_union_set(lowercaseAvailable, uppercaseAvailable, numbersAvailable,
+                                   specialAvailable, lowercaseSet, uppercaseSet, numbersSet,
+                                   specialSet);
+
+      while (size generatedPassword < policy.`length) {
+
+        randomChar <@ random_char_generator(unionSet);
+
+        if (randomChar \in lowercaseSet) {
+          lowercaseAvailable <- lowercaseAvailable - 1;
+          if (lowercaseAvailable = 0) {
+            unionSet <@ define_union_set(lowercaseAvailable, uppercaseAvailable, numbersAvailable,
+                                         specialAvailable, lowercaseSet, uppercaseSet, numbersSet,
+                                         specialSet);
+          }
+        }
+        elif (randomChar \in uppercaseSet) {
+          uppercaseAvailable <- uppercaseAvailable - 1;
+          if (uppercaseAvailable = 0) {
+            unionSet <@ define_union_set(lowercaseAvailable, uppercaseAvailable, numbersAvailable,
+                                         specialAvailable, lowercaseSet, uppercaseSet, numbersSet,
+                                         specialSet);
+          }
+        }
+        elif (randomChar \in numbersSet) {
+          numbersAvailable <- numbersAvailable - 1;
+          if (numbersAvailable = 0) {
+            unionSet <@ define_union_set(lowercaseAvailable, uppercaseAvailable, numbersAvailable,
+                                         specialAvailable, lowercaseSet, uppercaseSet, numbersSet,
+                                         specialSet);
+          }
+        }
+        elif (randomChar \in specialSet) {
+          specialAvailable <- specialAvailable - 1;
+          if (specialAvailable = 0) {
+            unionSet <@ define_union_set(lowercaseAvailable, uppercaseAvailable, numbersAvailable,
+                                         specialAvailable, lowercaseSet, uppercaseSet, numbersSet,
+                                         specialSet);
+          }
+        }
+
+        generatedPassword <- generatedPassword ++ [randomChar];
+
+      }
+
+        generatedPassword <@ permutation(generatedPassword);
+   
+        outputPassword <- Some generatedPassword;
 
     }
 
-    generatedPassword <@ permutation(generatedPassword);
+    (* --------------------------------------- *)
+    (* If policy is unsatisfiable, return None *)
+    (* --------------------------------------- *)
+    else {
 
-    return generatedPassword;
+      outputPassword <- None;
+
+    }
+
+    return outputPassword;
     
-
   }
   
 }.
@@ -914,16 +949,17 @@ qed.
 
 
 
+
 (*********************************)
 (*          CORRECTNESS          *)
 (*********************************)
 
-(* -------------------------------------------------------- *)
-(* RPG Spec satisfies the length defined in the policy (HL) *)
-(* -------------------------------------------------------- *)
+
+(* ---------------------------------------------------------------------------- *)
+(* If PCP is satisfiable, RPG Spec satisfies the length defined in the PCP (HL) *)
+(* ---------------------------------------------------------------------------- *)
 lemma rpg_correctness_length_hl (p:policy) :
   hoare [RPGRef.generate_password : policy = p /\
-         (* assumptions *)
          p.`length <= 200 /\
          0 < p.`length /\ 
          0 <= p.`lowercaseMin /\
@@ -940,9 +976,11 @@ lemma rpg_correctness_length_hl (p:policy) :
          p.`specialMin <= p.`specialMax /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
-         ==> satisfiesLength p res].
+         ==> is_some res /\ satisfiesLength p (oget res)].
 proof.
 proc.
+if.
+*
 seq 1 : (#pre).
   inline *.
   auto.
@@ -1173,17 +1211,25 @@ seq 1 : (size generatedPassword = p.`length /\ policy = p).
   move => />.
   smt(size_cat).
 skip => /#.
-ecall (permutation_size generatedPassword).
-skip => /#.  
+seq 1 : (#pre).
+- ecall (permutation_size generatedPassword).
+  skip => /#.  
+wp.
+skip => /#.
+* 
+conseq (_: false ==> _).
+move => &m /> /#.
+trivial.
 qed.
 
 
-(* --------------------------------------------------------------------- *)
-(* RPGSpec satisfies the different set bounds defined in the policy (HL) *)
-(* --------------------------------------------------------------------- *)
+
+
+(* -------------------------------------------------------------------------------------------- *)
+(* If PCP is satisfiable, RPGSpec satisfies the different set bounds defined in the policy (HL) *)
+(* -------------------------------------------------------------------------------------------- *)
 lemma rpg_correctness_bounds_hl (p:policy) :
   hoare [RPGRef.generate_password : policy = p /\
-         (* assumptions *)
          p.`length <= 200 /\
          0 < p.`length /\ 
          0 <= p.`lowercaseMin /\
@@ -1200,9 +1246,11 @@ lemma rpg_correctness_bounds_hl (p:policy) :
          p.`specialMin <= p.`specialMax /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
-         ==> satisfiesBounds p res].
+         ==> is_some res /\ satisfiesBounds p (oget res)].
 proof.
 proc.
+if.
+*
 seq 1 : (#pre /\ 0 < size lowercaseSet /\
          RPGRef.lowercaseSet = lowercaseSet).
   inline *.
@@ -2669,16 +2717,20 @@ seq 1 : (policy = p /\
 auto.
 move => &m />.
 smt. (* ez fix *)
+*
+conseq (_: false ==> _).
+move => &m /> /#.
+trivial.
 qed.
 
 
 
-(* ---------------------------------------------------------------------- *)
-(* RPGSpec satisfies both the length and the bounds defined in the policy *)
-(* ---------------------------------------------------------------------- *)
-lemma rpg_correctness_hl (p:policy) :
+
+(* ------------------------------------------------------------------------------------------ *)
+(* If PCP is satisfiable, RPGSpec satisfies both the length and the bounds defined in the PCP *)
+(* ------------------------------------------------------------------------------------------ *)
+lemma rpg_correctness_sat_pcp_hl (p:policy) :
   hoare [RPGRef.generate_password : policy = p /\
-         (* assumptions *)
          p.`length <= 200 /\
          0 < p.`length /\ 
          0 <= p.`lowercaseMin /\
@@ -2695,10 +2747,9 @@ lemma rpg_correctness_hl (p:policy) :
          p.`specialMin <= p.`specialMax /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
-         ==> satisfiesLength p res /\ satisfiesBounds p res].
+         ==> is_some res /\ satisfiesLength p (oget res) /\ satisfiesBounds p (oget res)].
 proof.
 have length_proof : (hoare [RPGRef.generate_password : policy = p /\
-         (* assumptions *)
          p.`length <= 200 /\
          0 < p.`length /\ 
          0 <= p.`lowercaseMin /\
@@ -2715,10 +2766,9 @@ have length_proof : (hoare [RPGRef.generate_password : policy = p /\
          p.`specialMin <= p.`specialMax /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
-         ==> satisfiesLength p res]).
+         ==> is_some res /\ satisfiesLength p (oget res)]).
 exact rpg_correctness_length_hl.
 have bounds_proof : (hoare [RPGRef.generate_password : policy = p /\
-         (* assumptions *)
          p.`length <= 200 /\
          0 < p.`length /\ 
          0 <= p.`lowercaseMin /\
@@ -2735,13 +2785,49 @@ have bounds_proof : (hoare [RPGRef.generate_password : policy = p /\
          p.`specialMin <= p.`specialMax /\
          p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
          p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
-         ==> satisfiesBounds p res]).
+         ==> is_some res /\ satisfiesBounds p (oget res)]).
 exact rpg_correctness_bounds_hl.
 conseq length_proof bounds_proof.
 move => &m ?.
 split.
 assumption.
 assumption.
+smt. (*fixme*)
+qed.
+
+
+
+
+(* --------------------------------------------- *)
+(* If PCP is unsatisfiable, RPGSpec returns None *)
+(* --------------------------------------------- *)
+
+lemma rpg_correctness_unsat_pcp_hl (p:policy) :
+  hoare [RPGRef.generate_password : policy = p /\
+         !(p.`length <= 200 /\
+         0 < p.`length /\ 
+         0 <= p.`lowercaseMin /\
+         0 <= p.`uppercaseMin /\
+         0 <= p.`numbersMin /\
+         0 <= p.`specialMin /\
+         0 <= p.`lowercaseMax /\
+         0 <= p.`uppercaseMax /\
+         0 <= p.`numbersMax /\
+         0 <= p.`specialMax /\
+         p.`lowercaseMin <= p.`lowercaseMax /\
+         p.`uppercaseMin <= p.`uppercaseMax /\
+         p.`numbersMin <= p.`numbersMax /\
+         p.`specialMin <= p.`specialMax /\
+         p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
+         p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax)
+         ==> res = None].
+proof.
+proc.
+if.
+* conseq (_: false ==> _).
+  move => &m /> /#.
+  trivial.
+* by wp.
 qed.
 
 
@@ -2876,17 +2962,48 @@ proof.
 byphoare (_: policy = p ==> _).
 have lossless: islossless Correctness(RPGRef).main.
 - proc.
-  if.
-  + wp.
-    by call rpg_ll.
-  + islossless.
+  wp.
+  call rpg_ll.
+  trivial.
 have correct: hoare[Correctness(RPGRef).main : policy = p ==> res].
-- proc.    
-  if.
-  + wp.
-    call (rpg_correctness_hl p).
-    by skip.
-  + by wp.
+- proc.
+  case (policy.`length <= 200 /\
+        0 < policy.`length /\ 
+        0 <= policy.`lowercaseMin /\
+        0 <= policy.`uppercaseMin /\
+        0 <= policy.`numbersMin /\
+        0 <= policy.`specialMin /\
+        0 <= policy.`lowercaseMax /\
+        0 <= policy.`uppercaseMax /\
+        0 <= policy.`numbersMax /\
+        0 <= policy.`specialMax /\
+        policy.`lowercaseMin <= policy.`lowercaseMax /\
+        policy.`uppercaseMin <= policy.`uppercaseMax /\
+        policy.`numbersMin <= policy.`numbersMax /\
+        policy.`specialMin <= policy.`specialMax /\
+        policy.`lowercaseMin + policy.`uppercaseMin + policy.`numbersMin +
+          policy.`specialMin <= policy.`length /\
+        policy.`length <= policy.`lowercaseMax + policy.`uppercaseMax +
+          policy.`numbersMax + policy.`specialMax).
+  + seq 1 : (#pre /\
+             is_some pw /\
+             satisfiesLength policy (oget pw) /\
+             satisfiesBounds policy (oget pw)).
+    * call (rpg_correctness_sat_pcp_hl p).
+      skip => /#.
+    if.
+    * wp.
+      skip => /#.
+    * conseq (_: false ==> _). smt.
+      trivial.
+  + seq 1 : (#pre /\ is_none pw).
+    * call (rpg_correctness_unsat_pcp_hl p).
+      skip => /#.
+    if.
+    * conseq (_: false ==> _). smt.
+      trivial.
+    * wp.
+      skip => /#.
 by conseq lossless correct.
 reflexivity.
 trivial.

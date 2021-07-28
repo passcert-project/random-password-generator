@@ -5,7 +5,7 @@ clone include PasswordGenerationTh.
 
 (* Abstract type of an RPG *)
 module type RPG_T = { 
-  proc generate_password(policy:policy) : password
+  proc generate_password(policy:policy) : password option
 }.
 
 
@@ -32,8 +32,10 @@ module Correctness(RPG : RPG_T) = {
 
   proc main(policy:policy) : bool = {
   
-    var pw : password;
+    var pw : password option;
     var satisfied : bool;
+
+    pw <@ RPG.generate_password(policy);
 
     if(policy.`length <= 200 /\
        0 < policy.`length /\ 
@@ -53,13 +55,13 @@ module Correctness(RPG : RPG_T) = {
          policy.`length /\
        policy.`length <=
          policy.`lowercaseMax + policy.`uppercaseMax + policy.`numbersMax + policy.`specialMax) {
-
-      pw <@ RPG.generate_password(policy);
     
-      satisfied <- satisfiesLength policy pw /\ satisfiesBounds policy pw;
+      satisfied <- is_some pw /\
+                   satisfiesLength policy (oget pw) /\
+                   satisfiesBounds policy (oget pw);
     }
     else {
-      satisfied <- true;
+      satisfied <- is_none pw;
     }
     
     return satisfied;
@@ -84,7 +86,7 @@ axiom dpassword_fu : is_full dpassword.
 
 (* Orcl : define the adversary view of a RPG *)
 module type Orcl = {
-  proc generate_password(p:policy) : password
+  proc generate_password(p:policy) : password option
 }.
 
 (* The type of adversaries *)
@@ -122,7 +124,7 @@ module IdealRPG : Orcl = {
 
     pw <$ dpassword \ (fun pass => !(satisfiesLength p pw) /\ !(satisfiesBounds p pw));
 
-    return pw;
+    return Some pw;
   }
 
 }.
