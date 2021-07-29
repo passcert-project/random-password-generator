@@ -2,67 +2,97 @@
 #include <stdlib.h>
 #include <inttypes.h>
 
-extern uint64_t generate_password(uint64_t length, uint64_t lowercaseBool, uint64_t uppercaseBool, uint64_t numbersBool, uint64_t specialBool, uint64_t poutput);
+extern uint64_t generate_password(uint64_t length, uint64_t lowercasePolicies, uint64_t uppercasePolicies, uint64_t numbersPolicies, uint64_t specialPolicies, uint64_t poutput);
 
-int main() {
-    // Welcome message
-    printf("Hi! Welcome to PassCert's password generator!\n");
+int main(int argc, char *argv[]) {
 
-    // Ask for password length
     int length;
-    printf("Please select the length of your password (1-200):\n-> ");
-    scanf("%d", &length);
+    int lowercaseBool, lowercaseMin, lowercaseMax;
+    int uppercaseBool, uppercaseMin, uppercaseMax;
+    int numbersBool, numbersMin, numbersMax;
+    int specialBool, specialMin, specialMax;
 
-    // Ask for lowercase letters
-    int lowercaseBool = 0;
-    int lowercaseMin = 0;
-    int lowercaseMax = 0;
-    printf("Do you want lowercase letters in your password? (1-Yes; 0-No):\n-> ");
-    scanf("%d", &lowercaseBool);
-    if(lowercaseBool) {
-        printf("What is the minimum number of occurrences of lowercase letters in your password?:\n-> ");
-        scanf("%d", &lowercaseMin);
-        printf("What is the maximum number of occurrences of lowercase letters in your password?:\n-> ");
-        scanf("%d", &lowercaseMax);
-    }
+    // Check if there is no flag
+    if(argc == 1) {
+        // Welcome message
+        printf("Hi! Welcome to PassCert's password generator!\n");
 
-    // Ask for uppercase letters
-    int uppercaseBool = 0;
-    int uppercaseMin = 0;
-    int uppercaseMax = 0;
-    printf("Do you want uppercase letters in your password? (1-Yes; 0-No):\n-> ");
-    scanf("%d", &uppercaseBool);
-    if(uppercaseBool) {
-        printf("What is the minimum number of occurrences of uppercase letters in your password?:\n-> ");
-        scanf("%d", &uppercaseMin);
-        printf("What is the maximum number of occurrences of uppercase letters in your password?:\n-> ");
-        scanf("%d", &uppercaseMax);
-    }
+        // Ask for password length
+        printf("Please select the length of your password (1-200):\n-> ");
+        scanf("%d", &length);
 
-    // Ask for numbers
-    int numbersBool = 0;
-    int numbersMin = 0;
-    int numbersMax = 0;
-    printf("Do you want numbers in your password? (1-Yes; 0-No):\n-> ");
-    scanf("%d", &numbersBool);
-    if(numbersBool) {
-        printf("What is the minimum number of occurrences of number characters in your password?:\n-> ");
-        scanf("%d", &numbersMin);
-        printf("What is the maximum number of occurrences of number characters in your password?:\n-> ");
-        scanf("%d", &numbersMax);
-    }
+        // Ask for lowercase letters
+        lowercaseBool = 0;
+        lowercaseMin = 0;
+        lowercaseMax = 0;
+        printf("Do you want lowercase letters in your password? (1-Yes; 0-No):\n-> ");
+        scanf("%d", &lowercaseBool);
+        if(lowercaseBool) {
+            printf("What is the minimum number of occurrences of lowercase letters in your password?:\n-> ");
+            scanf("%d", &lowercaseMin);
+            printf("What is the maximum number of occurrences of lowercase letters in your password?:\n-> ");
+            scanf("%d", &lowercaseMax);
+        }
 
-    // Ask for special characters
-    int specialBool = 0;
-    int specialMin = 0;
-    int specialMax = 0;
-    printf("Do you want special characters in your password? (1-Yes; 0-No):\n-> ");
-    scanf("%d", &specialBool);
-    if(specialBool) {
-        printf("What is the minimum number of occurrences of special characters in your password?:\n-> ");
-        scanf("%d", &specialMin);
-        printf("What is the maximum number of occurrences of special characters in your password? (0 in case you do not care about the maximum number of occurrences of this set):\n-> ");
-        scanf("%d", &specialMax);
+        // Ask for uppercase letters
+        uppercaseBool = 0;
+        uppercaseMin = 0;
+        uppercaseMax = 0;
+        printf("Do you want uppercase letters in your password? (1-Yes; 0-No):\n-> ");
+        scanf("%d", &uppercaseBool);
+        if(uppercaseBool) {
+            printf("What is the minimum number of occurrences of uppercase letters in your password?:\n-> ");
+            scanf("%d", &uppercaseMin);
+            printf("What is the maximum number of occurrences of uppercase letters in your password?:\n-> ");
+            scanf("%d", &uppercaseMax);
+        }
+
+        // Ask for numbers
+        numbersBool = 0;
+        numbersMin = 0;
+        numbersMax = 0;
+        printf("Do you want numbers in your password? (1-Yes; 0-No):\n-> ");
+        scanf("%d", &numbersBool);
+        if(numbersBool) {
+            printf("What is the minimum number of occurrences of number characters in your password?:\n-> ");
+            scanf("%d", &numbersMin);
+            printf("What is the maximum number of occurrences of number characters in your password?:\n-> ");
+            scanf("%d", &numbersMax);
+        }
+
+        // Ask for special characters
+        specialBool = 0;
+        specialMin = 0;
+        specialMax = 0;
+        printf("Do you want special characters in your password? (1-Yes; 0-No):\n-> ");
+        scanf("%d", &specialBool);
+        if(specialBool) {
+            printf("What is the minimum number of occurrences of special characters in your password?:\n-> ");
+            scanf("%d", &specialMin);
+            printf("What is the maximum number of occurrences of special characters in your password? (0 in case you do not care about the maximum number of occurrences of this set):\n-> ");
+            scanf("%d", &specialMax);
+        }
+    } else if(strcmp(argv[1], "--auto") == 0 || strcmp(argv[1], "-a") == 0) {
+        if(argc == 11) {
+            length = atoi(argv[2]);
+            lowercaseMin = atoi(argv[3]);
+            lowercaseMax = atoi(argv[4]);
+            uppercaseMin = atoi(argv[5]);
+            uppercaseMax = atoi(argv[6]);
+            numbersMin = atoi(argv[7]);
+            numbersMax = atoi(argv[8]);
+            specialMin = atoi(argv[9]);
+            specialMax = atoi(argv[10]);
+
+        } else {
+            printf("Use './passwordGeneratorApp.out -h' for help.\n");
+            return 1;
+        }
+    } else if(strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {
+        printf("TODO");
+    } else {
+        printf("Use './passwordGeneratorApp.out -h' for help.\n");
+        return 1;
     }
 
     // Store policies in array
@@ -82,7 +112,7 @@ int main() {
     // Allocate memory for password to be generated
     char* password = (char*) calloc(length+1, sizeof(char));
     if(password == NULL) {
-        printf("Error while allocating memory for password");
+        printf("Error while allocating memory for password\n");
     }
 
     // Generate password
