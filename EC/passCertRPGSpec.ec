@@ -2701,42 +2701,10 @@ lemma rpg_correctness_sat_pcp_hl (p:policy) :
   hoare [RPGRef.generate_password : policy = p /\ isPolicySatisfiable p
          ==> is_some res /\ satisfiesLength p (oget res) /\ satisfiesBounds p (oget res)].
 proof.
-have length_proof : (hoare [RPGRef.generate_password : policy = p /\
-         p.`length <= 200 /\
-         0 < p.`length /\ 
-         0 <= p.`lowercaseMin /\
-         0 <= p.`uppercaseMin /\
-         0 <= p.`numbersMin /\
-         0 <= p.`specialMin /\
-         0 <= p.`lowercaseMax /\
-         0 <= p.`uppercaseMax /\
-         0 <= p.`numbersMax /\
-         0 <= p.`specialMax /\
-         p.`lowercaseMin <= p.`lowercaseMax /\
-         p.`uppercaseMin <= p.`uppercaseMax /\
-         p.`numbersMin <= p.`numbersMax /\
-         p.`specialMin <= p.`specialMax /\
-         p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
-         p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
+have length_proof : (hoare [RPGRef.generate_password : policy = p /\ isPolicySatisfiable p
          ==> is_some res /\ satisfiesLength p (oget res)]).
 exact rpg_correctness_length_hl.
-have bounds_proof : (hoare [RPGRef.generate_password : policy = p /\
-         p.`length <= 200 /\
-         0 < p.`length /\ 
-         0 <= p.`lowercaseMin /\
-         0 <= p.`uppercaseMin /\
-         0 <= p.`numbersMin /\
-         0 <= p.`specialMin /\
-         0 <= p.`lowercaseMax /\
-         0 <= p.`uppercaseMax /\
-         0 <= p.`numbersMax /\
-         0 <= p.`specialMax /\
-         p.`lowercaseMin <= p.`lowercaseMax /\
-         p.`uppercaseMin <= p.`uppercaseMax /\
-         p.`numbersMin <= p.`numbersMax /\
-         p.`specialMin <= p.`specialMax /\
-         p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
-         p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
+have bounds_proof : (hoare [RPGRef.generate_password : policy = p /\ isPolicySatisfiable p
          ==> is_some res /\ satisfiesBounds p (oget res)]).
 exact rpg_correctness_bounds_hl.
 conseq length_proof bounds_proof.
@@ -2903,24 +2871,7 @@ have lossless: islossless Correctness(RPGRef).main.
   trivial.
 have correct: hoare[Correctness(RPGRef).main : policy = p ==> res].
 - proc.
-  case (policy.`length <= 200 /\
-        0 < policy.`length /\ 
-        0 <= policy.`lowercaseMin /\
-        0 <= policy.`uppercaseMin /\
-        0 <= policy.`numbersMin /\
-        0 <= policy.`specialMin /\
-        0 <= policy.`lowercaseMax /\
-        0 <= policy.`uppercaseMax /\
-        0 <= policy.`numbersMax /\
-        0 <= policy.`specialMax /\
-        policy.`lowercaseMin <= policy.`lowercaseMax /\
-        policy.`uppercaseMin <= policy.`uppercaseMax /\
-        policy.`numbersMin <= policy.`numbersMax /\
-        policy.`specialMin <= policy.`specialMax /\
-        policy.`lowercaseMin + policy.`uppercaseMin + policy.`numbersMin +
-          policy.`specialMin <= policy.`length /\
-        policy.`length <= policy.`lowercaseMax + policy.`uppercaseMax +
-          policy.`numbersMax + policy.`specialMax).
+  case (isPolicySatisfiable policy).
   + seq 1 : (#pre /\
              is_some pw /\
              satisfiesLength policy (oget pw) /\
