@@ -959,23 +959,7 @@ qed.
 (* If PCP is satisfiable, RPG Spec satisfies the length defined in the PCP (HL) *)
 (* ---------------------------------------------------------------------------- *)
 lemma rpg_correctness_length_hl (p:policy) :
-  hoare [RPGRef.generate_password : policy = p /\
-         p.`length <= 200 /\
-         0 < p.`length /\ 
-         0 <= p.`lowercaseMin /\
-         0 <= p.`uppercaseMin /\
-         0 <= p.`numbersMin /\
-         0 <= p.`specialMin /\
-         0 <= p.`lowercaseMax /\
-         0 <= p.`uppercaseMax /\
-         0 <= p.`numbersMax /\
-         0 <= p.`specialMax /\
-         p.`lowercaseMin <= p.`lowercaseMax /\
-         p.`uppercaseMin <= p.`uppercaseMax /\
-         p.`numbersMin <= p.`numbersMax /\
-         p.`specialMin <= p.`specialMax /\
-         p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
-         p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
+  hoare [RPGRef.generate_password : policy = p /\ isPolicySatisfiable p
          ==> is_some res /\ satisfiesLength p (oget res)].
 proof.
 proc.
@@ -1229,23 +1213,7 @@ qed.
 (* If PCP is satisfiable, RPGSpec satisfies the different set bounds defined in the policy (HL) *)
 (* -------------------------------------------------------------------------------------------- *)
 lemma rpg_correctness_bounds_hl (p:policy) :
-  hoare [RPGRef.generate_password : policy = p /\
-         p.`length <= 200 /\
-         0 < p.`length /\ 
-         0 <= p.`lowercaseMin /\
-         0 <= p.`uppercaseMin /\
-         0 <= p.`numbersMin /\
-         0 <= p.`specialMin /\
-         0 <= p.`lowercaseMax /\
-         0 <= p.`uppercaseMax /\
-         0 <= p.`numbersMax /\
-         0 <= p.`specialMax /\
-         p.`lowercaseMin <= p.`lowercaseMax /\
-         p.`uppercaseMin <= p.`uppercaseMax /\
-         p.`numbersMin <= p.`numbersMax /\
-         p.`specialMin <= p.`specialMax /\
-         p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
-         p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
+  hoare [RPGRef.generate_password : policy = p /\ isPolicySatisfiable p
          ==> is_some res /\ satisfiesBounds p (oget res)].
 proof.
 proc.
@@ -2730,23 +2698,7 @@ qed.
 (* If PCP is satisfiable, RPGSpec satisfies both the length and the bounds defined in the PCP *)
 (* ------------------------------------------------------------------------------------------ *)
 lemma rpg_correctness_sat_pcp_hl (p:policy) :
-  hoare [RPGRef.generate_password : policy = p /\
-         p.`length <= 200 /\
-         0 < p.`length /\ 
-         0 <= p.`lowercaseMin /\
-         0 <= p.`uppercaseMin /\
-         0 <= p.`numbersMin /\
-         0 <= p.`specialMin /\
-         0 <= p.`lowercaseMax /\
-         0 <= p.`uppercaseMax /\
-         0 <= p.`numbersMax /\
-         0 <= p.`specialMax /\
-         p.`lowercaseMin <= p.`lowercaseMax /\
-         p.`uppercaseMin <= p.`uppercaseMax /\
-         p.`numbersMin <= p.`numbersMax /\
-         p.`specialMin <= p.`specialMax /\
-         p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
-         p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax
+  hoare [RPGRef.generate_password : policy = p /\ isPolicySatisfiable p
          ==> is_some res /\ satisfiesLength p (oget res) /\ satisfiesBounds p (oget res)].
 proof.
 have length_proof : (hoare [RPGRef.generate_password : policy = p /\
@@ -2803,23 +2755,7 @@ qed.
 (* --------------------------------------------- *)
 
 lemma rpg_correctness_unsat_pcp_hl (p:policy) :
-  hoare [RPGRef.generate_password : policy = p /\
-         !(p.`length <= 200 /\
-         0 < p.`length /\ 
-         0 <= p.`lowercaseMin /\
-         0 <= p.`uppercaseMin /\
-         0 <= p.`numbersMin /\
-         0 <= p.`specialMin /\
-         0 <= p.`lowercaseMax /\
-         0 <= p.`uppercaseMax /\
-         0 <= p.`numbersMax /\
-         0 <= p.`specialMax /\
-         p.`lowercaseMin <= p.`lowercaseMax /\
-         p.`uppercaseMin <= p.`uppercaseMax /\
-         p.`numbersMin <= p.`numbersMax /\
-         p.`specialMin <= p.`specialMax /\
-         p.`lowercaseMin + p.`uppercaseMin + p.`numbersMin + p.`specialMin <= p.`length /\
-         p.`length <= p.`lowercaseMax + p.`uppercaseMax + p.`numbersMax + p.`specialMax)
+  hoare [RPGRef.generate_password : policy = p /\ !(isPolicySatisfiable p)
          ==> res = None].
 proof.
 proc.
