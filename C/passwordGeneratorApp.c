@@ -76,6 +76,7 @@ int main(int argc, char *argv[]) {
     } else if(strcmp(argv[1], "--auto") == 0 || strcmp(argv[1], "-a") == 0) {
         if(argc == 11) {
             length = atoi(argv[2]);
+            printf(" ");  //NASTY HACK. THERE IS SOME PROBLEMS WHERE THE PASSWORD IS BEING WRITTEN, AND SOMEHOW THIS SOLVES IT
             lowercaseMin = atoi(argv[3]);
             lowercaseMax = atoi(argv[4]);
             uppercaseMin = atoi(argv[5]);
