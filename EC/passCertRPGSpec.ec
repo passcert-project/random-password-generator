@@ -2884,3 +2884,8 @@ qed.
 (*******************************)
 (*          SECURITY           *)
 (*******************************)
+
+lemma rpg_security :
+  equiv [IdealRPG.generate_password ~ RealRPG(RPGRef).generate_password : true ==> ={res} ].
+proof.
+admitted.

@@ -72,22 +72,6 @@ module type Orcl = {
   proc generate_password(p:policy) : password option
 }.
 
-(* The type of adversaries *)
-module type Adv (O:Orcl) = {
-  proc guess() : bool
-}.
-
-(* The game: parametric on oracle and adversary *)
-module RPGGame(A:Adv, O:Orcl) = {
-
-  proc main() = {
-    var b;
-    b <@ A(O).guess();
-    return b;
-  }
-
-}.
-
 (* Real RPG Oracle *)
 module RealRPG(RPG : RPG_T) : Orcl = {
 
@@ -117,9 +101,6 @@ module IdealRPG : Orcl = {
   }
 
 }.
-
-lemma security &m (A:Adv):
-  Pr[RPGGame(A,RealRPG).main() @ &m : res] = Pr[RPGGame(A,IdealRPG).main() @ &m : res].
 
 (*module ModifiedRPG : Orcl = {
 
