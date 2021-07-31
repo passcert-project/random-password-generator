@@ -133,24 +133,16 @@ int main(int argc, char *argv[]) {
     } else if ((int) code == -6) {
         printf("Special characters minimum number of occurrences can not be negative.\n");
     } else if ((int) code == -7) {
-        printf("Lowercase letters maximum number of occurrences can not be negative.\n");
-    } else if ((int) code == -8) {
-        printf("Uppercase letters maximum number of occurrences can not be negative.\n");
-    } else if ((int) code == -9) {
-        printf("Numbers maximum number of occurrences can not be negative.\n");
-    } else if ((int) code == -10) {
-        printf("Special characters maximum number of occurrences can not be negative.\n");
-    } else if ((int) code == -11) {
         printf("Lowercase letters maximum number of occurrences can not be smaller than minimum.\n");
-    } else if ((int) code == -12) {
+    } else if ((int) code == -8) {
         printf("Uppercase letters maximum number of occurrences can not be smaller than minimum.\n");
-    } else if ((int) code == -13) {
+    } else if ((int) code == -9) {
         printf("Numbers maximum number of occurrences can not be smaller than minimum.\n");
-    } else if ((int) code == -14) {
+    } else if ((int) code == -10) {
         printf("Special characters maximum number of occurrences can not be smaller than minimum.\n");
-    } else if ((int) code == -15) {
+    } else if ((int) code == -11) {
         printf("Minimum values sum is too big. It is not possible to satisfy the length with such minimum values.\n");
-    } else if ((int) code == -16) {
+    } else if ((int) code == -12) {
         printf("Maximum values sum is too small. It is not possible to satisfy the length with such maximum values.\n");
     } else {
         // Output password

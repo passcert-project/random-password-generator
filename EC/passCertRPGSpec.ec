@@ -2886,6 +2886,7 @@ qed.
 (*******************************)
 
 lemma rpg_security :
-  equiv [IdealRPG.generate_password ~ RealRPG(RPGRef).generate_password : true ==> ={res} ].
+  equiv [IdealRPG.generate_password ~ RealRPG(RPGRef).generate_password : ={p} ==> ={res} ].
 proof.
+proc.
 admitted.
