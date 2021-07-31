@@ -140,24 +140,7 @@ module RPGRef : RPG_T = {
     (* ---------------------------------------------- *)
     (* If policy is satisfiable, return Some password *)
     (* ---------------------------------------------- *)
-    if(policy.`length <= 200 /\
-       0 < policy.`length /\ 
-       0 <= policy.`lowercaseMin /\
-       0 <= policy.`uppercaseMin /\
-       0 <= policy.`numbersMin /\
-       0 <= policy.`specialMin /\
-       0 <= policy.`lowercaseMax /\
-       0 <= policy.`uppercaseMax /\
-       0 <= policy.`numbersMax /\
-       0 <= policy.`specialMax /\
-       policy.`lowercaseMin <= policy.`lowercaseMax /\
-       policy.`uppercaseMin <= policy.`uppercaseMax /\
-       policy.`numbersMin <= policy.`numbersMax /\
-       policy.`specialMin <= policy.`specialMax /\
-       policy.`lowercaseMin + policy.`uppercaseMin + policy.`numbersMin + policy.`specialMin <=
-         policy.`length /\
-       policy.`length <=
-         policy.`lowercaseMax + policy.`uppercaseMax + policy.`numbersMax + policy.`specialMax) {
+    if(isPolicySatisfiable policy) {
 
       (* initializer sets *)
       lowercaseSet <@ get_lowercaseSet();
@@ -1272,7 +1255,7 @@ seq 1 : (policy = p /\
          setOccurrences numbersSet generatedPassword = 0 /\
          setOccurrences specialSet generatedPassword = 0).
   auto.
-  move => &m /> ????????????????????.
+  move => &m /> ????????????????.
   rewrite /lowercaseSet /uppercaseSet /numbersSet /specialSet.
   smt tmo=10. (* TODO *)
 seq 1 : (#pre /\
