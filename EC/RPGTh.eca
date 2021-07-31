@@ -104,19 +104,22 @@ module IdealRPG : Orcl = {
 
   proc generate_password(p:policy) = {
     var pw;
+    var out;
+    
+    if(isPolicySatisfiable p) {
+      pw <$ dpassword \ (fun pass => !(satisfiesLength p pw) /\ !(satisfiesBounds p pw));
+      out <- Some pw;
+    } else {
+      out <- None;
+    }
 
-    pw <$ dpassword \ (fun pass => !(satisfiesLength p pw) /\ !(satisfiesBounds p pw));
-
-    return Some pw;
+    return out;
   }
 
 }.
 
-(* 
-In this case advantage is of the form.
-| Pr[RPGGame(A, RealRPG(Scheme)).main() @ &m : res ] - 
-  Pr[RPGGame(A, IdealRPG).main() @ &m : res ]|
-*)
+lemma security &m (A:Adv):
+  Pr[RPGGame(A,RealRPG).main() @ &m : res] = Pr[RPGGame(A,IdealRPG).main() @ &m : res].
 
 (*module ModifiedRPG : Orcl = {
 

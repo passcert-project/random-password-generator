@@ -2843,7 +2843,7 @@ qed.
 (* ------------------ *)
 (* RPGSpec is correct *)
 (* ------------------ *)
-lemma rpg_correct &m (p:policy) :
+lemma rpg_correctness &m (p:policy) :
   Pr[Correctness(RPGRef).main(p) @ &m : res] = 1%r.
 proof.
 byphoare (_: policy = p ==> _).
