@@ -140,7 +140,7 @@ module RPGRef : RPG_T = {
     (* ---------------------------------------------- *)
     (* If policy is satisfiable, return Some password *)
     (* ---------------------------------------------- *)
-    if(isPolicySatisfiable policy) {
+    if(satisfiablePolicy policy) {
 
       (* initializer sets *)
       lowercaseSet <@ get_lowercaseSet();
@@ -942,7 +942,7 @@ qed.
 (* If PCP is satisfiable, RPG Spec satisfies the length defined in the PCP (HL) *)
 (* ---------------------------------------------------------------------------- *)
 lemma rpg_correctness_length_hl (p:policy) :
-  hoare [RPGRef.generate_password : policy = p /\ isPolicySatisfiable p
+  hoare [RPGRef.generate_password : policy = p /\ satisfiablePolicy p
          ==> is_some res /\ satisfiesLength p (oget res)].
 proof.
 proc.
@@ -1196,7 +1196,7 @@ qed.
 (* If PCP is satisfiable, RPGSpec satisfies the different set bounds defined in the policy (HL) *)
 (* -------------------------------------------------------------------------------------------- *)
 lemma rpg_correctness_bounds_hl (p:policy) :
-  hoare [RPGRef.generate_password : policy = p /\ isPolicySatisfiable p
+  hoare [RPGRef.generate_password : policy = p /\ satisfiablePolicy p
          ==> is_some res /\ satisfiesBounds p (oget res)].
 proof.
 proc.
@@ -2681,13 +2681,13 @@ qed.
 (* If PCP is satisfiable, RPGSpec satisfies both the length and the bounds defined in the PCP *)
 (* ------------------------------------------------------------------------------------------ *)
 lemma rpg_correctness_sat_pcp_hl (p:policy) :
-  hoare [RPGRef.generate_password : policy = p /\ isPolicySatisfiable p
+  hoare [RPGRef.generate_password : policy = p /\ satisfiablePolicy p
          ==> is_some res /\ satisfiesLength p (oget res) /\ satisfiesBounds p (oget res)].
 proof.
-have length_proof : (hoare [RPGRef.generate_password : policy = p /\ isPolicySatisfiable p
+have length_proof : (hoare [RPGRef.generate_password : policy = p /\ satisfiablePolicy p
          ==> is_some res /\ satisfiesLength p (oget res)]).
 exact rpg_correctness_length_hl.
-have bounds_proof : (hoare [RPGRef.generate_password : policy = p /\ isPolicySatisfiable p
+have bounds_proof : (hoare [RPGRef.generate_password : policy = p /\ satisfiablePolicy p
          ==> is_some res /\ satisfiesBounds p (oget res)]).
 exact rpg_correctness_bounds_hl.
 conseq length_proof bounds_proof.
@@ -2706,7 +2706,7 @@ qed.
 (* --------------------------------------------- *)
 
 lemma rpg_correctness_unsat_pcp_hl (p:policy) :
-  hoare [RPGRef.generate_password : policy = p /\ !(isPolicySatisfiable p)
+  hoare [RPGRef.generate_password : policy = p /\ !(satisfiablePolicy p)
          ==> res = None].
 proof.
 proc.
@@ -2854,7 +2854,7 @@ have c_lossless: islossless Correctness(RPGRef).main.
   trivial.
 have c_correct: hoare[Correctness(RPGRef).main : policy = p ==> res].
 - proc.
-  case (isPolicySatisfiable policy).
+  case (satisfiablePolicy policy).
   + seq 1 : (#pre /\
              is_some pw /\
              satisfiesLength policy (oget pw) /\

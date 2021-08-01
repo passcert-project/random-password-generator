@@ -37,7 +37,7 @@ module Correctness(RPG : RPG_T) = {
 
     pw <@ RPG.generate_password(policy);
 
-    if(isPolicySatisfiable policy) {
+    if(satisfiablePolicy policy) {
     
       satisfied <- is_some pw /\
                    satisfiesLength policy (oget pw) /\
@@ -64,7 +64,7 @@ op dpassword : password distr.
 
 axiom dpassword_ll : is_lossless dpassword.
 axiom dpassword_uni : is_uniform dpassword.
-axiom dpassword_supp : forall p, p \in dpassword => isPasswordValid p.
+axiom dpassword_supp : forall p, p \in dpassword => validPassword p.
 axiom dpassword_fu : is_full dpassword.
 
 (* Ideal RPG Oracle *)
@@ -74,7 +74,7 @@ module IdealRPG  = {
     var pw;
     var out;
     
-    if(isPolicySatisfiable policy) {
+    if(satisfiablePolicy policy) {
       pw <$ dpassword \ (fun pass => !(satisfiesLength policy pw) /\ !(satisfiesBounds policy pw));
       out <- Some pw;
     } else {
