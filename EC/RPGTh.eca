@@ -66,32 +66,15 @@ axiom dpassword_ll : is_lossless dpassword.
 axiom dpassword_uni : is_uniform dpassword.
 axiom dpassword_fu : is_full dpassword.
 
-
-(* Orcl : define the adversary view of a RPG *)
-module type Orcl = {
-  proc generate_password(p:policy) : password option
-}.
-
-(* Real RPG Oracle *)
-module RealRPG(RPG : RPG_T) : Orcl = {
-
-  proc generate_password(p:policy) = {
-    var pw;
-    pw <@ RPG.generate_password(p);
-    return pw;
-  }
-
-}.
-
 (* Ideal RPG Oracle *)
-module IdealRPG : Orcl = {
+module IdealRPG  = {
 
-  proc generate_password(p:policy) = {
+  proc generate_password(policy:policy) = {
     var pw;
     var out;
     
-    if(isPolicySatisfiable p) {
-      pw <$ dpassword \ (fun pass => !(satisfiesLength p pw) /\ !(satisfiesBounds p pw));
+    if(isPolicySatisfiable policy) {
+      pw <$ dpassword \ (fun pass => !(satisfiesLength policy pw) /\ !(satisfiesBounds policy pw));
       out <- Some pw;
     } else {
       out <- None;

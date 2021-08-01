@@ -2847,12 +2847,12 @@ lemma rpg_correctness &m (p:policy) :
   Pr[Correctness(RPGRef).main(p) @ &m : res] = 1%r.
 proof.
 byphoare (_: policy = p ==> _).
-have lossless: islossless Correctness(RPGRef).main.
+have c_lossless: islossless Correctness(RPGRef).main.
 - proc.
   wp.
   call rpg_ll.
   trivial.
-have correct: hoare[Correctness(RPGRef).main : policy = p ==> res].
+have c_correct: hoare[Correctness(RPGRef).main : policy = p ==> res].
 - proc.
   case (isPolicySatisfiable policy).
   + seq 1 : (#pre /\
@@ -2874,7 +2874,7 @@ have correct: hoare[Correctness(RPGRef).main : policy = p ==> res].
       trivial.
     * wp.
       skip => /#.
-by conseq lossless correct.
+by conseq c_lossless c_correct.
 reflexivity.
 trivial.
 qed.
@@ -2886,7 +2886,7 @@ qed.
 (*******************************)
 
 lemma rpg_security :
-  equiv [IdealRPG.generate_password ~ RealRPG(RPGRef).generate_password : ={p} ==> ={res} ].
+  equiv [IdealRPG.generate_password ~ RPGRef.generate_password : ={policy} ==> ={res} ].
 proof.
 proc.
 admitted.
