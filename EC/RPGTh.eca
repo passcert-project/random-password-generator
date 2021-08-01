@@ -64,6 +64,7 @@ op dpassword : password distr.
 
 axiom dpassword_ll : is_lossless dpassword.
 axiom dpassword_uni : is_uniform dpassword.
+axiom dpassword_supp : forall p, p \in dpassword => isPasswordValid p.
 axiom dpassword_fu : is_full dpassword.
 
 (* Ideal RPG Oracle *)
