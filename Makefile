@@ -1,9 +1,9 @@
 all: compile-jasmin compile-c
 
-compile-jasmin: ../jasmin/compiler/jasminc Jasmin/passCertGenerator.jazz
-				../jasmin/compiler/jasminc Jasmin/passCertGenerator.jazz -o passCertGenerator.s
+compile-jasmin: ../jasmin/compiler/jasminc Jasmin/passCertRPG.jazz
+				../jasmin/compiler/jasminc Jasmin/passCertRPG.jazz -o passCertRPG.s
 
-compile-c:	C/passwordGeneratorApp.c passCertGenerator.s
-			gcc C/passwordGeneratorApp.c passCertGenerator.s -o passwordGeneratorApp.out
+compile-c:	C/RPG_app.c passCertRPG.s
+			gcc C/RPG_app.c passCertRPG.s -o passCertRPG.out
 
 

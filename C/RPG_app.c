@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <inttypes.h>
 
-extern uint64_t generate_password(uint64_t length, uint64_t lowercasePolicies, uint64_t uppercasePolicies, uint64_t numbersPolicies, uint64_t specialPolicies, uint64_t poutput);
+extern uint64_t generate_password(uint64_t length, uint64_t lowercasePolicy, uint64_t uppercasePolicy, uint64_t numbersPolicy, uint64_t specialPolicy, uint64_t poutput);
 
 int main(int argc, char *argv[]) {
 
@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
     } else if(strcmp(argv[1], "--auto") == 0 || strcmp(argv[1], "-a") == 0) {
         if(argc == 11) {
             length = atoi(argv[2]);
-            printf(" ");  //NASTY HACK. THERE IS SOME PROBLEMS WHERE THE PASSWORD IS BEING WRITTEN, AND SOMEHOW THIS SOLVES IT
+            printf(" ");  // NOT COOL HACK. THERE ARE SOME PROBLEMS WHERE THE PASSWORD IS BEING WRITTEN, AND SOMEHOW THIS SOLVES IT
             lowercaseMin = atoi(argv[3]);
             lowercaseMax = atoi(argv[4]);
             uppercaseMin = atoi(argv[5]);
@@ -97,19 +97,19 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Store policies in array
-    uint64_t lowercasePolicies[2];
-    lowercasePolicies[0] = (uint64_t) lowercaseMin;
-    lowercasePolicies[1] = (uint64_t) lowercaseMax;
-    uint64_t uppercasePolicies[2];
-    uppercasePolicies[0] = (uint64_t) uppercaseMin;
-    uppercasePolicies[1] = (uint64_t) uppercaseMax;
-    uint64_t numbersPolicies[2];
-    numbersPolicies[0] = (uint64_t) numbersMin;
-    numbersPolicies[1] = (uint64_t) numbersMax;
-    uint64_t specialPolicies[2];
-    specialPolicies[0] = (uint64_t) specialMin;
-    specialPolicies[1] = (uint64_t) specialMax;
+    // Store policy in arrays
+    uint64_t lowercasePolicy[2];
+    lowercasePolicy[0] = (uint64_t) lowercaseMin;
+    lowercasePolicy[1] = (uint64_t) lowercaseMax;
+    uint64_t uppercasePolicy[2];
+    uppercasePolicy[0] = (uint64_t) uppercaseMin;
+    uppercasePolicy[1] = (uint64_t) uppercaseMax;
+    uint64_t numbersPolicy[2];
+    numbersPolicy[0] = (uint64_t) numbersMin;
+    numbersPolicy[1] = (uint64_t) numbersMax;
+    uint64_t specialPolicy[2];
+    specialPolicy[0] = (uint64_t) specialMin;
+    specialPolicy[1] = (uint64_t) specialMax;
 
     // Allocate memory for password to be generated
     char* password = (char*) calloc(length+1, sizeof(char));
@@ -118,7 +118,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Generate password
-	uint64_t code = generate_password((uint64_t) length, (uint64_t) lowercasePolicies, (uint64_t) uppercasePolicies, (uint64_t) numbersPolicies, (uint64_t) specialPolicies, (uint64_t) password);
+	uint64_t code = generate_password((uint64_t) length, (uint64_t) lowercasePolicy, (uint64_t) uppercasePolicy, (uint64_t) numbersPolicy, (uint64_t) specialPolicy, (uint64_t) password);
     
     if ((int) code == -1) {
         printf("Password length is too large (must be smaller than 200)\n");

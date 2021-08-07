@@ -271,16 +271,6 @@ module RPGRef : RPG_T = {
 (*        AUXILIARY LEMMAS        *)
 (**********************************)
 
-(* helps in combining proofs *)
-(*lemma rpg_generate_password_conjunction_rule P Q1 Q2 :
-  hoare [RPGRef.generate_password : P ==> Q1] =>
-  hoare [RPGRef.generate_password : P ==> Q2] =>
-  hoare [RPGRef.generate_password : P ==> Q1 /\ Q2].
-proof.
-by move => H1 H2; conseq H1 H2.
-qed.*)
-
-
 (* axiom -> rng always terminates *)
 axiom rng_ll : islossless RPGRef.rng.
 
@@ -295,6 +285,7 @@ seq 1 : (#pre).
   auto.
 seq 1 : (#pre /\ 0 <= value).
   auto.
+  move => &m /> h1 val.
   smt.
 while (0 <= value).
   auto.
@@ -2884,6 +2875,13 @@ qed.
 (*******************************)
 (*          SECURITY           *)
 (*******************************)
+
+lemma rng_uniform  :
+  equiv [RPGRef.rng ~ Test.uniformRangeDistr : ={range} ==> ={res}].
+proof.
+proc.
+wp.
+
 
 lemma rpg_security :
   equiv [IdealRPG.generate_password ~ RPGRef.generate_password : ={policy} ==> ={res} ].
