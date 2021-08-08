@@ -74,7 +74,7 @@ inline fn define_union_set(reg u64 lowercase_max, reg u64 uppercase_max, reg u64
     return i_set, union_set;
 }
 
-export fn generate_password(reg u64 length, reg u64 lowercase_policies, reg u64 uppercase_policies, reg u64 numbers_policies, reg u64 special_policies, reg u64 p_output) -> reg u64 {
+export fn generate_password(reg u64 policy_addr, reg u64 output_addr) -> reg u64 {
 
     // General purpose registers
     reg u8 tmp8;
@@ -88,7 +88,7 @@ export fn generate_password(reg u64 length, reg u64 lowercase_policies, reg u64 
     stack u8[76] special_set;
     stack u8[76] union_set;
     // Variables that stor min and max values of characters to be generated
-    stack u64 lowercase_min, uppercase_min, numbers_min, special_min, lowercase_max, uppercase_max, numbers_max, special_max;
+    stack u64 length, lowercase_min, uppercase_min, numbers_min, special_min, lowercase_max, uppercase_max, numbers_max, special_max;
     // Output
     reg u64 output;
 
@@ -101,17 +101,16 @@ export fn generate_password(reg u64 length, reg u64 lowercase_policies, reg u64 
     //                                                                                              //
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Get policy of the minimum values of characters per set to be generated
-    lowercase_min       = [lowercase_policies + 0];
-    uppercase_min       = [uppercase_policies + 0];
-    numbers_min         = [numbers_policies + 0];
-    special_min         = [special_policies + 0];
-
-    // Get policy of the maximum values of characters per set to be generated
-    lowercase_max       = [lowercase_policies + 8];
-    uppercase_max       = [uppercase_policies + 8];
-    numbers_max         = [numbers_policies + 8];
-    special_max         = [special_policies + 8];
+    // Get values from the policy
+    length          = [policy_addr + 0];
+    lowercase_min   = [policy_addr + 8];
+    lowercase_max   = [policy_addr + 16];
+    uppercase_min   = [policy_addr + 24];
+    uppercase_max   = [policy_addr + 32];
+    numbers_min     = [policy_addr + 40];
+    numbers_max     = [policy_addr + 48];
+    special_min     = [policy_addr + 56];
+    special_max     = [policy_addr + 64];
 
     
     ////////////////////////////
@@ -119,9 +118,10 @@ export fn generate_password(reg u64 length, reg u64 lowercase_policies, reg u64 
     ////////////////////////////
 
     // Length does not exceed maximum length of 200
-    if (length <=s 200) {
+    tmp64_1 = length;
+    if (tmp64_1 <=s 200) {
     // Length is not negative
-    if (length >=s 0) {
+    if (tmp64_1 >=s 0) {
     // Min values are not negative
     tmp64_1 = lowercase_min;
     if (tmp64_1 >=s 0) {
@@ -281,7 +281,7 @@ export fn generate_password(reg u64 length, reg u64 lowercase_policies, reg u64 
         while (i < lowercase_min) {
             lowercase_max -= 1;
             tmp8 = random_char_generator(26, lowercase_set);
-            (u8) [p_output + i_filled] = tmp8;
+            (u8) [output_addr + i_filled] = tmp8;
             i += 1;
             i_filled += 1;
         }
@@ -291,7 +291,7 @@ export fn generate_password(reg u64 length, reg u64 lowercase_policies, reg u64 
         while (i < uppercase_min) {
             uppercase_max -= 1;
             tmp8 = random_char_generator(26, uppercase_set);
-            (u8) [p_output + i_filled] = tmp8;
+            (u8) [output_addr + i_filled] = tmp8;
             i += 1;
             i_filled += 1;
         }
@@ -301,7 +301,7 @@ export fn generate_password(reg u64 length, reg u64 lowercase_policies, reg u64 
         while (i < numbers_min) {
             numbers_max -= 1;
             tmp8 = random_char_generator(10, numbers_set);
-            (u8) [p_output + i_filled] = tmp8;
+            (u8) [output_addr + i_filled] = tmp8;
             i += 1;
             i_filled += 1;
         }
@@ -311,7 +311,7 @@ export fn generate_password(reg u64 length, reg u64 lowercase_policies, reg u64 
         while (i < special_min) {
             special_max -= 1;
             tmp8 = random_char_generator(14, special_set);
-            (u8) [p_output + i_filled] = tmp8;
+            (u8) [output_addr + i_filled] = tmp8;
             i += 1;
             i_filled += 1;
         }
@@ -322,7 +322,8 @@ export fn generate_password(reg u64 length, reg u64 lowercase_policies, reg u64 
                         lowercase_set, uppercase_set, numbers_set, special_set, union_set);
 
     // Generate password from the set of available characters
-    while (i_filled < length) {
+    tmp64_2 = length;
+    while (i_filled < tmp64_2) {
         tmp8 = random_char_generator(tmp64_1, union_set);
         if (tmp8 >= 97) { if (tmp8 <= 122) {
                 lowercase_max -= 1;
@@ -351,15 +352,16 @@ export fn generate_password(reg u64 length, reg u64 lowercase_policies, reg u64 
                 }   
             }
         }
-        (u8) [p_output + i_filled] = tmp8;
+        (u8) [output_addr + i_filled] = tmp8;
         i_filled += 1;
     }
 
     // Generate random permutation of string
-    permutation(p_output, length);
+    tmp64_1 = length;
+    permutation(output_addr, tmp64_1);
 
     // Make sure last character is \0
-    [p_output + length] = 0;
+    [output_addr + tmp64_1] = 0;
 
     output = 1;
 
