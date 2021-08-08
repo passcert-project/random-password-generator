@@ -4,7 +4,7 @@ from Jasmin require import JModel.
 require import Array76.
 require import WArray76.
 
-op [full uniform] RDRAND: W64.t distr.  
+op [full uniform] RDRAND: W64.t distr. 
 
 module M = {
   proc rng (range:W64.t) : W64.t = {
@@ -109,18 +109,17 @@ module M = {
     return (i_set, union_set);
   }
   
-  proc generate_password (length:W64.t, lowercase_policies:W64.t,
-                          uppercase_policies:W64.t, numbers_policies:W64.t,
-                          special_policies:W64.t, p_output:W64.t) : W64.t = {
+  proc generate_password (policy_addr:W64.t, output_addr:W64.t) : W64.t = {
     
     var output:W64.t;
+    var length:W64.t;
     var lowercase_min:W64.t;
-    var uppercase_min:W64.t;
-    var numbers_min:W64.t;
-    var special_min:W64.t;
     var lowercase_max:W64.t;
+    var uppercase_min:W64.t;
     var uppercase_max:W64.t;
+    var numbers_min:W64.t;
     var numbers_max:W64.t;
+    var special_min:W64.t;
     var special_max:W64.t;
     var tmp64_1:W64.t;
     var tmp64_2:W64.t;
@@ -137,24 +136,27 @@ module M = {
     special_set <- witness;
     union_set <- witness;
     uppercase_set <- witness;
+    length <-
+    (loadW64 Glob.mem (W64.to_uint (policy_addr + (W64.of_int 0))));
     lowercase_min <-
-    (loadW64 Glob.mem (W64.to_uint (lowercase_policies + (W64.of_int 0))));
-    uppercase_min <-
-    (loadW64 Glob.mem (W64.to_uint (uppercase_policies + (W64.of_int 0))));
-    numbers_min <-
-    (loadW64 Glob.mem (W64.to_uint (numbers_policies + (W64.of_int 0))));
-    special_min <-
-    (loadW64 Glob.mem (W64.to_uint (special_policies + (W64.of_int 0))));
+    (loadW64 Glob.mem (W64.to_uint (policy_addr + (W64.of_int 8))));
     lowercase_max <-
-    (loadW64 Glob.mem (W64.to_uint (lowercase_policies + (W64.of_int 8))));
+    (loadW64 Glob.mem (W64.to_uint (policy_addr + (W64.of_int 16))));
+    uppercase_min <-
+    (loadW64 Glob.mem (W64.to_uint (policy_addr + (W64.of_int 24))));
     uppercase_max <-
-    (loadW64 Glob.mem (W64.to_uint (uppercase_policies + (W64.of_int 8))));
+    (loadW64 Glob.mem (W64.to_uint (policy_addr + (W64.of_int 32))));
+    numbers_min <-
+    (loadW64 Glob.mem (W64.to_uint (policy_addr + (W64.of_int 40))));
     numbers_max <-
-    (loadW64 Glob.mem (W64.to_uint (numbers_policies + (W64.of_int 8))));
+    (loadW64 Glob.mem (W64.to_uint (policy_addr + (W64.of_int 48))));
+    special_min <-
+    (loadW64 Glob.mem (W64.to_uint (policy_addr + (W64.of_int 56))));
     special_max <-
-    (loadW64 Glob.mem (W64.to_uint (special_policies + (W64.of_int 8))));
-    if ((length \sle (W64.of_int 200))) {
-      if (((W64.of_int 0) \sle length)) {
+    (loadW64 Glob.mem (W64.to_uint (policy_addr + (W64.of_int 64))));
+    tmp64_1 <- length;
+    if ((tmp64_1 \sle (W64.of_int 200))) {
+      if (((W64.of_int 0) \sle tmp64_1)) {
         tmp64_1 <- lowercase_min;
         if (((W64.of_int 0) \sle tmp64_1)) {
           tmp64_1 <- uppercase_min;
@@ -309,7 +311,7 @@ module M = {
                                 tmp8 <@ random_char_generator ((W64.of_int 26),
                                 lowercase_set);
                                 Glob.mem <-
-                                storeW8 Glob.mem (W64.to_uint (p_output + i_filled)) tmp8;
+                                storeW8 Glob.mem (W64.to_uint (output_addr + i_filled)) tmp8;
                                 i <- (i + (W64.of_int 1));
                                 i_filled <- (i_filled + (W64.of_int 1));
                               }
@@ -325,7 +327,7 @@ module M = {
                                 tmp8 <@ random_char_generator ((W64.of_int 26),
                                 uppercase_set);
                                 Glob.mem <-
-                                storeW8 Glob.mem (W64.to_uint (p_output + i_filled)) tmp8;
+                                storeW8 Glob.mem (W64.to_uint (output_addr + i_filled)) tmp8;
                                 i <- (i + (W64.of_int 1));
                                 i_filled <- (i_filled + (W64.of_int 1));
                               }
@@ -341,7 +343,7 @@ module M = {
                                 tmp8 <@ random_char_generator ((W64.of_int 10),
                                 numbers_set);
                                 Glob.mem <-
-                                storeW8 Glob.mem (W64.to_uint (p_output + i_filled)) tmp8;
+                                storeW8 Glob.mem (W64.to_uint (output_addr + i_filled)) tmp8;
                                 i <- (i + (W64.of_int 1));
                                 i_filled <- (i_filled + (W64.of_int 1));
                               }
@@ -357,7 +359,7 @@ module M = {
                                 tmp8 <@ random_char_generator ((W64.of_int 14),
                                 special_set);
                                 Glob.mem <-
-                                storeW8 Glob.mem (W64.to_uint (p_output + i_filled)) tmp8;
+                                storeW8 Glob.mem (W64.to_uint (output_addr + i_filled)) tmp8;
                                 i <- (i + (W64.of_int 1));
                                 i_filled <- (i_filled + (W64.of_int 1));
                               }
@@ -369,8 +371,9 @@ module M = {
                             uppercase_max, numbers_max, special_max,
                             lowercase_set, uppercase_set, numbers_set,
                             special_set, union_set);
+                            tmp64_2 <- length;
                             
-                            while ((i_filled \ult length)) {
+                            while ((i_filled \ult tmp64_2)) {
                               tmp8 <@ random_char_generator (tmp64_1,
                               union_set);
                               if (((W8.of_int 97) \ule tmp8)) {
@@ -442,12 +445,13 @@ module M = {
                                 }
                               }
                               Glob.mem <-
-                              storeW8 Glob.mem (W64.to_uint (p_output + i_filled)) tmp8;
+                              storeW8 Glob.mem (W64.to_uint (output_addr + i_filled)) tmp8;
                               i_filled <- (i_filled + (W64.of_int 1));
                             }
-                            permutation (p_output, length);
+                            tmp64_1 <- length;
+                            permutation (output_addr, tmp64_1);
                             Glob.mem <-
-                            storeW64 Glob.mem (W64.to_uint (p_output + length)) (W64.of_int 0);
+                            storeW64 Glob.mem (W64.to_uint (output_addr + tmp64_1)) (W64.of_int 0);
                             output <- (W64.of_int 1);
                           } else {
                             output <- (W64.of_int (- 12));
