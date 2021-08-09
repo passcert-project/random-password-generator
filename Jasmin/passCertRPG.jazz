@@ -1,8 +1,22 @@
 inline fn rng(reg u64 range) -> reg u64 {
-    reg u64 rand_number;
+
+    reg u64 rand_number, max_value, tmp1, tmp2;
+
+    max_value = 18446744073709551616;   // 2^64 max uint 64bits
+    tmp1 = range;
+    max_value = max_value / tmp1;
+    max_value = max_value * tmp1;
+    max_value = max_value - 1;
     rand_number = #RDRAND();
-    rand_number = rand_number % range; //FIXME MAKE THE DISTRIBUTION UNIFORM
-    return rand_number;
+
+    while(max_value < rand_number) {
+        rand_number = #RDRAND();
+    }
+
+    tmp2 = rand_number;
+    tmp2 = tmp2 % tmp1;
+
+    return tmp2;
 }
 
 inline fn random_char_generator(reg u64 range, stack u8[76] set) -> reg u8 {

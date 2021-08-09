@@ -2881,6 +2881,7 @@ lemma rng_uniform  :
 proof.
 proc.
 wp.
+admitted.
 
 
 lemma rpg_security :

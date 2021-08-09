@@ -1,10 +1,8 @@
-require import AllCore Distr List PassCertRPG_jazz.
+require import AllCore Distr List PassCertRPG_jazz PassCertRPG_ref.
 from Jasmin require import JModel.
-require RPGTh.
 
-clone include RPGTh.
-
-(*abbrev EqWordInt word num = W64.to_uint word = num.*)
+abbrev EqWordChar word char = W8.to_uint word = char.
+abbrev EqWordInt word int = W64.to_uint word = int.
 
 module ConcreteScheme : RPG_T = {
 
@@ -65,11 +63,21 @@ module ConcreteScheme : RPG_T = {
 }.
 
 
-lemma implementation_reference_equiv &m policy :
-  equiv
+(*********************************)
+(*          EQUIVALENCE          *)
+(*********************************)
+
+lemma imp_ref_rng_equiv :
+  equiv [M.rng ~ RPGRef.rng : EqWordInt range{1} range{2} ==> EqWordInt res{1} res{2}].
+proof.
+proc.
 
 
-
+lemma implementation_reference_equiv :
+  equiv [ConcreteScheme.generate_password ~ RPGRef.generate_password : ={policy} ==> ={res}].
+proof.
+proc.
+admitted.
 
 
 (*********************************)
