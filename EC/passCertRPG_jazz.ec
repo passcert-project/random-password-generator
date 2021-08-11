@@ -4,16 +4,29 @@ from Jasmin require import JModel.
 require import Array76.
 require import WArray76.
 
-op [full uniform] RDRAND: W64.t distr. 
+op [full uniform] RDRAND: W64.t distr.   
 
 module M = {
   proc rng (range:W64.t) : W64.t = {
     
+    var tmp2:W64.t;
+    var max_value:W64.t;
+    var tmp1:W64.t;
     var rand_number:W64.t;
     
+    max_value <- (W64.of_int 18446744073709551616);
+    tmp1 <- range;
+    max_value <- (max_value \udiv tmp1);
+    max_value <- (max_value * tmp1);
+    max_value <- (max_value - (W64.of_int 1));
     rand_number <$ RDRAND ;
-    rand_number <- (rand_number \umod range);
-    return (rand_number);
+    
+    while ((max_value \ult rand_number)) {
+      rand_number <$ RDRAND ;
+    }
+    tmp2 <- rand_number;
+    tmp2 <- (tmp2 \umod tmp1);
+    return (tmp2);
   }
   
   proc random_char_generator (range:W64.t, set:W8.t Array76.t) : W8.t = {

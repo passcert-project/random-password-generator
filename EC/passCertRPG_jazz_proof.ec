@@ -71,7 +71,11 @@ lemma imp_ref_rng_equiv :
   equiv [M.rng ~ RPGRef.rng : EqWordInt range{1} range{2} ==> EqWordInt res{1} res{2}].
 proof.
 proc.
-
+seq 5 1 : (EqWordInt max_value{1} maxValue{2}).
+- wp.
+  skip.
+  move => &1 &2 H1 />.
+  rewrite /EqWordInt.
 
 lemma implementation_reference_equiv :
   equiv [ConcreteScheme.generate_password ~ RPGRef.generate_password : ={policy} ==> ={res}].
@@ -92,7 +96,8 @@ proof.
 
 
 
-
+------------------
+EqWordInt 
 
 
 
