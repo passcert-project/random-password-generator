@@ -9,9 +9,18 @@ module RPGRef : RPG_T = {
 
   proc rng(range:int) : int = {
     
-    var value, maxValue : int;
+    var value, maxValue, modValue : int;
 
-    maxValue <- ((2^64) %/ range) * range - 1;
+    (* check how much we should remove from 2^64 - 1 in order to get a multiple of range *)
+    modValue <- ((2^64) - 1 %% range);
+
+    (* if the mod is range - 1, it means we can sample from 2^64 - 1 and have an uniform distribution *)
+    if(modValue = range - 1) {
+      maxValue <- modValue;
+    (* else, we need to remove the unnecessary values*)
+    } else {
+      maxValue <- ((2^64) - 1) - modValue - 1;
+    }
 
     value <$ [0 .. (2^64) - 1];
 
@@ -280,21 +289,20 @@ lemma rng_range _range :
   hoare [RPGRef.rng : range = _range /\ 0 < _range ==> 0 <= res /\ res < _range].
 proof.
 proc.
-wp.
-seq 1 : (#pre).
-  auto.
+sp.
 seq 1 : (#pre /\ 0 <= value).
   auto.
-  move => &m /> h1 val.
+move => &m /> h1 val.
   smt.
+wp.
 while (0 <= value).
   auto.
   smt.
 skip.
-move => &m /> ? v ? ? ?.
+move => &m /> h1 h2 value0 h3 h4.
 split.
-- by apply modn_ge0.
-- by apply ltz_pmod. 
+- by apply modn_ge0. 
+- smt. (*by apply ltz_pmod*) 
 qed.
 
 
@@ -991,7 +999,7 @@ seq 1 : (policy = p /\
       seq 1 : (#pre).
         inline *.
         auto.
-        seq 4 : (#pre).
+        seq 5 : (#pre).
           auto.
         while true.
           auto.
@@ -1031,7 +1039,7 @@ seq 1 : (policy = p /\
       seq 1 : (#pre).
         inline *.
         auto.
-        seq 4 : (#pre).
+        seq 5 : (#pre).
           auto.
         while true.
           auto.
@@ -1071,7 +1079,7 @@ seq 1 : (policy = p /\
       seq 1 : (#pre).
         inline *.
         auto.
-        seq 4 : (#pre).
+        seq 5 : (#pre).
           auto.
         while true.
           auto.
@@ -1110,7 +1118,7 @@ seq 1 : (policy = p /\
       seq 1 : (#pre).
         inline *.
         auto.
-        seq 4 : (#pre).
+        seq 5 : (#pre).
           auto.
         while true.
           auto.
@@ -1128,7 +1136,7 @@ seq 1 : (size generatedPassword = p.`length /\ policy = p).
   seq 1 : (#pre).
     inline *.
     auto.
-    seq 4 : (#pre).
+    seq 5 : (#pre).
       auto.
     while true.
       auto.
@@ -2728,7 +2736,7 @@ islossless.
     hoare.
     inline *.
     auto.
-    seq 3 : (#pre).   
+    seq 4 : (#pre).   
     auto.
     while true.
     - auto.  
@@ -2754,7 +2762,7 @@ islossless.
     hoare.
     inline *.
     auto.
-    seq 3 : (#pre).    
+    seq 4 : (#pre).    
       auto.
     while true.
     - auto.

@@ -77,6 +77,7 @@ seq 5 1 : (EqWordInt max_value{1} maxValue{2}).
   move => &1 &2 H1 />.
   rewrite /EqWordInt.
 
+
 lemma implementation_reference_equiv :
   equiv [ConcreteScheme.generate_password ~ RPGRef.generate_password : ={policy} ==> ={res}].
 proof.

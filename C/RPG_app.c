@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
         if(specialBool) {
             printf("What is the minimum number of occurrences of special characters in your password?:\n-> ");
             scanf("%d", &specialMin);
-            printf("What is the maximum number of occurrences of special characters in your password? (0 in case you do not care about the maximum number of occurrences of this set):\n-> ");
+            printf("What is the maximum number of occurrences of special characters in your password?:\n-> ");
             scanf("%d", &specialMax);
         }
     } else if(strcmp(argv[1], "--auto") == 0 || strcmp(argv[1], "-a") == 0) {
@@ -117,7 +117,7 @@ int main(int argc, char *argv[]) {
 
     // Generate password
 	uint64_t code = generate_password((uint64_t) policy, (uint64_t) password);
-    
+
     if ((int) code == -1) {
         printf("Password length is too large (must be smaller than 200)\n");
     } else if ((int) code == -2) {

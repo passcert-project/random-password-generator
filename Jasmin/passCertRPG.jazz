@@ -1,22 +1,31 @@
 inline fn rng(reg u64 range) -> reg u64 {
 
-    reg u64 rand_number, max_value, tmp1, tmp2;
+    reg u64 max_value, tmp1, tmp2, tmp_range;
 
-    max_value = 18446744073709551616;   // 2^64 max uint 64bits
-    tmp1 = range;
-    max_value = max_value / tmp1;
-    max_value = max_value * tmp1;
-    max_value = max_value - 1;
-    rand_number = #RDRAND();
+    tmp1 = 18446744073709551615; // 2^64 -1
+    tmp2 = 18446744073709551615;
+    tmp_range = range;
+    tmp1 = tmp1 % tmp_range;
 
-    while(max_value < rand_number) {
-        rand_number = #RDRAND();
+    tmp_range -= 1;
+
+    if(tmp1 == tmp_range) {
+        max_value = tmp2;
+    } else {
+        max_value = tmp2 - tmp1;
+        max_value -= 1;
     }
 
-    tmp2 = rand_number;
-    tmp2 = tmp2 % tmp1;
+    tmp2 = #RDRAND();
+    while(max_value < tmp2) {
+        tmp2 = #RDRAND();
+    }
+    tmp1 = tmp2;
+    tmp_range += 1;
+    tmp1 = tmp1 % tmp_range;
 
-    return tmp2;
+    return tmp1;
+
 }
 
 inline fn random_char_generator(reg u64 range, stack u8[76] set) -> reg u8 {

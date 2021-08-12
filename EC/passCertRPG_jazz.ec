@@ -14,7 +14,7 @@ module M = {
     var tmp1:W64.t;
     var rand_number:W64.t;
     
-    max_value <- (W64.of_int 18446744073709551616);
+    max_value <- (W64.of_int 18446744073709551615);
     tmp1 <- range;
     max_value <- (max_value \udiv tmp1);
     max_value <- (max_value * tmp1);
