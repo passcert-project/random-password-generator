@@ -12,23 +12,23 @@ module RPGRef : RPG_T = {
     var value, maxValue, modValue : int;
 
     (* check how much we should remove from 2^64 - 1 in order to get a multiple of range *)
-    modValue <- ((2^64) - 1 %% range);
+    modValue <- (2^64 - 1) %% range;
 
     (* if the mod is range - 1, it means we can sample from 2^64 - 1 and have an uniform distribution *)
     if(modValue = range - 1) {
-      maxValue <- modValue;
+      maxValue <- (2^64 - 1);
     (* else, we need to remove the unnecessary values*)
     } else {
-      maxValue <- ((2^64) - 1) - modValue - 1;
+      maxValue <- (2^64 - 1) - modValue - 1;
     }
 
-    value <$ [0 .. (2^64) - 1];
+    value <$ [0 .. (2^64 - 1)];
 
     while (maxValue < value) {
-      value <$ [0 .. (2^64) - 1]; (* Random Bytes Generator *)
+      value <$ [0 .. (2^64 - 1)]; (* Random Bytes Generator *)
     }
     
-    value <- (value %% range);
+    value <- value %% range;
     
     return value;
     

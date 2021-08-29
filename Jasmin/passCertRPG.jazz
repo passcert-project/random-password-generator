@@ -142,19 +142,28 @@ export fn generate_password(reg u64 policy_addr, reg u64 output_addr) -> reg u64
 
     // Length does not exceed maximum length of 200
     tmp64_1 = length;
-    if (tmp64_1 <=s 200) {
-    // Length is not negative
-    if (tmp64_1 >=s 0) {
+    if (tmp64_1 <= 200) {
+    // Length is greater than zero
+    if (tmp64_1 > 0) {
     // Min values are not negative
     tmp64_1 = lowercase_min;
-    if (tmp64_1 >=s 0) {
+    if (tmp64_1 >= 0) {
     tmp64_1 = uppercase_min;
-    if (tmp64_1 >=s 0) {
+    if (tmp64_1 >= 0) {
     tmp64_1 = numbers_min;
-    if (tmp64_1 >=s 0) {
+    if (tmp64_1 >= 0) {
     tmp64_1 = special_min;
-    if (tmp64_1 >=s 0) {
-    // Max values are larger or equal to min values
+    if (tmp64_1 >= 0) {
+    // Max values do not exceed 200 (theoretically this is useless, but we need this in the implementation to avoid overflow)
+    tmp64_1 = lowercase_max;
+    if (tmp64_1 <= 200) {
+    tmp64_1 = uppercase_max;
+    if (tmp64_1 <= 200) {
+    tmp64_1 = numbers_max;
+    if (tmp64_1 <= 200) {
+    tmp64_1 = special_max;
+    if (tmp64_1 <= 200) { 
+    // Max values are greater or equal to min values
     tmp64_1 = lowercase_max;
     tmp64_2 = lowercase_min;
     if (tmp64_1 >= tmp64_2) {
@@ -265,7 +274,7 @@ export fn generate_password(reg u64 policy_addr, reg u64 output_addr) -> reg u64
     numbers_set[8] = 56;
     numbers_set[9] = 57;
     i = 10;
-    while (i < (76)) {
+    while (i < (76)) { // Maybe remove this whiles
         numbers_set[(int)i] = 0;
         i += 1;
     }
@@ -390,26 +399,42 @@ export fn generate_password(reg u64 policy_addr, reg u64 output_addr) -> reg u64
 
     } else {
         // Maximum values are short (Sum(Max) < length)
-        output = -12; 
+        output = -16; 
     }
     } else {
         // Minimum values are larger than length (Sum(Min) > length)
-        output = -11; 
+        output = -15; 
     }
     } else {
         // Special characters max value is smaller than min value
-        output = -10; 
+        output = -14; 
     }
     } else {
         // Numbers max value is smaller than min value 
-        output = -9; 
+        output = -13; 
     }
     } else {
         // Uppercase letters max value is smaller than min value 
-        output = -8; 
+        output = -12; 
     }
     } else {
         // Lowercase letters max value is smaller than min value 
+        output = -11; 
+    }
+    } else {
+        //  Special characters max value is greater than 200
+        output = -10; 
+    }
+    } else {
+        //  Numbers max value is greater than 200
+        output = -9; 
+    }
+    } else {
+        // Uppercase letters max value is greater than 200
+        output = -8; 
+    }
+    } else {
+        // Lowercase letters max value is greater than 200
         output = -7; 
     }
     } else {
