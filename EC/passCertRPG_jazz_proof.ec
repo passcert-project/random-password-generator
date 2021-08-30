@@ -6,7 +6,7 @@ op EqWordInt word int = W64.to_uint word = int.
 op EqIntWord int word = W64.of_int int = word.
 
 
-(*op policyFitsW64 policy =
+op policyFitsW64 policy =
   0 <= policy.`length < W64.modulus /\
   0 <= policy.`lowercaseMin < W64.modulus /\
   0 <= policy.`lowercaseMax < W64.modulus /\
@@ -27,7 +27,7 @@ op policyInMem policy mem policyAddr =
   EqWordInt (loadW64 mem ((W64.to_uint policyAddr)+40)) policy.`numbersMin /\
   EqWordInt (loadW64 mem ((W64.to_uint policyAddr)+48)) policy.`numbersMax /\
   EqWordInt (loadW64 mem ((W64.to_uint policyAddr)+56)) policy.`specialMin /\
-  EqWordInt (loadW64 mem ((W64.to_uint policyAddr)+64)) policy.`specialMax.*)
+  EqWordInt (loadW64 mem ((W64.to_uint policyAddr)+64)) policy.`specialMax.
 
 
 op memP_eq_specP policy (length lowercase_min lowercase_max uppercase_min uppercase_max
@@ -306,7 +306,7 @@ admitted.
 
 lemma implementation_reference_equiv :
   equiv[ConcreteScheme.generate_password ~ RPGRef.generate_password :
-          ={policy} /\ policyFitsW64 policy{1}==> ={res}].
+          ={policy} /\ policyFitsW64 policy{1} ==> ={res}].
 proof.
 proc.
 seq 3 0 : (#pre /\
@@ -318,45 +318,27 @@ seq 2 0 : (#pre /\ policyAddr{1} = W64.zero).
 admit.
 inline M.generate_password.
 seq 17 0 : (={policy} /\
-            EqWordInt length{1} policy{1}.`length /\
-            EqWordInt lowercase_min{1} policy{1}.`lowercaseMin /\
-            EqWordInt lowercase_max{1} policy{1}.`lowercaseMax /\
-            EqWordInt uppercase_min{1} policy{1}.`uppercaseMin /\
-            EqWordInt uppercase_max{1} policy{1}.`uppercaseMax /\
-            EqWordInt numbers_min{1} policy{1}.`numbersMin /\
-            EqWordInt numbers_max{1} policy{1}.`numbersMax /\
-            EqWordInt special_min{1} policy{1}.`specialMin /\
-            EqWordInt special_max{1} policy{1}.`specialMax /\
+            memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+                           uppercase_min{1} uppercase_max{1} numbers_min{1}
+                           numbers_max{1} special_min{1} special_max{1} /\
             tmp64_1{1} = length{1}).
 - auto.
   move => &m1 &m2 />.
 if{1}.
 if{1}.
 seq 0 0 : (={policy} /\
-           EqWordInt length{1} policy{1}.`length /\
-           EqWordInt lowercase_min{1} policy{1}.`lowercaseMin /\
-           EqWordInt lowercase_max{1} policy{1}.`lowercaseMax /\
-           EqWordInt uppercase_min{1} policy{1}.`uppercaseMin /\
-           EqWordInt uppercase_max{1} policy{1}.`uppercaseMax /\
-           EqWordInt numbers_min{1} policy{1}.`numbersMin /\
-           EqWordInt numbers_max{1} policy{1}.`numbersMax /\
-           EqWordInt special_min{1} policy{1}.`specialMin /\
-           EqWordInt special_max{1} policy{1}.`specialMax /\
+           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+                           uppercase_min{1} uppercase_max{1} numbers_min{1}
+                           numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
            W64.zero \ult length{1}).
 by skip.
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           EqWordInt length{1} policy{1}.`length /\
-           EqWordInt lowercase_min{1} policy{1}.`lowercaseMin /\
-           EqWordInt lowercase_max{1} policy{1}.`lowercaseMax /\
-           EqWordInt uppercase_min{1} policy{1}.`uppercaseMin /\
-           EqWordInt uppercase_max{1} policy{1}.`uppercaseMax /\
-           EqWordInt numbers_min{1} policy{1}.`numbersMin /\
-           EqWordInt numbers_max{1} policy{1}.`numbersMax /\
-           EqWordInt special_min{1} policy{1}.`specialMin /\
-           EqWordInt special_max{1} policy{1}.`specialMax /\
+           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+                           uppercase_min{1} uppercase_max{1} numbers_min{1}
+                           numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
            W64.zero \ult length{1} /\
            W64.zero \ule lowercase_min{1}).
@@ -364,15 +346,9 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           EqWordInt length{1} policy{1}.`length /\
-           EqWordInt lowercase_min{1} policy{1}.`lowercaseMin /\
-           EqWordInt lowercase_max{1} policy{1}.`lowercaseMax /\
-           EqWordInt uppercase_min{1} policy{1}.`uppercaseMin /\
-           EqWordInt uppercase_max{1} policy{1}.`uppercaseMax /\
-           EqWordInt numbers_min{1} policy{1}.`numbersMin /\
-           EqWordInt numbers_max{1} policy{1}.`numbersMax /\
-           EqWordInt special_min{1} policy{1}.`specialMin /\
-           EqWordInt special_max{1} policy{1}.`specialMax /\
+           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+                           uppercase_min{1} uppercase_max{1} numbers_min{1}
+                           numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
            W64.zero \ult length{1} /\
            W64.zero \ule lowercase_min{1} /\
@@ -381,15 +357,9 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           EqWordInt length{1} policy{1}.`length /\
-           EqWordInt lowercase_min{1} policy{1}.`lowercaseMin /\
-           EqWordInt lowercase_max{1} policy{1}.`lowercaseMax /\
-           EqWordInt uppercase_min{1} policy{1}.`uppercaseMin /\
-           EqWordInt uppercase_max{1} policy{1}.`uppercaseMax /\
-           EqWordInt numbers_min{1} policy{1}.`numbersMin /\
-           EqWordInt numbers_max{1} policy{1}.`numbersMax /\
-           EqWordInt special_min{1} policy{1}.`specialMin /\
-           EqWordInt special_max{1} policy{1}.`specialMax /\
+           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+                           uppercase_min{1} uppercase_max{1} numbers_min{1}
+                           numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
            W64.zero \ult length{1} /\
            W64.zero \ule lowercase_min{1} /\
@@ -399,15 +369,9 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           EqWordInt length{1} policy{1}.`length /\
-           EqWordInt lowercase_min{1} policy{1}.`lowercaseMin /\
-           EqWordInt lowercase_max{1} policy{1}.`lowercaseMax /\
-           EqWordInt uppercase_min{1} policy{1}.`uppercaseMin /\
-           EqWordInt uppercase_max{1} policy{1}.`uppercaseMax /\
-           EqWordInt numbers_min{1} policy{1}.`numbersMin /\
-           EqWordInt numbers_max{1} policy{1}.`numbersMax /\
-           EqWordInt special_min{1} policy{1}.`specialMin /\
-           EqWordInt special_max{1} policy{1}.`specialMax /\
+           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+                           uppercase_min{1} uppercase_max{1} numbers_min{1}
+                           numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
            W64.zero \ult length{1} /\
            W64.zero \ule lowercase_min{1} /\
@@ -418,15 +382,9 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           EqWordInt length{1} policy{1}.`length /\
-           EqWordInt lowercase_min{1} policy{1}.`lowercaseMin /\
-           EqWordInt lowercase_max{1} policy{1}.`lowercaseMax /\
-           EqWordInt uppercase_min{1} policy{1}.`uppercaseMin /\
-           EqWordInt uppercase_max{1} policy{1}.`uppercaseMax /\
-           EqWordInt numbers_min{1} policy{1}.`numbersMin /\
-           EqWordInt numbers_max{1} policy{1}.`numbersMax /\
-           EqWordInt special_min{1} policy{1}.`specialMin /\
-           EqWordInt special_max{1} policy{1}.`specialMax /\
+           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+                           uppercase_min{1} uppercase_max{1} numbers_min{1}
+                           numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
            W64.zero \ult length{1} /\
            W64.zero \ule lowercase_min{1} /\
@@ -438,15 +396,9 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           EqWordInt length{1} policy{1}.`length /\
-           EqWordInt lowercase_min{1} policy{1}.`lowercaseMin /\
-           EqWordInt lowercase_max{1} policy{1}.`lowercaseMax /\
-           EqWordInt uppercase_min{1} policy{1}.`uppercaseMin /\
-           EqWordInt uppercase_max{1} policy{1}.`uppercaseMax /\
-           EqWordInt numbers_min{1} policy{1}.`numbersMin /\
-           EqWordInt numbers_max{1} policy{1}.`numbersMax /\
-           EqWordInt special_min{1} policy{1}.`specialMin /\
-           EqWordInt special_max{1} policy{1}.`specialMax /\
+           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+                           uppercase_min{1} uppercase_max{1} numbers_min{1}
+                           numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
            W64.zero \ult length{1} /\
            W64.zero \ule lowercase_min{1} /\
@@ -459,15 +411,9 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           EqWordInt length{1} policy{1}.`length /\
-           EqWordInt lowercase_min{1} policy{1}.`lowercaseMin /\
-           EqWordInt lowercase_max{1} policy{1}.`lowercaseMax /\
-           EqWordInt uppercase_min{1} policy{1}.`uppercaseMin /\
-           EqWordInt uppercase_max{1} policy{1}.`uppercaseMax /\
-           EqWordInt numbers_min{1} policy{1}.`numbersMin /\
-           EqWordInt numbers_max{1} policy{1}.`numbersMax /\
-           EqWordInt special_min{1} policy{1}.`specialMin /\
-           EqWordInt special_max{1} policy{1}.`specialMax /\
+           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+                           uppercase_min{1} uppercase_max{1} numbers_min{1}
+                           numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
            W64.zero \ult length{1} /\
            W64.zero \ule lowercase_min{1} /\
@@ -481,15 +427,9 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           EqWordInt length{1} policy{1}.`length /\
-           EqWordInt lowercase_min{1} policy{1}.`lowercaseMin /\
-           EqWordInt lowercase_max{1} policy{1}.`lowercaseMax /\
-           EqWordInt uppercase_min{1} policy{1}.`uppercaseMin /\
-           EqWordInt uppercase_max{1} policy{1}.`uppercaseMax /\
-           EqWordInt numbers_min{1} policy{1}.`numbersMin /\
-           EqWordInt numbers_max{1} policy{1}.`numbersMax /\
-           EqWordInt special_min{1} policy{1}.`specialMin /\
-           EqWordInt special_max{1} policy{1}.`specialMax /\
+           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+                           uppercase_min{1} uppercase_max{1} numbers_min{1}
+                           numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
            W64.zero \ult length{1} /\
            W64.zero \ule lowercase_min{1} /\
@@ -504,15 +444,9 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           EqWordInt length{1} policy{1}.`length /\
-           EqWordInt lowercase_min{1} policy{1}.`lowercaseMin /\
-           EqWordInt lowercase_max{1} policy{1}.`lowercaseMax /\
-           EqWordInt uppercase_min{1} policy{1}.`uppercaseMin /\
-           EqWordInt uppercase_max{1} policy{1}.`uppercaseMax /\
-           EqWordInt numbers_min{1} policy{1}.`numbersMin /\
-           EqWordInt numbers_max{1} policy{1}.`numbersMax /\
-           EqWordInt special_min{1} policy{1}.`specialMin /\
-           EqWordInt special_max{1} policy{1}.`specialMax /\
+           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+                           uppercase_min{1} uppercase_max{1} numbers_min{1}
+                           numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
            W64.zero \ult length{1} /\
            W64.zero \ule lowercase_min{1} /\
@@ -528,15 +462,9 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           EqWordInt length{1} policy{1}.`length /\
-           EqWordInt lowercase_min{1} policy{1}.`lowercaseMin /\
-           EqWordInt lowercase_max{1} policy{1}.`lowercaseMax /\
-           EqWordInt uppercase_min{1} policy{1}.`uppercaseMin /\
-           EqWordInt uppercase_max{1} policy{1}.`uppercaseMax /\
-           EqWordInt numbers_min{1} policy{1}.`numbersMin /\
-           EqWordInt numbers_max{1} policy{1}.`numbersMax /\
-           EqWordInt special_min{1} policy{1}.`specialMin /\
-           EqWordInt special_max{1} policy{1}.`specialMax /\
+           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+                           uppercase_min{1} uppercase_max{1} numbers_min{1}
+                           numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
            W64.zero \ult length{1} /\
            W64.zero \ule lowercase_min{1} /\
@@ -553,15 +481,9 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           EqWordInt length{1} policy{1}.`length /\
-           EqWordInt lowercase_min{1} policy{1}.`lowercaseMin /\
-           EqWordInt lowercase_max{1} policy{1}.`lowercaseMax /\
-           EqWordInt uppercase_min{1} policy{1}.`uppercaseMin /\
-           EqWordInt uppercase_max{1} policy{1}.`uppercaseMax /\
-           EqWordInt numbers_min{1} policy{1}.`numbersMin /\
-           EqWordInt numbers_max{1} policy{1}.`numbersMax /\
-           EqWordInt special_min{1} policy{1}.`specialMin /\
-           EqWordInt special_max{1} policy{1}.`specialMax /\
+           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+                           uppercase_min{1} uppercase_max{1} numbers_min{1}
+                           numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
            W64.zero \ult length{1} /\
            W64.zero \ule lowercase_min{1} /\
@@ -579,15 +501,9 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           EqWordInt length{1} policy{1}.`length /\
-           EqWordInt lowercase_min{1} policy{1}.`lowercaseMin /\
-           EqWordInt lowercase_max{1} policy{1}.`lowercaseMax /\
-           EqWordInt uppercase_min{1} policy{1}.`uppercaseMin /\
-           EqWordInt uppercase_max{1} policy{1}.`uppercaseMax /\
-           EqWordInt numbers_min{1} policy{1}.`numbersMin /\
-           EqWordInt numbers_max{1} policy{1}.`numbersMax /\
-           EqWordInt special_min{1} policy{1}.`specialMin /\
-           EqWordInt special_max{1} policy{1}.`specialMax /\
+           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+                           uppercase_min{1} uppercase_max{1} numbers_min{1}
+                           numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
            W64.zero \ult length{1} /\
            W64.zero \ule lowercase_min{1} /\
@@ -606,15 +522,9 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           EqWordInt length{1} policy{1}.`length /\
-           EqWordInt lowercase_min{1} policy{1}.`lowercaseMin /\
-           EqWordInt lowercase_max{1} policy{1}.`lowercaseMax /\
-           EqWordInt uppercase_min{1} policy{1}.`uppercaseMin /\
-           EqWordInt uppercase_max{1} policy{1}.`uppercaseMax /\
-           EqWordInt numbers_min{1} policy{1}.`numbersMin /\
-           EqWordInt numbers_max{1} policy{1}.`numbersMax /\
-           EqWordInt special_min{1} policy{1}.`specialMin /\
-           EqWordInt special_max{1} policy{1}.`specialMax /\
+           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+                           uppercase_min{1} uppercase_max{1} numbers_min{1}
+                           numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
            W64.zero \ult length{1} /\
            W64.zero \ule lowercase_min{1} /\
@@ -634,31 +544,13 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           EqWordInt length{1} policy{1}.`length /\
-           EqWordInt lowercase_min{1} policy{1}.`lowercaseMin /\
-           EqWordInt lowercase_max{1} policy{1}.`lowercaseMax /\
-           EqWordInt uppercase_min{1} policy{1}.`uppercaseMin /\
-           EqWordInt uppercase_max{1} policy{1}.`uppercaseMax /\
-           EqWordInt numbers_min{1} policy{1}.`numbersMin /\
-           EqWordInt numbers_max{1} policy{1}.`numbersMax /\
-           EqWordInt special_min{1} policy{1}.`specialMin /\
-           EqWordInt special_max{1} policy{1}.`specialMax /\
-           length{1} \ule (of_int 200)%W64 /\
-           W64.zero \ult length{1} /\
-           W64.zero \ule lowercase_min{1} /\
-           W64.zero \ule uppercase_min{1} /\
-           W64.zero \ule numbers_min{1} /\
-           W64.zero \ule special_min{1} /\
-           lowercase_max{1} \ule (of_int 200)%W64 /\
-           uppercase_max{1} \ule (of_int 200)%W64 /\
-           numbers_max{1} \ule (of_int 200)%W64 /\
-           special_max{1} \ule (of_int 200)%W64 /\
-           lowercase_min{1} \ule lowercase_max{1} /\
-           uppercase_min{1} \ule uppercase_max{1} /\
-           numbers_min{1} \ule numbers_max{1} /\
-           special_min{1} \ule special_max{1} /\
-           lowercase_min{1} + uppercase_min{1} + numbers_min{1} + special_min{1} \ule length{1} /\
-           length{1} \ule lowercase_max{1} + uppercase_max{1} + numbers_max{1} + special_max{1}).
+           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+                         uppercase_min{1} uppercase_max{1} numbers_min{1}
+                         numbers_max{1} special_min{1} special_max{1} /\
+           satisfiableMemPolicy length{1} lowercase_min{1} lowercase_max{1}
+                                uppercase_min{1} uppercase_max{1}
+                                numbers_min{1} numbers_max{1}
+                                special_min{1} special_max{1}).
 - by skip.
 if{2}.
 (* talvez seja necessario tirar informacoes sobre equivalencia entre os conjuntos *)
