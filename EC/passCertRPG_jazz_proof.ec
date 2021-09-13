@@ -111,7 +111,7 @@ module ConcreteScheme : RPG_T = {
     
     output <- M.generate_password(policyAddr, pwdAddr);
 
-    if (W64.to_uint output < 0) {
+    if (output \slt W64.zero) {
       pwdOpt <- None;
     } else {
       pwd <- pwdMemToSpec(policy.`length, Glob.mem, pwdAddr);
@@ -553,6 +553,7 @@ seq 0 0 : (={policy} /\
                                 special_min{1} special_max{1}).
 - by skip.
 if{2}.
+(* if both mem and spec are satisfiable... distribution on the output should be equal *)
 (* talvez seja necessario tirar informacoes sobre equivalencia entre os conjuntos *)
 seq 0 4 : (#pre).
 - inline *.
@@ -563,10 +564,9 @@ sp.
 
 admit.
 
-
 (* if spec policy is unsat and mem policy is sat *)
 conseq (_: false ==> _).
-move => &m1 &m2 [[h1 h2] h3].
+move => &m1 &m2 [[h1 [h2 h3]] h4].
 have sat : satisfiablePolicy policy{m1}.
 - by apply (sat_mem_sat_spec policy{m1} length{m1}
                           lowercase_min{m1} lowercase_max{m1}
@@ -577,18 +577,454 @@ subst policy{m1}.
 trivial.
 trivial.
 
-
-(* if mem length gt or eq to maxsum *)
+(* if mem length > maxsum *)
 if{2}.
-conseq (_: false ==> _).
+* conseq (_: false ==> _).
+  move => &m1 &m2 [[[h1 [h2 [h3 [h4 h5]]]] h6] h7].
+  subst policy{m2}.
+  have sat : satisfiableMemPolicy length{m1}
+                                  lowercase_min{m1} lowercase_max{m1}
+                                  uppercase_min{m1} uppercase_max{m1}
+                                  numbers_min{m1} numbers_max{m1}
+                                  special_min{m1} special_max{m1}.
+  - by apply (sat_mem_sat_spec policy{m1} length{m1}
+                          lowercase_min{m1} lowercase_max{m1}
+                          uppercase_min{m1} uppercase_max{m1}
+                          numbers_min{m1} numbers_max{m1}
+                          special_min{m1} special_max{m1}).
+  subst tmp64_2{m1} tmp64_1{m1}.
+  smt.
+  trivial.
+* sp.
+  if{1}.
+  - auto.
+  - conseq (_: false ==> _).
+    move => &m1 &m2 [[h1 [h2 [h3 h4]]] h5].
+    subst output{m1} output0{m1}.
+    rewrite sltE !of_sintK /smod /= in h5.
+    trivial.
+    trivial.
+
+(* if mem length < minsum *)
+if{2}.
+* conseq (_: false ==> _).
+  move => &m1 &m2 [[[h1 [h2 [h3 [h4 h5]]]] h6] h7].
+  subst policy{m2}.
+  have sat : satisfiableMemPolicy length{m1}
+                                  lowercase_min{m1} lowercase_max{m1}
+                                  uppercase_min{m1} uppercase_max{m1}
+                                  numbers_min{m1} numbers_max{m1}
+                                  special_min{m1} special_max{m1}.
+  - by apply (sat_mem_sat_spec policy{m1} length{m1}
+                          lowercase_min{m1} lowercase_max{m1}
+                          uppercase_min{m1} uppercase_max{m1}
+                          numbers_min{m1} numbers_max{m1}
+                          special_min{m1} special_max{m1}).
+  subst tmp64_2{m1} tmp64_1{m1}.
+  smt.
+  trivial.
+* sp.
+  if{1}.
+  - auto.
+  - conseq (_: false ==> _).
+    move => &m1 &m2 [[h1 [h2 [h3 h4]]] h5].
+    subst output{m1} output0{m1}.
+    rewrite sltE !of_sintK /smod /= in h5.
+    trivial.
+    trivial.
+
+(* if mem special min > special max *)
+if{2}.
+* conseq (_: false ==> _).
+  move => &m1 &m2 [[[h1 [h2 [h3 [h4 h5]]]] h6] h7].
+  subst policy{m2}.
+  have sat : satisfiableMemPolicy length{m1}
+                                  lowercase_min{m1} lowercase_max{m1}
+                                  uppercase_min{m1} uppercase_max{m1}
+                                  numbers_min{m1} numbers_max{m1}
+                                  special_min{m1} special_max{m1}.
+  - by apply (sat_mem_sat_spec policy{m1} length{m1}
+                          lowercase_min{m1} lowercase_max{m1}
+                          uppercase_min{m1} uppercase_max{m1}
+                          numbers_min{m1} numbers_max{m1}
+                          special_min{m1} special_max{m1}).
+  subst tmp64_1{m1} tmp64_2{m1}.
+  smt.
+  trivial.
+* sp.
+  if{1}.
+  - auto.
+  - conseq (_: false ==> _).
+    move => &m1 &m2 [[h1 [h2 [h3 h4]]] h5].
+    subst output{m1} output0{m1}.
+    rewrite sltE !of_sintK /smod /= in h5.
+    trivial.
+    trivial.
 
 
+(* if mem numbers min > numbers max *)
+if{2}.
+* conseq (_: false ==> _).
+  move => &m1 &m2 [[[h1 [h2 [h3 [h4 h5]]]] h6] h7].
+  subst policy{m2}.
+  have sat : satisfiableMemPolicy length{m1}
+                                  lowercase_min{m1} lowercase_max{m1}
+                                  uppercase_min{m1} uppercase_max{m1}
+                                  numbers_min{m1} numbers_max{m1}
+                                  special_min{m1} special_max{m1}.
+  - by apply (sat_mem_sat_spec policy{m1} length{m1}
+                          lowercase_min{m1} lowercase_max{m1}
+                          uppercase_min{m1} uppercase_max{m1}
+                          numbers_min{m1} numbers_max{m1}
+                          special_min{m1} special_max{m1}).
+  subst tmp64_1{m1} tmp64_2{m1}.
+  smt.
+  trivial.
+* sp.
+  if{1}.
+  - auto.
+  - conseq (_: false ==> _).
+    move => &m1 &m2 [[h1 [h2 [h3 h4]]] h5].
+    subst output{m1} output0{m1}.
+    rewrite sltE !of_sintK /smod /= in h5.
+    trivial.
+    trivial.
 
+(* if mem uppercase min > uppercase max *)
+if{2}.
+* conseq (_: false ==> _).
+  move => &m1 &m2 [[[h1 [h2 [h3 [h4 h5]]]] h6] h7].
+  subst policy{m2}.
+  have sat : satisfiableMemPolicy length{m1}
+                                  lowercase_min{m1} lowercase_max{m1}
+                                  uppercase_min{m1} uppercase_max{m1}
+                                  numbers_min{m1} numbers_max{m1}
+                                  special_min{m1} special_max{m1}.
+  - by apply (sat_mem_sat_spec policy{m1} length{m1}
+                          lowercase_min{m1} lowercase_max{m1}
+                          uppercase_min{m1} uppercase_max{m1}
+                          numbers_min{m1} numbers_max{m1}
+                          special_min{m1} special_max{m1}).
+  subst tmp64_1{m1} tmp64_2{m1}.
+  smt.
+  trivial.
+* sp.
+  if{1}.
+  - auto.
+  - conseq (_: false ==> _).
+    move => &m1 &m2 [[h1 [h2 [h3 h4]]] h5].
+    subst output{m1} output0{m1}.
+    rewrite sltE !of_sintK /smod /= in h5.
+    trivial.
+    trivial.
 
+(* if mem lowercase min > lowercase max *)
+if{2}.
+* conseq (_: false ==> _).
+  move => &m1 &m2 [[[h1 [h2 [h3 [h4 h5]]]] h6] h7].
+  subst policy{m2}.
+  have sat : satisfiableMemPolicy length{m1}
+                                  lowercase_min{m1} lowercase_max{m1}
+                                  uppercase_min{m1} uppercase_max{m1}
+                                  numbers_min{m1} numbers_max{m1}
+                                  special_min{m1} special_max{m1}.
+  - by apply (sat_mem_sat_spec policy{m1} length{m1}
+                          lowercase_min{m1} lowercase_max{m1}
+                          uppercase_min{m1} uppercase_max{m1}
+                          numbers_min{m1} numbers_max{m1}
+                          special_min{m1} special_max{m1}).
+  subst tmp64_1{m1} tmp64_2{m1}.
+  smt.
+  trivial.
+* sp.
+  if{1}.
+  - auto.
+  - conseq (_: false ==> _).
+    move => &m1 &m2 [[h1 [h2 [h3 h4]]] h5].
+    subst output{m1} output0{m1}.
+    rewrite sltE !of_sintK /smod /= in h5.
+    trivial.
+    trivial.
 
+(* if mem special max > 200 *)
+if{2}.
+* conseq (_: false ==> _).
+  move => &m1 &m2 [[[h1 [h2 [h3 [h4 h5]]]] h6] h7].
+  subst policy{m2}.
+  have sat : satisfiableMemPolicy length{m1}
+                                  lowercase_min{m1} lowercase_max{m1}
+                                  uppercase_min{m1} uppercase_max{m1}
+                                  numbers_min{m1} numbers_max{m1}
+                                  special_min{m1} special_max{m1}.
+  - by apply (sat_mem_sat_spec policy{m1} length{m1}
+                          lowercase_min{m1} lowercase_max{m1}
+                          uppercase_min{m1} uppercase_max{m1}
+                          numbers_min{m1} numbers_max{m1}
+                          special_min{m1} special_max{m1}).
+  subst tmp64_1{m1}.
+  smt.
+  trivial.
+* sp.
+  if{1}.
+  - auto.
+  - conseq (_: false ==> _).
+    move => &m1 &m2 [[h1 [h2 [h3 h4]]] h5].
+    subst output{m1} output0{m1}.
+    rewrite sltE !of_sintK /smod /= in h5.
+    trivial.
+    trivial.
 
+(* if mem numbers max > 200 *)
+if{2}.
+* conseq (_: false ==> _).
+  move => &m1 &m2 [[[h1 [h2 [h3 [h4 h5]]]] h6] h7].
+  subst policy{m2}.
+  have sat : satisfiableMemPolicy length{m1}
+                                  lowercase_min{m1} lowercase_max{m1}
+                                  uppercase_min{m1} uppercase_max{m1}
+                                  numbers_min{m1} numbers_max{m1}
+                                  special_min{m1} special_max{m1}.
+  - by apply (sat_mem_sat_spec policy{m1} length{m1}
+                          lowercase_min{m1} lowercase_max{m1}
+                          uppercase_min{m1} uppercase_max{m1}
+                          numbers_min{m1} numbers_max{m1}
+                          special_min{m1} special_max{m1}).
+  subst tmp64_1{m1}.
+  smt.
+  trivial.
+* sp.
+  if{1}.
+  - auto.
+  - conseq (_: false ==> _).
+    move => &m1 &m2 [[h1 [h2 [h3 h4]]] h5].
+    subst output{m1} output0{m1}.
+    rewrite sltE !of_sintK /smod /= in h5.
+    trivial.
+    trivial.
 
+(* if mem uppercase max > 200 *)
+if{2}.
+* conseq (_: false ==> _).
+  move => &m1 &m2 [[[h1 [h2 [h3 [h4 h5]]]] h6] h7].
+  subst policy{m2}.
+  have sat : satisfiableMemPolicy length{m1}
+                                  lowercase_min{m1} lowercase_max{m1}
+                                  uppercase_min{m1} uppercase_max{m1}
+                                  numbers_min{m1} numbers_max{m1}
+                                  special_min{m1} special_max{m1}.
+  - by apply (sat_mem_sat_spec policy{m1} length{m1}
+                          lowercase_min{m1} lowercase_max{m1}
+                          uppercase_min{m1} uppercase_max{m1}
+                          numbers_min{m1} numbers_max{m1}
+                          special_min{m1} special_max{m1}).
+  subst tmp64_1{m1}.
+  smt.
+  trivial.
+* sp.
+  if{1}.
+  - auto.
+  - conseq (_: false ==> _).
+    move => &m1 &m2 [[h1 [h2 [h3 h4]]] h5].
+    subst output{m1} output0{m1}.
+    rewrite sltE !of_sintK /smod /= in h5.
+    trivial.
+    trivial.
 
+(* if mem lowercase max > 200 *)
+if{2}.
+* conseq (_: false ==> _).
+  move => &m1 &m2 [[[h1 [h2 [h3 [h4 h5]]]] h6] h7].
+  subst policy{m2}.
+  have sat : satisfiableMemPolicy length{m1}
+                                  lowercase_min{m1} lowercase_max{m1}
+                                  uppercase_min{m1} uppercase_max{m1}
+                                  numbers_min{m1} numbers_max{m1}
+                                  special_min{m1} special_max{m1}.
+  - by apply (sat_mem_sat_spec policy{m1} length{m1}
+                          lowercase_min{m1} lowercase_max{m1}
+                          uppercase_min{m1} uppercase_max{m1}
+                          numbers_min{m1} numbers_max{m1}
+                          special_min{m1} special_max{m1}).
+  subst tmp64_1{m1}.
+  smt.
+  trivial.
+* sp.
+  if{1}.
+  - auto.
+  - conseq (_: false ==> _).
+    move => &m1 &m2 [[h1 [h2 [h3 h4]]] h5].
+    subst output{m1} output0{m1}.
+    rewrite sltE !of_sintK /smod /= in h5.
+    trivial.
+    trivial.
+
+(* if mem special min < 0 *)
+if{2}.
+* conseq (_: false ==> _).
+  move => &m1 &m2 [[[h1 [h2 [h3 [h4 h5]]]] h6] h7].
+  subst policy{m2}.
+  have sat : satisfiableMemPolicy length{m1}
+                                  lowercase_min{m1} lowercase_max{m1}
+                                  uppercase_min{m1} uppercase_max{m1}
+                                  numbers_min{m1} numbers_max{m1}
+                                  special_min{m1} special_max{m1}.
+  - by apply (sat_mem_sat_spec policy{m1} length{m1}
+                          lowercase_min{m1} lowercase_max{m1}
+                          uppercase_min{m1} uppercase_max{m1}
+                          numbers_min{m1} numbers_max{m1}
+                          special_min{m1} special_max{m1}).
+  subst tmp64_1{m1}.
+  smt.
+  trivial.
+* sp.
+  if{1}.
+  - auto.
+  - conseq (_: false ==> _).
+    move => &m1 &m2 [[h1 [h2 [h3 h4]]] h5].
+    subst output{m1} output0{m1}.
+    rewrite sltE !of_sintK /smod /= in h5.
+    trivial.
+    trivial.
+
+(* if mem numbers min < 0 *)
+if{2}.
+* conseq (_: false ==> _).
+  move => &m1 &m2 [[[h1 [h2 [h3 [h4 h5]]]] h6] h7].
+  subst policy{m2}.
+  have sat : satisfiableMemPolicy length{m1}
+                                  lowercase_min{m1} lowercase_max{m1}
+                                  uppercase_min{m1} uppercase_max{m1}
+                                  numbers_min{m1} numbers_max{m1}
+                                  special_min{m1} special_max{m1}.
+  - by apply (sat_mem_sat_spec policy{m1} length{m1}
+                          lowercase_min{m1} lowercase_max{m1}
+                          uppercase_min{m1} uppercase_max{m1}
+                          numbers_min{m1} numbers_max{m1}
+                          special_min{m1} special_max{m1}).
+  subst tmp64_1{m1}.
+  smt.
+  trivial.
+* sp.
+  if{1}.
+  - auto.
+  - conseq (_: false ==> _).
+    move => &m1 &m2 [[h1 [h2 [h3 h4]]] h5].
+    subst output{m1} output0{m1}.
+    rewrite sltE !of_sintK /smod /= in h5.
+    trivial.
+    trivial.
+
+(* if mem uppercase min < 0 *)
+if{2}.
+* conseq (_: false ==> _).
+  move => &m1 &m2 [[[h1 [h2 [h3 [h4 h5]]]] h6] h7].
+  subst policy{m2}.
+  have sat : satisfiableMemPolicy length{m1}
+                                  lowercase_min{m1} lowercase_max{m1}
+                                  uppercase_min{m1} uppercase_max{m1}
+                                  numbers_min{m1} numbers_max{m1}
+                                  special_min{m1} special_max{m1}.
+  - by apply (sat_mem_sat_spec policy{m1} length{m1}
+                          lowercase_min{m1} lowercase_max{m1}
+                          uppercase_min{m1} uppercase_max{m1}
+                          numbers_min{m1} numbers_max{m1}
+                          special_min{m1} special_max{m1}).
+  subst tmp64_1{m1}.
+  smt.
+  trivial.
+* sp.
+  if{1}.
+  - auto.
+  - conseq (_: false ==> _).
+    move => &m1 &m2 [[h1 [h2 [h3 h4]]] h5].
+    subst output{m1} output0{m1}.
+    rewrite sltE !of_sintK /smod /= in h5.
+    trivial.
+    trivial.
+
+(* if mem lowercase min < 0 *)
+if{2}.
+* conseq (_: false ==> _).
+  move => &m1 &m2 [[[h1 [h2 [h3 [h4 h5]]]] h6] h7].
+  subst policy{m2}.
+  have sat : satisfiableMemPolicy length{m1}
+                                  lowercase_min{m1} lowercase_max{m1}
+                                  uppercase_min{m1} uppercase_max{m1}
+                                  numbers_min{m1} numbers_max{m1}
+                                  special_min{m1} special_max{m1}.
+  - by apply (sat_mem_sat_spec policy{m1} length{m1}
+                          lowercase_min{m1} lowercase_max{m1}
+                          uppercase_min{m1} uppercase_max{m1}
+                          numbers_min{m1} numbers_max{m1}
+                          special_min{m1} special_max{m1}).
+  subst tmp64_1{m1}.
+  smt.
+  trivial.
+* sp.
+  if{1}.
+  - auto.
+  - conseq (_: false ==> _).
+    move => &m1 &m2 [[h1 [h2 [h3 h4]]] h5].
+    subst output{m1} output0{m1}.
+    rewrite sltE !of_sintK /smod /= in h5.
+    trivial.
+    trivial.
+
+(* if mem length < 0 *)
+if{2}.
+* conseq (_: false ==> _).
+  move => &m1 &m2 [[[[h1 [h2 h3]] h4] h5] h6].
+  subst policy{m2}.
+  have sat : satisfiableMemPolicy length{m1}
+                                  lowercase_min{m1} lowercase_max{m1}
+                                  uppercase_min{m1} uppercase_max{m1}
+                                  numbers_min{m1} numbers_max{m1}
+                                  special_min{m1} special_max{m1}.
+  - by apply (sat_mem_sat_spec policy{m1} length{m1}
+                          lowercase_min{m1} lowercase_max{m1}
+                          uppercase_min{m1} uppercase_max{m1}
+                          numbers_min{m1} numbers_max{m1}
+                          special_min{m1} special_max{m1}).
+  subst tmp64_1{m1}.
+  smt.
+  trivial.
+* sp.
+  if{1}.
+  - auto.
+  - conseq (_: false ==> _).
+    move => &m1 &m2 [[h1 [h2 [h3 h4]]] h5].
+    subst output{m1} output0{m1}.
+    rewrite sltE !of_sintK /smod /= in h5.
+    trivial.
+    trivial.
+
+(* if mem length > 200 *)
+if{2}.
+* conseq (_: false ==> _).
+  move => &m1 &m2 [[[h1 [h2 h3]] h4] h5].
+  subst policy{m2}.
+  have sat : satisfiableMemPolicy length{m1}
+                                  lowercase_min{m1} lowercase_max{m1}
+                                  uppercase_min{m1} uppercase_max{m1}
+                                  numbers_min{m1} numbers_max{m1}
+                                  special_min{m1} special_max{m1}.
+  - by apply (sat_mem_sat_spec policy{m1} length{m1}
+                          lowercase_min{m1} lowercase_max{m1}
+                          uppercase_min{m1} uppercase_max{m1}
+                          numbers_min{m1} numbers_max{m1}
+                          special_min{m1} special_max{m1}).
+  subst tmp64_1{m1}.
+  smt.
+  trivial.
+* sp.
+  if{1}.
+  - auto.
+  - conseq (_: false ==> _).
+    move => &m1 &m2 [[h1 [h2 [h3 h4]]] h5].
+    subst output{m1} output0{m1}.
+    rewrite sltE !of_sintK /smod /= in h5.
+    trivial.
+    trivial.
 admitted.
 
 
