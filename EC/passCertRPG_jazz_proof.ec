@@ -1,10 +1,13 @@
 require import AllCore IntDiv Number Distr List PassCertRPG_jazz PassCertRPG_ref.
 from Jasmin require import JModel.
 
+(*-------------------------------*)
+(*----- Auxiliary operators -----*)
+(*-------------------------------*)
+
 op EqWordChar word char = W8.to_uint word = char.
 op EqWordInt word int = W64.to_uint word = int.
 op EqIntWord int word = W64.of_int int = word.
-
 
 op policyFitsW64 policy =
   0 <= policy.`length < W64.modulus /\
@@ -17,7 +20,6 @@ op policyFitsW64 policy =
   0 <= policy.`specialMin < W64.modulus /\
   0 <= policy.`specialMax < W64.modulus.
 
-
 op policyInMem policy mem policyAddr =
   EqWordInt (loadW64 mem (W64.to_uint policyAddr)) policy.`length /\
   EqWordInt (loadW64 mem ((W64.to_uint policyAddr)+8)) policy.`lowercaseMin /\
@@ -28,7 +30,6 @@ op policyInMem policy mem policyAddr =
   EqWordInt (loadW64 mem ((W64.to_uint policyAddr)+48)) policy.`numbersMax /\
   EqWordInt (loadW64 mem ((W64.to_uint policyAddr)+56)) policy.`specialMin /\
   EqWordInt (loadW64 mem ((W64.to_uint policyAddr)+64)) policy.`specialMax.
-
 
 op memP_eq_specP policy (length lowercase_min lowercase_max uppercase_min uppercase_max
                  numbers_min numbers_max special_min special_max) =
@@ -41,7 +42,6 @@ op memP_eq_specP policy (length lowercase_min lowercase_max uppercase_min upperc
   EqWordInt numbers_max policy.`numbersMax /\
   EqWordInt special_min policy.`specialMin /\
   EqWordInt special_max policy.`specialMax.
-
 
 op satisfiableMemPolicy (length
                          lowercase_min lowercase_max
@@ -65,6 +65,9 @@ op satisfiableMemPolicy (length
   (lowercase_min + uppercase_min + numbers_min + special_min \ule length) /\
   (length \ule lowercase_max + uppercase_max + numbers_max + special_max).
 
+
+(*op memSet_eq_specSet memSet specSet =
+  forall x, (x \in memSet /\ !(x = W8.zero)) => exists y, y \in specSetEqWordChar*)
   
 
 
@@ -652,8 +655,7 @@ qed.
 
 lemma imp_ref_rng_equiv :
   equiv[M.rng ~ RPGRef.rng : EqWordInt range{1} range{2} /\
-                             to_uint range{1} < W64.modulus /\
-                             0 < to_uint range{1}
+                             0 < to_uint range{1} < W64.modulus
                              ==> EqWordInt res{1} res{2}].
 proof.
 proc.
@@ -677,10 +679,11 @@ seq 5 1 : (#pre /\
   rewrite - h1.
   have mod64 : W64.modulus = 18446744073709551616.
   - smt.
+  move => h4.
   by rewrite - mod64.
   rewrite to_uintB.
   rewrite ltzE in h3.
-  by rewrite uleE /=.
+  rewrite uleE /=. smt.
   by rewrite - h1 /=.
   by rewrite to_uint_small.
 if.
@@ -690,7 +693,13 @@ if.
     rewrite -h2 -h3.
     congr.
   + move => h5. 
-    smt. (*fix*)
+    subst modValue{2}.
+    apply wordint_to_intword in h2.
+    apply wordint_to_intword in h3.
+    rewrite /EqIntWord in h2.
+    rewrite /EqIntWord in h3.
+    subst tmp1{1}.
+    by subst tmp_range{1}.
 - seq 1 1 : (#[/:]pre /\ EqWordInt max_value{1} maxValue{2}).
   + wp.
     by skip.
@@ -707,10 +716,10 @@ proof.
 proc.
 seq 3 0 : (#pre /\
            policyAddr{1} = W64.zero /\
+           pwdAddr{1} = (of_int%W64 1000) /\ 
            policyInMem policy{1} Glob.mem{1} (W64.zero)).
-seq 2 0 : (#pre /\ policyAddr{1} = W64.zero).
-- auto.
-(*ecall{1} (imp_policy_mem policy{1} Glob.mem{1} policyAddr{1}).*)
+sp.
+(*ecall{1} (imp_policy_to_mem policy{1} Glob.mem{1} policyAddr{1}).*)
 admit.
 inline M.generate_password.
 seq 17 0 : (={policy} /\
@@ -951,12 +960,63 @@ seq 0 0 : (={policy} /\
 if{2}.
 (* if both mem and spec are satisfiable... distribution on the output should be equal *)
 (* talvez seja necessario tirar informacoes sobre equivalencia entre os conjuntos *)
-seq 0 4 : (#pre).
+seq 84 4 : (#pre).
 - inline *.
   auto.
-seq 26 0 : (#pre).
+  seq 26 0 : (#pre).
+  - auto.
+  seq 2 0 : (#pre).
+  - sp.
+    while{1} true (76 - to_uint i{1}).
+    + move => ? z.
+      wp. skip. smt.
+      skip.
+      smt.
+  seq 26 0 : (#pre).
+  - auto.
+  seq 2 0 : (#pre).
+  - sp.
+    while{1} true (76 - to_uint i{1}).
+    + move => ? z.
+      wp. skip. smt.
+      skip.
+      smt.
+  seq 10 0 : (#pre).
+  - auto.
+  seq 2 0 : (#pre).
+  - sp.
+    while{1} true (76 - to_uint i{1}).
+    + move => ? z.
+      wp. skip. smt.
+      skip.
+      smt.
+  seq 14 0 : (#pre).
+  - auto.
+  seq 2 0 : (#pre).
+  - sp.
+    while{1} true (76 - to_uint i{1}).
+    + move => ? z.
+      wp. skip. smt.
+      skip.
+      smt.
+  by skip.
+seq 2 0 : (#pre).
+- sp.
+  while{1} true (76 - to_uint i{1}).
+    + move => ? z.
+      wp. skip. smt.
+      skip.
+      smt.
+seq 1 1 : (#[/:]pre /\ generatedPassword{2} = [] /\
+           size generatedPassword{2} = to_uint%W64 i_filled{1}).
 - auto.
-sp.
+seq 0 4 : (#[/:]pre /\
+           EqWordInt lowercase_max{1} lowercaseAvailable{2} /\
+           EqWordInt uppercase_max{1} uppercaseAvailable{2} /\
+           EqWordInt numbers_max{1} numbersAvailable{2} /\
+           EqWordInt special_max{1} specialAvailable{2}).
+- auto.
+  move => />.
 
 admit.
 
