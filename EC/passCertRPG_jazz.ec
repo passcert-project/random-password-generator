@@ -6,6 +6,7 @@ require import WArray76.
 
 op [full uniform] RDRAND: W64.t distr.
 
+
 module M = {
   proc rng (range:W64.t) : W64.t = {
     

@@ -1,4 +1,4 @@
-require import AllCore IntDiv Number Distr List PassCertRPG_jazz PassCertRPG_ref.
+require import AllCore CoreInt Number IntDiv Number Distr DInterval List PassCertRPG_jazz PassCertRPG_ref.
 from Jasmin require import JModel.
 
 (*-------------------------------*)
@@ -71,7 +71,7 @@ op satisfiableMemPolicy (length
   
 
 
-module ConcreteScheme : RPG_T = {
+(*module ConcreteScheme : RPG_T = {
 
   proc policySpecToMem(policy:policy, mem:global_mem_t, addr:W64.t) : global_mem_t = {
     mem <- storeW64 mem (W64.to_uint addr + 0) (W64.of_int policy.`length);
@@ -124,11 +124,10 @@ module ConcreteScheme : RPG_T = {
     }
 
     return pwdOpt;
-
-
   }
 
-}.
+}.*)
+
 
 
 (**********************************)
@@ -143,6 +142,7 @@ move => h1.
 by rewrite - h1.
 qed.
 
+
 lemma eqwordint_int_id x :
   0 <= x < W64.modulus =>
   EqWordInt (of_int%W64 x) x.
@@ -153,12 +153,14 @@ assumption.
 reflexivity.
 qed.
 
+
 lemma load_from_store mem addr word :
   loadW64 (storeW64 mem addr word) (addr) = word.
 proof.
 rewrite /storeW64.
 admit.
 admitted.
+
 
 lemma load_from_unaffected_store mem addr (pos1 pos2:int) wordX wordY :
   loadW64 mem (addr + pos1) = wordX =>
@@ -167,417 +169,6 @@ lemma load_from_unaffected_store mem addr (pos1 pos2:int) wordX wordY :
 proof.
 admit.
 admitted.
-
-lemma imp_policy_to_mem _policy _mem _policyAddr :
-  hoare[ConcreteScheme.policySpecToMem : policy = _policy /\
-                                         mem = _mem /\
-                                         addr = _policyAddr /\
-                                         policyFitsW64 _policy
-         ==> 
-        policyInMem _policy res _policyAddr].
-proof.
-proc.
-seq 1 : (policy = _policy /\
-         addr = _policyAddr /\
-         policyFitsW64 _policy /\
-         EqWordInt (loadW64 mem (to_uint addr)) policy.`length).
-- wp.
-  skip.
-  move => &m /> ????????????.
-  rewrite /EqWordInt.
-  rewrite load_from_store to_uint_small.
-  by do! split.
-  move => />.   
-seq 1 : (#[/:]pre /\ EqWordInt (loadW64 mem ((to_uint addr)+8)) policy.`lowercaseMin).
-- wp.
-  skip.
-  move => &m /> ???????????????????.
-  split.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               0
-               8
-               (of_int%W64 policy{m}.`length)
-               (of_int%W64 policy{m}.`lowercaseMin)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite load_from_store /EqWordInt to_uint_small.
-    smt.
-    reflexivity.  
-seq 1 : (#[/:]pre /\ EqWordInt (loadW64 mem ((to_uint addr)+16)) policy.`lowercaseMax).
-- wp.
-  skip.
-  move => &m /> ????????????????????.
-  do! split.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               0
-               16
-               (of_int%W64 policy{m}.`length)
-               (of_int%W64 policy{m}.`lowercaseMax)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               8
-               16
-               (of_int%W64 policy{m}.`lowercaseMin)
-               (of_int%W64 policy{m}.`lowercaseMax)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite load_from_store /EqWordInt to_uint_small.
-    smt.
-    reflexivity.
-seq 1 : (#[/:]pre /\ EqWordInt (loadW64 mem ((to_uint addr)+24)) policy.`uppercaseMin).
-- wp.
-  skip.
-  move => &m /> ?????????????????????.
-  do! split.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               0
-               24
-               (of_int%W64 policy{m}.`length)
-               (of_int%W64 policy{m}.`uppercaseMin)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               8
-               24
-               (of_int%W64 policy{m}.`lowercaseMin)
-               (of_int%W64 policy{m}.`uppercaseMin)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               16
-               24
-               (of_int%W64 policy{m}.`lowercaseMax)
-               (of_int%W64 policy{m}.`uppercaseMin)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite load_from_store /EqWordInt to_uint_small.
-    smt.
-    reflexivity.
-seq 1 : (#[/:]pre /\ EqWordInt (loadW64 mem ((to_uint addr)+32)) policy.`uppercaseMax).
-- wp.
-  skip.
-  move => &m /> ??????????????????????.
-  do! split.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               0
-               32
-               (of_int%W64 policy{m}.`length)
-               (of_int%W64 policy{m}.`uppercaseMax)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               8
-               32
-               (of_int%W64 policy{m}.`lowercaseMin)
-               (of_int%W64 policy{m}.`uppercaseMax)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               16
-               32
-               (of_int%W64 policy{m}.`lowercaseMax)
-               (of_int%W64 policy{m}.`uppercaseMax)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               24
-               32
-               (of_int%W64 policy{m}.`uppercaseMin)
-               (of_int%W64 policy{m}.`uppercaseMax)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite load_from_store /EqWordInt to_uint_small.
-    smt.
-    reflexivity.
-seq 1 : (#[/:]pre /\ EqWordInt (loadW64 mem ((to_uint addr)+40)) policy.`numbersMin).
-- wp.
-  skip.
-  move => &m /> ???????????????????????.
-  do! split.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               0
-               40
-               (of_int%W64 policy{m}.`length)
-               (of_int%W64 policy{m}.`numbersMin)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               8
-               40
-               (of_int%W64 policy{m}.`lowercaseMin)
-               (of_int%W64 policy{m}.`numbersMin)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               16
-               40
-               (of_int%W64 policy{m}.`lowercaseMax)
-               (of_int%W64 policy{m}.`numbersMin)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               24
-               40
-               (of_int%W64 policy{m}.`uppercaseMin)
-               (of_int%W64 policy{m}.`numbersMin)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               32
-               40
-               (of_int%W64 policy{m}.`uppercaseMax)
-               (of_int%W64 policy{m}.`numbersMin)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite load_from_store /EqWordInt to_uint_small.
-    smt.
-    reflexivity.
-seq 1 : (#[/:]pre /\ EqWordInt (loadW64 mem ((to_uint addr)+48)) policy.`numbersMax).
-- wp.
-  skip.
-  move => &m /> ????????????????????????.
-  do! split.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               0
-               48
-               (of_int%W64 policy{m}.`length)
-               (of_int%W64 policy{m}.`numbersMax)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               8
-               48
-               (of_int%W64 policy{m}.`lowercaseMin)
-               (of_int%W64 policy{m}.`numbersMax)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               16
-               48
-               (of_int%W64 policy{m}.`lowercaseMax)
-               (of_int%W64 policy{m}.`numbersMax)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               24
-               48
-               (of_int%W64 policy{m}.`uppercaseMin)
-               (of_int%W64 policy{m}.`numbersMax)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               32
-               48
-               (of_int%W64 policy{m}.`uppercaseMax)
-               (of_int%W64 policy{m}.`numbersMax)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               40
-               48
-               (of_int%W64 policy{m}.`numbersMin)
-               (of_int%W64 policy{m}.`numbersMax)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite load_from_store /EqWordInt to_uint_small.
-    smt.
-    reflexivity.
-seq 1 : (#[/:]pre /\ EqWordInt (loadW64 mem ((to_uint addr)+56)) policy.`specialMin).
-- wp.
-  skip.
-  move => &m /> ?????????????????????????.
-  do! split.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               0
-               56
-               (of_int%W64 policy{m}.`length)
-               (of_int%W64 policy{m}.`specialMin)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               8
-               56
-               (of_int%W64 policy{m}.`lowercaseMin)
-               (of_int%W64 policy{m}.`specialMin)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               16
-               56
-               (of_int%W64 policy{m}.`lowercaseMax)
-               (of_int%W64 policy{m}.`specialMin)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               24
-               56
-               (of_int%W64 policy{m}.`uppercaseMin)
-               (of_int%W64 policy{m}.`specialMin)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               32
-               56
-               (of_int%W64 policy{m}.`uppercaseMax)
-               (of_int%W64 policy{m}.`specialMin)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               40
-               56
-               (of_int%W64 policy{m}.`numbersMin)
-               (of_int%W64 policy{m}.`specialMin)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               48
-               56
-               (of_int%W64 policy{m}.`numbersMax)
-               (of_int%W64 policy{m}.`specialMin)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite load_from_store /EqWordInt to_uint_small.
-    smt.
-    reflexivity.
-seq 1 : (#[/:]pre /\ EqWordInt (loadW64 mem ((to_uint addr)+64)) policy.`specialMax).
-- wp.
-  skip.
-  move => &m /> ??????????????????????????.
-  do! split.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               0
-               64
-               (of_int%W64 policy{m}.`length)
-               (of_int%W64 policy{m}.`specialMax)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               8
-               64
-               (of_int%W64 policy{m}.`lowercaseMin)
-               (of_int%W64 policy{m}.`specialMax)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               16
-               64
-               (of_int%W64 policy{m}.`lowercaseMax)
-               (of_int%W64 policy{m}.`specialMax)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               24
-               64
-               (of_int%W64 policy{m}.`uppercaseMin)
-               (of_int%W64 policy{m}.`specialMax)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               32
-               64
-               (of_int%W64 policy{m}.`uppercaseMax)
-               (of_int%W64 policy{m}.`specialMax)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               40
-               64
-               (of_int%W64 policy{m}.`numbersMin)
-               (of_int%W64 policy{m}.`specialMax)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               48
-               64
-               (of_int%W64 policy{m}.`numbersMax)
-               (of_int%W64 policy{m}.`specialMax)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite (load_from_unaffected_store mem{m}
-               (to_uint addr{m})
-               56
-               64
-               (of_int%W64 policy{m}.`specialMin)
-               (of_int%W64 policy{m}.`specialMax)).
-    smt.
-    trivial.
-    by apply eqwordint_int_id.
-  * rewrite load_from_store /EqWordInt to_uint_small.
-    smt.
-    reflexivity.
-by skip.
-qed.
 
 
 lemma sat_mem_sat_spec policy length lowercase_min lowercase_max uppercase_min
@@ -622,16 +213,16 @@ split.
     assumption.
 * move => /> ????????????????.
   do! split.
-  - rewrite uleE. rewrite of_uintK. rewrite -H in H8. smt.
+  - rewrite uleE. rewrite of_uintK. rewrite -H in H8. smt().
   - rewrite ultE. rewrite of_uintK. by rewrite -H in H9.
   - rewrite uleE. rewrite of_uintK. by rewrite -H0 in H10.
   - rewrite uleE. rewrite of_uintK. by rewrite -H2 in H11.
   - rewrite uleE. rewrite of_uintK. by rewrite -H4 in H12.
   - rewrite uleE. rewrite of_uintK. by rewrite -H6 in H13.
-  - rewrite uleE. rewrite of_uintK. rewrite -H1 in H14. smt.
-  - rewrite uleE. rewrite of_uintK. rewrite -H3 in H15. smt.
-  - rewrite uleE. rewrite of_uintK. rewrite -H5 in H16. smt.
-  - rewrite uleE. rewrite of_uintK. rewrite -H7 in H17. smt.
+  - rewrite uleE. rewrite of_uintK. rewrite -H1 in H14. smt().
+  - rewrite uleE. rewrite of_uintK. rewrite -H3 in H15. smt().
+  - rewrite uleE. rewrite of_uintK. rewrite -H5 in H16. smt().
+  - rewrite uleE. rewrite of_uintK. rewrite -H7 in H17. smt().
   - rewrite uleE. by rewrite -H0 -H1 in H18.
   - rewrite uleE. by rewrite -H2 -H3 in H19.
   - rewrite uleE. by rewrite -H4 -H5 in H20.
@@ -652,6 +243,9 @@ qed.
 (*********************************)
 (*          EQUIVALENCE          *)
 (*********************************)
+
+axiom rdrand_eq_dist :
+  RDRAND = dmap [0..W64.max_uint] W64.of_int.  
 
 lemma imp_ref_rng_equiv :
   equiv[M.rng ~ RPGRef.rng : EqWordInt range{1} range{2} /\
@@ -674,16 +268,16 @@ seq 5 1 : (#pre /\
     rewrite -h1.
     have mod : 18446744073709551615 %% to_uint range{1} < to_uint range{1}.
     * by apply ltz_pmod.
-    smt. (* fixme ltr_trans not working *)
+    smt(). (* fixme ltr_trans not working *)
   do! split.
   rewrite - h1.
   have mod64 : W64.modulus = 18446744073709551616.
-  - smt.
+  - smt().
   move => h4.
   by rewrite - mod64.
   rewrite to_uintB.
   rewrite ltzE in h3.
-  rewrite uleE /=. smt.
+  rewrite uleE /=. smt().
   by rewrite - h1 /=.
   by rewrite to_uint_small.
 if.
@@ -703,15 +297,85 @@ if.
 - seq 1 1 : (#[/:]pre /\ EqWordInt max_value{1} maxValue{2}).
   + wp.
     by skip.
-  seq 1 1 : (#[/:]pre /\ EqWordInt tmp2{1} value{2}).
-  + admit.
+  seq 1 1 : (EqWordInt range{1} range{2} /\
+             0 < to_uint range{1} < W64.modulus /\
+             EqWordInt tmp1{1} modValue{2} /\
+             EqWordInt tmp_range{1} (range{2} - 1) /\
+             tmp1{1} = tmp_range{1} /\
+             EqWordInt max_value{1} maxValue{2} /\
+             EqWordInt tmp2{1} value{2}).
+  + rnd W64.to_uint W64.of_int.
+    skip.
+    move => &m1 &m2 /> ???????.
+    split.
+    * move => vR ?.
+      rewrite to_uint_small.   
+      smt.
+      reflexivity.
+    * move => ?.
+      split.
+      * move => vR ?.
+        rewrite rdrand_eq_dist.
+        rewrite (dmap1E_can [0..W64.max_uint] W64.of_int W64.to_uint).
+        exact to_uintK.
+        move => a ?.
+        rewrite to_uint_small.
+        smt.
+        reflexivity.
+        rewrite to_uint_small.
+        smt.
+        by simplify.
+      * move => vR tmp2L ?.
+        rewrite supp_dinter.    
+        have eq : 0 <= to_uint tmp2L && to_uint tmp2L < W64.modulus.
+        + apply W64.to_uint_cmp.
+        smt.
+  seq 1 1 : (#pre).
+  - while (EqWordInt max_value{1} maxValue{2}).
+    * rnd W64.to_uint W64.of_int.  
+    skip.
+    move => &m1 &m2 /> ???.
+    split.
+    * move => vR ?.
+      rewrite to_uint_small.   
+      smt.
+      reflexivity.
+    * move => ?.
+      split.
+      * move => vR ?.
+        rewrite rdrand_eq_dist.
+        rewrite (dmap1E_can [0..W64.max_uint] W64.of_int W64.to_uint).
+        exact to_uintK.
+        move => a ?.
+        rewrite to_uint_small.
+        smt.
+        reflexivity.
+        rewrite to_uint_small.
+        smt.
+        by simplify.
+      * move => vR tmp2L ?.
+        split.
+        * rewrite supp_dinter.    
+          have eq : 0 <= to_uint tmp2L && to_uint tmp2L < W64.modulus.
+          + apply W64.to_uint_cmp.
+          smt.
+        * move => ?.
+          split.
+          * move => ?.
+            rewrite -H.
+            smt.
+    * auto.
+      admit.
+    
 admitted.
 
 
-
 lemma implementation_reference_equiv :
-  equiv[ConcreteScheme.generate_password ~ RPGRef.generate_password :
-          ={policy} /\ policyFitsW64 policy{1} ==> ={res}].
+  equiv[M.generate_password ~ RPGRef.generate_password :
+          policyFitsW64 policy{2} /\
+          policyInMem policy{2} M.Glob.mem policy_addr{1}
+           ==>
+          ={res}].
 proof.
 proc.
 seq 3 0 : (#pre /\
