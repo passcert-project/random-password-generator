@@ -153,7 +153,6 @@ assumption.
 reflexivity.
 qed.
 
-
 lemma load_from_store mem addr word :
   loadW64 (storeW64 mem addr word) (addr) = word.
 proof.
@@ -256,7 +255,9 @@ proc.
 seq 5 1 : (#pre /\
            EqWordInt tmp1{1} modValue{2} /\
            EqWordInt tmp_range{1} (range{2} - 1) /\
-           EqWordInt tmp2{1} (2^64-1)).
+           EqWordInt tmp2{1} (2^64-1) /\
+           W64.one \ule (tmp2{1} - tmp1{1}) /\
+           tmp1{1} \ule tmp2{1}).
 - wp.
   skip.
   move => &1 &2 [h1 [h2 h3]] />.
@@ -280,6 +281,8 @@ seq 5 1 : (#pre /\
   rewrite uleE /=. smt().
   by rewrite - h1 /=.
   by rewrite to_uint_small.
+  smt.
+  smt.
 if.
 - move => &1 &2 [h1 [h2 [h3 h4]]] />.
   split.
@@ -294,7 +297,7 @@ if.
     rewrite /EqIntWord in h3.
     subst tmp1{1}.
     by subst tmp_range{1}.
-- seq 1 1 : (#[/:]pre /\ EqWordInt max_value{1} maxValue{2}).
+- seq 1 1 : (#[/:]pre /\ EqWordInt max_value{1} maxValue{2} /\ 0 <= maxValue{2} < W64.modulus).
   + wp.
     by skip.
   seq 1 1 : (EqWordInt range{1} range{2} /\
@@ -303,10 +306,12 @@ if.
              EqWordInt tmp_range{1} (range{2} - 1) /\
              tmp1{1} = tmp_range{1} /\
              EqWordInt max_value{1} maxValue{2} /\
+             0 <= maxValue{2} < W64.modulus /\
+             0 <= value{2} < W64.modulus /\
              EqWordInt tmp2{1} value{2}).
   + rnd W64.to_uint W64.of_int.
     skip.
-    move => &m1 &m2 /> ???????.
+    move => &m1 &m2 /> ???????????.
     split.
     * move => vR ?.
       rewrite to_uint_small.   
@@ -331,10 +336,108 @@ if.
         + apply W64.to_uint_cmp.
         smt.
   seq 1 1 : (#pre).
-  - while (EqWordInt max_value{1} maxValue{2}).
+  - while (EqWordInt max_value{1} maxValue{2} /\
+           0 <= maxValue{2} < W64.modulus /\
+           0 <= value{2} < W64.modulus /\
+           EqWordInt tmp2{1} value{2}).
     * rnd W64.to_uint W64.of_int.  
+      skip.
+      move => &m1 &m2 /> ????????.
+      split.
+      + move => vR ?.
+        rewrite to_uint_small.   
+        smt.
+        reflexivity.
+      + move => ?.
+        split.
+        + move => vR ?.
+          rewrite rdrand_eq_dist.
+          rewrite (dmap1E_can [0..W64.max_uint] W64.of_int W64.to_uint).
+          exact to_uintK.
+          move => a ?.
+          rewrite to_uint_small.
+          smt.
+          reflexivity.
+          rewrite to_uint_small.
+          smt.
+          by simplify.
+        + move => vR tmp2L ?.
+          split.
+          + rewrite supp_dinter.    
+            have eq : 0 <= to_uint tmp2L && to_uint tmp2L < W64.modulus.
+            * apply W64.to_uint_cmp.
+            smt.
+          + move => ?.
+            do! split.
+            + smt.
+            + smt.
+            + move => ?.
+              rewrite -H.
+              smt.
+            + move => ?.
+              apply wordint_to_intword in H.
+              rewrite -H.
+              rewrite ultE to_uint_small.
+              split.
+              assumption. by move => ? /=.
+              assumption.
+    * skip.
+      move => &m1 &m2 /> ???????????.
+      split.
+      + move => ?.  
+        rewrite /EqWordInt in H9.
+        rewrite /EqWordInt in H4.
+        rewrite -H9 -H4.
+        by rewrite ultE in H10.
+      + move => ?.
+        apply wordint_to_intword in H9.
+        rewrite /EqIntWord in H9.
+        apply wordint_to_intword in H4.
+        rewrite /EqIntWord in H4.
+        rewrite -H9 -H4.
+        rewrite ultE.
+        rewrite to_uint_small.
+        split. assumption. by move => ?.
+        rewrite to_uint_small.
+        smt.
+        assumption.
+  wp.
+  skip.
+  move => &m1 &m2 /> ???????????.
+  rewrite /EqWordInt.
+  apply wordint_to_intword in H3.
+  rewrite /EqIntWord in H3.
+  rewrite -H3.
+  simplify.
+  rewrite -H9.
+  rewrite umodE /ulift2 to_uint_small to_uint_small.
+  rewrite /EqWordInt in H.
+  rewrite -H.
+  smt().
+  smt().
+  smt().
+  smt().
+- seq 2 1 : (#[/:]pre /\ EqWordInt max_value{1} maxValue{2}).
+  - wp.
     skip.
-    move => &m1 &m2 /> ???.
+    move => &m1 &m2 /> ?????????.
+    rewrite /EqWordInt to_uintB.
+    assumption. 
+    rewrite to_uintB.
+    assumption.
+    by rewrite -H2 H4 /=.
+  seq 2 2 : (0 <= to_uint tmp2{1} /\
+             range{2} < W64.modulus /\
+             EqWordInt tmp2{1} value{2} /\
+             EqWordInt (tmp_range{1} + W64.one) range{2}).
+  - seq 1 1 : (0 <= to_uint tmp2{1} /\
+               range{2} < W64.modulus /\
+               EqWordInt max_value{1} maxValue{2} /\
+               EqWordInt tmp2{1} value{2} /\
+               EqWordInt (tmp_range{1} + W64.one) range{2}).
+    - rnd W64.to_uint W64.of_int.
+    skip.
+    move => &m1 &m2 /> ??????????.
     split.
     * move => vR ?.
       rewrite to_uint_small.   
@@ -354,20 +457,70 @@ if.
         smt.
         by simplify.
       * move => vR tmp2L ?.
+        rewrite supp_dinter.    
+        have eq : 0 <= to_uint tmp2L && to_uint tmp2L < W64.modulus.
+        + apply W64.to_uint_cmp.
         split.
-        * rewrite supp_dinter.    
-          have eq : 0 <= to_uint tmp2L && to_uint tmp2L < W64.modulus.
-          + apply W64.to_uint_cmp.
-          smt.
+        * smt.
         * move => ?.
           split.
-          * move => ?.
-            rewrite -H.
+          * case eq.
+            move => />.
+          * split.
+            * by rewrite -H.
+            * smt.
+    while (EqWordInt max_value{1} maxValue{2} /\
+           EqWordInt tmp2{1} value{2} /\
+           EqWordInt (tmp_range{1} + W64.one) range{2}).
+    * rnd W64.to_uint W64.of_int.  
+      skip.
+      move => &m1 &m2 /> ?????.
+      split.
+      + move => vR ?.
+        rewrite to_uint_small.   
+        smt.
+        reflexivity.
+      + move => ?.
+        split.
+        + move => vR ?.
+          rewrite rdrand_eq_dist.
+          rewrite (dmap1E_can [0..W64.max_uint] W64.of_int W64.to_uint).
+          exact to_uintK.
+          move => a ?.
+          rewrite to_uint_small.
+          smt.
+          reflexivity.
+          rewrite to_uint_small.
+          smt.
+          by simplify.
+        + move => vR tmp2L ?.
+          split.
+          + rewrite supp_dinter.    
+            have eq : 0 <= to_uint tmp2L && to_uint tmp2L < W64.modulus.
+            * apply W64.to_uint_cmp.
             smt.
-    * auto.
-      admit.
-    
-admitted.
+          + move => ?.
+            do! split.
+            + smt.
+            + smt.
+              skip.
+              move => &m1 &m2 /> ?????.
+              do! split.
+              + smt.
+              + smt.                
+       * smt.
+wp.
+skip.
+move => &m1 &m2 [? [? [? ?]]].
+rewrite /EqWordInt umodE /ulift2 to_uint_small.
+split.
+- by apply modn_ge0.
+- move => ?.
+  rewrite /EqWordInt in H2.
+  rewrite H2.
+  smt.
+  by rewrite H1 H2.
+qed.
 
 
 lemma implementation_reference_equiv :
