@@ -1,4 +1,4 @@
-require import AllCore CoreInt Number IntDiv Number Distr DInterval List PassCertRPG_jazz PassCertRPG_ref.
+require import AllCore Number IntDiv Distr DInterval List PassCertRPG_jazz PassCertRPG_ref.
 from Jasmin require import JModel.
 
 (*-------------------------------*)
@@ -71,7 +71,7 @@ op satisfiableMemPolicy (length
   
 
 
-(*module ConcreteScheme : RPG_T = {
+module ConcreteScheme : RPG_T = {
 
   proc policySpecToMem(policy:policy, mem:global_mem_t, addr:W64.t) : global_mem_t = {
     mem <- storeW64 mem (W64.to_uint addr + 0) (W64.of_int policy.`length);
@@ -126,13 +126,38 @@ op satisfiableMemPolicy (length
     return pwdOpt;
   }
 
-}.*)
+}.
 
 
 
 (**********************************)
 (*        AUXILIARY LEMMAS        *)
 (**********************************)
+
+lemma RDRAND_dinterval:
+ RDRAND2 = dmap [0..W64.max_uint] W64.of_int.
+proof.
+rewrite /RDRAND2 /dword.
+apply eq_distr => x.
+rewrite duniform1E dmap1E all_wordsP /= /all_words.
+rewrite undup_id.
+ rewrite map_inj_in_uniq.
+  move=> a b Ha Hb H.
+ have: W64.to_uint (W64.of_int a) = W64.to_uint (W64.of_int b) by smt().
+  rewrite !of_uintK !modz_small; smt.
+ by apply iota_uniq.
+rewrite size_map size_iota dinterE /=.
+have ->: size (filter (pred1 x \o W64.of_int) (range 0 18446744073709551616)) = 1.
+ rewrite size_filter (eq_in_count _ (pred1 (W64.to_uint x))).
+  move => a /mem_range [? ?].
+  rewrite /(\o) /pred1; split => H.
+   by rewrite -H of_uintK modz_small /#.
+  by rewrite H to_uintK.
+ rewrite count_uniq_mem.
+  by apply range_uniq.
+ rewrite mem_range; move: (W64.to_uint_cmp x); smt().
+done.
+qed.
 
 lemma wordint_to_intword word int :
   EqWordInt word int => EqIntWord int word.
@@ -156,18 +181,29 @@ qed.
 lemma load_from_store mem addr word :
   loadW64 (storeW64 mem addr word) (addr) = word.
 proof.
-rewrite /storeW64.
-admit.
-admitted.
+rewrite /loadW64 /storeW64 -(W8u8.unpack8K word); congr.
+apply W8u8.Pack.all_eq_eq; rewrite /all_eq !storesE /=.
+rewrite !get_setE => |>. smt().
+qed.
 
+lemma load_storeW64_neq mem a1 a2 x:
+ (a2 + 8 <= a1 || a1 + 8 <= a2) => 
+ loadW64 (storeW64 mem a1 x) a2 = loadW64 mem a2.
+proof.
+move => H; rewrite /loadW64 /storeW64; congr.
+apply W8u8.Pack.all_eq_eq; rewrite /all_eq !storesE /=.
+rewrite !get_setE => |>. smt(). 
+qed.
 
 lemma load_from_unaffected_store mem addr (pos1 pos2:int) wordX wordY :
   loadW64 mem (addr + pos1) = wordX =>
   8 <= pos2 - pos1 =>
   loadW64 (storeW64 mem (addr + pos2) wordY) (addr + pos1) = wordX. 
 proof.
-admit.
-admitted.
+move=> <- *.
+apply load_storeW64_neq.
+smt().
+qed.
 
 
 lemma sat_mem_sat_spec policy length lowercase_min lowercase_max uppercase_min
@@ -182,56 +218,72 @@ lemma sat_mem_sat_spec policy length lowercase_min lowercase_max uppercase_min
     <=>
   (satisfiablePolicy policy).
 proof.
-move => /> ?????????.
+move => /> h1 h2 h3 h4 h5 h6 h7 h8 h9.
 split.
-* move => /> ????????????????. 
+* move => /> h10 h11 h12 h13 h14 h15 h16 h17 h18 h19 h20 h21 h22 h23 h24 h25.
+  rewrite uleE /= in h10.
+  rewrite ultE /= in h11.
+  rewrite uleE /= in h12.
+  rewrite uleE /= in h13.
+  rewrite uleE /= in h14.
+  rewrite uleE /= in h15.
+  rewrite uleE /= in h16.
+  rewrite uleE /= in h17.
+  rewrite uleE /= in h18.
+  rewrite uleE /= in h19.
+  rewrite uleE /= in h20.
+  rewrite uleE /= in h21.
+  rewrite uleE /= in h22.
+  rewrite uleE /= in h23.
+  rewrite uleE /= in h24.
+  rewrite uleE /= in h25.
   do! split.
-  - rewrite uleE in H8. rewrite of_uintK in H8. rewrite -H. smt. (*ez fix*)
-  - rewrite ultE in H9. rewrite of_uintK in H9. by rewrite -H.
-  - rewrite uleE in H10. rewrite of_uintK in H10. by rewrite -H0.
-  - rewrite uleE in H11. rewrite of_uintK in H11. by rewrite -H2.
-  - rewrite uleE in H12. rewrite of_uintK in H12. by rewrite -H4.
-  - rewrite uleE in H13. rewrite of_uintK in H13. by rewrite -H6.
-  - rewrite uleE in H14. rewrite of_uintK in H14. rewrite -H1. smt.
-  - rewrite uleE in H15. rewrite of_uintK in H15. rewrite -H3. smt.
-  - rewrite uleE in H16. rewrite of_uintK in H16. rewrite -H5. smt.
-  - rewrite uleE in H17. rewrite of_uintK in H17. rewrite -H7. smt.
-  - rewrite uleE in H18. by rewrite -H0 -H1.
-  - rewrite uleE in H19. by rewrite -H2 -H3.
-  - rewrite uleE in H20. by rewrite -H4 -H5.
-  - rewrite uleE in H21. by rewrite -H6 -H7.
-  - rewrite uleE in H22. rewrite -H0 -H2 -H4 -H6 -H.
-    rewrite -to_uintD_small. smt. (*Fix*)
+  - by rewrite -h1.
+  - by rewrite -h1.
+  - by rewrite -h2.
+  - by rewrite -h4.
+  - by rewrite -h6.
+  - by rewrite -h8.
+  - by rewrite -h3.
+  - by rewrite -h5.
+  - by rewrite -h7.
+  - by rewrite -h9.
+  - by rewrite -h2 -h3.
+  - by rewrite -h4 -h5.
+  - by rewrite -h6 -h7.
+  - by rewrite -h8 -h9.
+  - rewrite -h2 -h4 -h6 -h8 -h1.
+    rewrite -to_uintD_small. smt().
     rewrite -to_uintD_small. smt.
     rewrite -to_uintD_small. smt.
     assumption.
-  - rewrite uleE in H23. rewrite -H1 -H3 -H5 -H7 -H.
-    rewrite -to_uintD_small. smt.
+  - rewrite -h3 -h5 -h7 -h9 -h1.
+    rewrite -to_uintD_small. smt().
     rewrite -to_uintD_small. smt.
     rewrite -to_uintD_small. smt.
     assumption.
-* move => /> ????????????????.
+* move => /> h10 h11 h12 h13 h14 h15 h16 h17 h18 h19 h20 h21 h22 h23 h24 h25.
   do! split.
-  - rewrite uleE. rewrite of_uintK. rewrite -H in H8. smt().
-  - rewrite ultE. rewrite of_uintK. by rewrite -H in H9.
-  - rewrite uleE. rewrite of_uintK. by rewrite -H0 in H10.
-  - rewrite uleE. rewrite of_uintK. by rewrite -H2 in H11.
-  - rewrite uleE. rewrite of_uintK. by rewrite -H4 in H12.
-  - rewrite uleE. rewrite of_uintK. by rewrite -H6 in H13.
-  - rewrite uleE. rewrite of_uintK. rewrite -H1 in H14. smt().
-  - rewrite uleE. rewrite of_uintK. rewrite -H3 in H15. smt().
-  - rewrite uleE. rewrite of_uintK. rewrite -H5 in H16. smt().
-  - rewrite uleE. rewrite of_uintK. rewrite -H7 in H17. smt().
-  - rewrite uleE. by rewrite -H0 -H1 in H18.
-  - rewrite uleE. by rewrite -H2 -H3 in H19.
-  - rewrite uleE. by rewrite -H4 -H5 in H20.
-  - rewrite uleE. by rewrite -H6 -H7 in H21.
-  - rewrite uleE. rewrite -H0 -H2 -H4 -H6 -H in H22.
-    rewrite to_uintD_small. smt. (*Fix*)
+  - rewrite uleE. by rewrite -h1 in h10.
+  - rewrite ultE. by rewrite -h1 in h11.
+  - rewrite uleE. by rewrite -h2 in h12.
+  - rewrite uleE. by rewrite -h4 in h13.
+  - rewrite uleE. by rewrite -h6 in h14.
+  - rewrite uleE. by rewrite -h8 in h15.
+  - rewrite uleE. by rewrite -h3 in h16. 
+  - rewrite uleE. by rewrite -h5 in h17.
+  - rewrite uleE. by rewrite -h7 in h18.
+  - rewrite uleE. by rewrite -h9 in h19.
+  - rewrite uleE. by rewrite -h2 -h3 in h20.
+  - rewrite uleE. by rewrite -h4 -h5 in h21.
+  - rewrite uleE. by rewrite -h6 -h7 in h22.
+  - rewrite uleE. by rewrite -h8 -h9 in h23.
+  - rewrite uleE. rewrite -h2 -h4 -h6 -h8 -h1 in h24.
     rewrite to_uintD_small. smt.
     rewrite to_uintD_small. smt.
+    rewrite to_uintD_small. smt.
     assumption.
-  - rewrite uleE. rewrite -H1 -H3 -H5 -H7 -H in H23.
+  - rewrite uleE. rewrite -h3 -h5 -h7 -h9 -h1 in h25.
     rewrite to_uintD_small. smt.
     rewrite to_uintD_small. smt.
     rewrite to_uintD_small. smt.
@@ -261,28 +313,23 @@ seq 5 1 : (#pre /\
 - wp.
   skip.
   move => &1 &2 [h1 [h2 h3]] />.
-  rewrite umodE /ulift2 h1 /= /EqWordInt.
-  rewrite to_uint_small.
+  rewrite umodE /ulift2 h1 /= /EqWordInt to_uint_small.
   split.
   + by apply modn_ge0.
   + move => h4.
     rewrite -h1.
     have mod : 18446744073709551615 %% to_uint range{1} < to_uint range{1}.
     * by apply ltz_pmod.
-    smt(). (* fixme ltr_trans not working *)
+    (*apply (ltr_trans mod h3). cant find the lemma for some reason*)
+    smt.
   do! split.
-  rewrite - h1.
-  have mod64 : W64.modulus = 18446744073709551616.
-  - smt().
-  move => h4.
-  by rewrite - mod64.
-  rewrite to_uintB.
-  rewrite ltzE in h3.
-  rewrite uleE /=. smt().
-  by rewrite - h1 /=.
-  by rewrite to_uint_small.
-  smt.
-  smt.
+  + rewrite to_uintB.
+    rewrite uleE /=.
+    smt().
+    by rewrite h1 /=.
+  + rewrite uleE /=.
+    smt.
+  + smt.
 if.
 - move => &1 &2 [h1 [h2 [h3 h4]]] />.
   split.
@@ -311,26 +358,25 @@ if.
              EqWordInt tmp2{1} value{2}).
   + rnd W64.to_uint W64.of_int.
     skip.
-    move => &m1 &m2 /> ???????????.
+    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11.
     split.
-    * move => vR ?.
+    * move => vR h12.
       rewrite to_uint_small.   
       smt.
       reflexivity.
-    * move => ?.
+    * move => h12.
       split.
-      * move => vR ?.
-        rewrite rdrand_eq_dist.
-        rewrite (dmap1E_can [0..W64.max_uint] W64.of_int W64.to_uint).
-        exact to_uintK.
-        move => a ?.
+      * move => vR h13.
+        rewrite RDRAND_dinterval (dmap1E_can [0..W64.max_uint] W64.of_int W64.to_uint).
+        exact W64.to_uintK.
+        move => a h14.
         rewrite to_uint_small.
         smt.
         reflexivity.
         rewrite to_uint_small.
         smt.
         by simplify.
-      * move => vR tmp2L ?.
+      * move => vR tmp2L h13.
         rewrite supp_dinter.    
         have eq : 0 <= to_uint tmp2L && to_uint tmp2L < W64.modulus.
         + apply W64.to_uint_cmp.
@@ -342,59 +388,58 @@ if.
            EqWordInt tmp2{1} value{2}).
     * rnd W64.to_uint W64.of_int.  
       skip.
-      move => &m1 &m2 /> ????????.
+      move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8.
       split.
-      + move => vR ?.
+      + move => vR h9.
         rewrite to_uint_small.   
         smt.
         reflexivity.
-      + move => ?.
+      + move => h9.
         split.
-        + move => vR ?.
-          rewrite rdrand_eq_dist.
-          rewrite (dmap1E_can [0..W64.max_uint] W64.of_int W64.to_uint).
-          exact to_uintK.
-          move => a ?.
+        + move => vR h10.
+          rewrite RDRAND_dinterval (dmap1E_can [0..W64.max_uint] W64.of_int W64.to_uint).
+          exact W64.to_uintK.
+          move => a h11.
           rewrite to_uint_small.
           smt.
           reflexivity.
           rewrite to_uint_small.
           smt.
           by simplify.
-        + move => vR tmp2L ?.
+        + move => vR tmp2L h10.
           split.
           + rewrite supp_dinter.    
             have eq : 0 <= to_uint tmp2L && to_uint tmp2L < W64.modulus.
             * apply W64.to_uint_cmp.
             smt.
-          + move => ?.
+          + move => h11.
             do! split.
             + smt.
             + smt.
-            + move => ?.
-              rewrite -H.
+            + move => h12.
+              rewrite -h1.
               smt.
-            + move => ?.
-              apply wordint_to_intword in H.
-              rewrite -H.
+            + move => h12.
+              apply wordint_to_intword in h1.
+              rewrite -h1.
               rewrite ultE to_uint_small.
               split.
-              assumption. by move => ? /=.
+              assumption. by move => h13 /=.
               assumption.
     * skip.
-      move => &m1 &m2 /> ???????????.
+      move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11.
       split.
-      + move => ?.  
-        rewrite /EqWordInt in H9.
-        rewrite /EqWordInt in H4.
-        rewrite -H9 -H4.
-        by rewrite ultE in H10.
-      + move => ?.
-        apply wordint_to_intword in H9.
-        rewrite /EqIntWord in H9.
-        apply wordint_to_intword in H4.
-        rewrite /EqIntWord in H4.
-        rewrite -H9 -H4.
+      + move => h12.  
+        rewrite /EqWordInt in h11.
+        rewrite /EqWordInt in h6.
+        rewrite -h11 -h6.
+        by rewrite ultE in h12.
+      + move => h12.
+        apply wordint_to_intword in h11.
+        rewrite /EqIntWord in h11.
+        apply wordint_to_intword in h6.
+        rewrite /EqIntWord in h6.
+        rewrite -h11 -h6.
         rewrite ultE.
         rewrite to_uint_small.
         split. assumption. by move => ?.
@@ -403,16 +448,16 @@ if.
         assumption.
   wp.
   skip.
-  move => &m1 &m2 /> ???????????.
+  move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11.
   rewrite /EqWordInt.
-  apply wordint_to_intword in H3.
-  rewrite /EqIntWord in H3.
-  rewrite -H3.
+  apply wordint_to_intword in h5.
+  rewrite /EqIntWord in h5.
+  rewrite -h5.
   simplify.
-  rewrite -H9.
+  rewrite -h11.
   rewrite umodE /ulift2 to_uint_small to_uint_small.
-  rewrite /EqWordInt in H.
-  rewrite -H.
+  rewrite /EqWordInt in h1.
+  rewrite -h1.
   smt().
   smt().
   smt().
@@ -420,12 +465,12 @@ if.
 - seq 2 1 : (#[/:]pre /\ EqWordInt max_value{1} maxValue{2}).
   - wp.
     skip.
-    move => &m1 &m2 /> ?????????.
+    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9.
     rewrite /EqWordInt to_uintB.
     assumption. 
     rewrite to_uintB.
     assumption.
-    by rewrite -H2 H4 /=.
+    by rewrite -h4 h6 /=.
   seq 2 2 : (0 <= to_uint tmp2{1} /\
              range{2} < W64.modulus /\
              EqWordInt tmp2{1} value{2} /\
@@ -437,98 +482,100 @@ if.
                EqWordInt (tmp_range{1} + W64.one) range{2}).
     - rnd W64.to_uint W64.of_int.
     skip.
-    move => &m1 &m2 /> ??????????.
+    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10.
     split.
-    * move => vR ?.
+    * move => vR h11.
       rewrite to_uint_small.   
       smt.
       reflexivity.
-    * move => ?.
+    * move => h12.
       split.
-      * move => vR ?.
-        rewrite rdrand_eq_dist.
-        rewrite (dmap1E_can [0..W64.max_uint] W64.of_int W64.to_uint).
-        exact to_uintK.
-        move => a ?.
+      * move => vR h13.
+        rewrite RDRAND_dinterval (dmap1E_can [0..W64.max_uint] W64.of_int W64.to_uint).
+        exact W64.to_uintK.
+        move => a h14.
         rewrite to_uint_small.
         smt.
         reflexivity.
         rewrite to_uint_small.
         smt.
         by simplify.
-      * move => vR tmp2L ?.
+      * move => vR tmp2L h13.
         rewrite supp_dinter.    
         have eq : 0 <= to_uint tmp2L && to_uint tmp2L < W64.modulus.
         + apply W64.to_uint_cmp.
         split.
         * smt.
-        * move => ?.
+        * move => h14.
           split.
           * case eq.
             move => />.
           * split.
-            * by rewrite -H.
+            * by rewrite -h1.
             * smt.
     while (EqWordInt max_value{1} maxValue{2} /\
            EqWordInt tmp2{1} value{2} /\
            EqWordInt (tmp_range{1} + W64.one) range{2}).
     * rnd W64.to_uint W64.of_int.  
       skip.
-      move => &m1 &m2 /> ?????.
+      move => &m1 &m2 /> h1 h2 h3 h4 h5.
       split.
-      + move => vR ?.
+      + move => vR h6.
         rewrite to_uint_small.   
         smt.
         reflexivity.
-      + move => ?.
+      + move => h6.
         split.
-        + move => vR ?.
-          rewrite rdrand_eq_dist.
-          rewrite (dmap1E_can [0..W64.max_uint] W64.of_int W64.to_uint).
-          exact to_uintK.
-          move => a ?.
+        + move => vR h7.
+          rewrite RDRAND_dinterval (dmap1E_can [0..W64.max_uint] W64.of_int W64.to_uint).
+          exact W64.to_uintK.
+          move => a h8.
           rewrite to_uint_small.
           smt.
           reflexivity.
           rewrite to_uint_small.
           smt.
           by simplify.
-        + move => vR tmp2L ?.
+        + move => vR tmp2L h7.
           split.
           + rewrite supp_dinter.    
             have eq : 0 <= to_uint tmp2L && to_uint tmp2L < W64.modulus.
             * apply W64.to_uint_cmp.
             smt.
-          + move => ?.
+          + move => h8.
             do! split.
             + smt.
             + smt.
               skip.
-              move => &m1 &m2 /> ?????.
+              move => &m1 &m2 /> h1 h2 h3 h4 h5.
               do! split.
               + smt.
               + smt.                
        * smt.
 wp.
 skip.
-move => &m1 &m2 [? [? [? ?]]].
+move => &m1 &m2 [h1 [h2 [h3 h4]]].
 rewrite /EqWordInt umodE /ulift2 to_uint_small.
 split.
 - by apply modn_ge0.
-- move => ?.
-  rewrite /EqWordInt in H2.
-  rewrite H2.
+- move => h5.
+  rewrite /EqWordInt in h4.
+  rewrite h4.
   smt.
-  by rewrite H1 H2.
+  by rewrite h3 h4.
 qed.
 
 
-lemma implementation_reference_equiv :
+(*lemma implementation_reference_equiv :
   equiv[M.generate_password ~ RPGRef.generate_password :
           policyFitsW64 policy{2} /\
-          policyInMem policy{2} M.Glob.mem policy_addr{1}
+          policyInMem policy{2} M.mem policy_addr{1}
            ==>
-          ={res}].
+          ={res}].*)
+
+lemma implementation_reference_equiv :
+  equiv [ConcreteScheme.generate_password ~ RPGRef.generate_password :
+         ={policy} ==> ={res}].
 proof.
 proc.
 seq 3 0 : (#pre /\
@@ -785,7 +832,7 @@ seq 84 4 : (#pre).
   seq 2 0 : (#pre).
   - sp.
     while{1} true (76 - to_uint i{1}).
-    + move => ? z.
+    + move => &m z.
       wp. skip. smt.
       skip.
       smt.
@@ -794,7 +841,7 @@ seq 84 4 : (#pre).
   seq 2 0 : (#pre).
   - sp.
     while{1} true (76 - to_uint i{1}).
-    + move => ? z.
+    + move => &m z.
       wp. skip. smt.
       skip.
       smt.
@@ -803,7 +850,7 @@ seq 84 4 : (#pre).
   seq 2 0 : (#pre).
   - sp.
     while{1} true (76 - to_uint i{1}).
-    + move => ? z.
+    + move => &m z.
       wp. skip. smt.
       skip.
       smt.
@@ -812,7 +859,7 @@ seq 84 4 : (#pre).
   seq 2 0 : (#pre).
   - sp.
     while{1} true (76 - to_uint i{1}).
-    + move => ? z.
+    + move => &m z.
       wp. skip. smt.
       skip.
       smt.
@@ -820,7 +867,7 @@ seq 84 4 : (#pre).
 seq 2 0 : (#pre).
 - sp.
   while{1} true (76 - to_uint i{1}).
-    + move => ? z.
+    + move => &m z.
       wp. skip. smt.
       skip.
       smt.
