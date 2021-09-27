@@ -20,7 +20,7 @@ op policyFitsW64 policy =
   0 <= policy.`specialMin < W64.modulus /\
   0 <= policy.`specialMax < W64.modulus.
 
-op policyInMem policy mem policyAddr =
+op policyInMem mem policyAddr policy =
   EqWordInt (loadW64 mem (W64.to_uint policyAddr)) policy.`length /\
   EqWordInt (loadW64 mem ((W64.to_uint policyAddr)+8)) policy.`lowercaseMin /\
   EqWordInt (loadW64 mem ((W64.to_uint policyAddr)+16)) policy.`lowercaseMax /\
@@ -31,7 +31,7 @@ op policyInMem policy mem policyAddr =
   EqWordInt (loadW64 mem ((W64.to_uint policyAddr)+56)) policy.`specialMin /\
   EqWordInt (loadW64 mem ((W64.to_uint policyAddr)+64)) policy.`specialMax.
 
-op memP_eq_specP policy (length lowercase_min lowercase_max uppercase_min uppercase_max
+op memPolicy_eq_specPolicy policy (length lowercase_min lowercase_max uppercase_min uppercase_max
                  numbers_min numbers_max special_min special_max) =
   EqWordInt length policy.`length /\
   EqWordInt lowercase_min policy.`lowercaseMin /\
@@ -42,6 +42,15 @@ op memP_eq_specP policy (length lowercase_min lowercase_max uppercase_min upperc
   EqWordInt numbers_max policy.`numbersMax /\
   EqWordInt special_min policy.`specialMin /\
   EqWordInt special_max policy.`specialMax.
+
+
+op memPassword_eq_specPassword_length mem passwordAddr length password =
+  forall n, n \in range 0 length =>
+  nth (-1) password n = W8.to_uint (loadW8 mem (W64.to_uint passwordAddr + n)).
+
+op memPassword_eq_specPassword mem passwordAddr password =
+  memPassword_eq_specPassword_length mem passwordAddr (size password) password.
+
 
 op satisfiableMemPolicy (length
                          lowercase_min lowercase_max
@@ -68,8 +77,6 @@ op satisfiableMemPolicy (length
 
 (*op memSet_eq_specSet memSet specSet =
   forall x, (x \in memSet /\ !(x = W8.zero)) => exists y, y \in specSetEqWordChar*)
-  
-
 
 module ConcreteScheme : RPG_T = {
 
@@ -127,7 +134,7 @@ module ConcreteScheme : RPG_T = {
   }
 
 }.
-
+  
 
 
 (**********************************)
@@ -208,7 +215,7 @@ qed.
 
 lemma sat_mem_sat_spec policy length lowercase_min lowercase_max uppercase_min
                        uppercase_max numbers_min numbers_max special_min special_max :
-  (memP_eq_specP policy length lowercase_min lowercase_max uppercase_min
+  (memPolicy_eq_specPolicy policy length lowercase_min lowercase_max uppercase_min
                  uppercase_max numbers_min numbers_max special_min special_max) =>
   (satisfiableMemPolicy length
                         lowercase_min lowercase_max
@@ -565,20 +572,20 @@ split.
   by rewrite h3 h4.
 qed.
 
-
 (*lemma implementation_reference_equiv :
   equiv[M.generate_password ~ RPGRef.generate_password :
           policyFitsW64 policy{2} /\
-          policyInMem policy{2} M.mem policy_addr{1}
-           ==>
-          ={res}].*)
-
+          policyInMem Glob.mem{1} policy_addr{1} policy{2}
+            ==>
+          (res{1} \slt W64.zero <=> res{2} = None) /\
+          (res{1} = W64.one <=> memPassword_eq_specPassword Glob.mem{1} W64.zero (oget res{2}))].*)
 lemma implementation_reference_equiv :
   equiv [ConcreteScheme.generate_password ~ RPGRef.generate_password :
-         ={policy} ==> ={res}].
+         ={policy} /\ policyFitsW64 policy{2} ==> ={res}].
 proof.
 proc.
-seq 3 0 : (#pre /\
+admitted.
+(*seq 3 0 : (#pre /\
            policyAddr{1} = W64.zero /\
            pwdAddr{1} = (of_int%W64 1000) /\ 
            policyInMem policy{1} Glob.mem{1} (W64.zero)).
@@ -881,7 +888,7 @@ seq 0 4 : (#[/:]pre /\
            EqWordInt special_max{1} specialAvailable{2}).
 - auto.
   move => />.
-
+seq 1 1 : ().
 admit.
 
 (* if spec policy is unsat and mem policy is sat *)
@@ -1345,7 +1352,7 @@ if{2}.
     rewrite sltE !of_sintK /smod /= in h5.
     trivial.
     trivial.
-admitted.
+admitted.*)
 
 
 (*********************************)
@@ -1353,13 +1360,21 @@ admitted.
 (*********************************)
 
 lemma concrete_rpg_correctness &m policy :
+  policyFitsW64 policy =>
   Pr[Correctness(ConcreteScheme).main(policy) @ &m : res] = 1%r.
 proof.
-
-
-
-
-
+move => h1. 
+have correct_ref : Pr[Correctness(RPGRef).main(policy) @ &m : res] = 1%r.
++ exact rpg_correctness.
+rewrite -correct_ref.
+byequiv.
+proc.
+wp.
+call implementation_reference_equiv.
+by skip.
+trivial.
+trivial.
+qed.
 
 (*********************************)
 (*           SECURITY            *)
