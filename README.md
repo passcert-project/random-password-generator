@@ -2,7 +2,7 @@
 The Random Password Generator (RPG) component of PassCert. The generator is implemented in Jasmin [1] and will be formally verified with EasyCrypt [2]. This repository has the code of the RPG written in Jasmin and also a small example of a C application that uses the generator. Also, it has the specification of a reference implementation written in EasyCrypt of an RPG. The reference implementation is proven to be functionally correct (yet to be proven secure). We also prove that our Jasmin program meets the specification (it is equivalent) and preserves the correctness property (and, in the future, security).
 
 ## Structure of the RPG solution
-![alt text](https://github.com/badjelix/random-password-generator/blob/master/images/Architecture.jpg?raw=true)
+![architecture](https://github.com/badjelix/passcert-project/random-password-generator/blob/master/images/Architecture.jpg?raw=true)
 
 
 ## Dependencies
