@@ -1,5 +1,7 @@
 require import AllCore Number IntDiv Distr DInterval List PassCertRPG_jazz PassCertRPG_ref.
 from Jasmin require import JModel.
+require import Array76.
+require import WArray76.
 
 (*-------------------------------*)
 (*----- Auxiliary operators -----*)
@@ -8,6 +10,8 @@ from Jasmin require import JModel.
 op EqWordChar word char = W8.to_uint word = char.
 op EqWordInt word int = W64.to_uint word = int.
 op EqIntWord int word = W64.of_int int = word.
+op EqWordIntSet (memSet:W8.t Array76.t) (specSet:charSet) =
+  map W8.to_uint (take (size specSet) (Array76.to_list memSet)) = specSet.
 
 op policyFitsW64 policy =
   0 <= policy.`length < W64.modulus /\
@@ -20,7 +24,7 @@ op policyFitsW64 policy =
   0 <= policy.`specialMin < W64.modulus /\
   0 <= policy.`specialMax < W64.modulus.
 
-op policyInMem mem policyAddr policy =
+op memPolicy_eq_specPolicy mem policyAddr policy =
   EqWordInt (loadW64 mem (W64.to_uint policyAddr)) policy.`length /\
   EqWordInt (loadW64 mem ((W64.to_uint policyAddr)+8)) policy.`lowercaseMin /\
   EqWordInt (loadW64 mem ((W64.to_uint policyAddr)+16)) policy.`lowercaseMax /\
@@ -31,7 +35,7 @@ op policyInMem mem policyAddr policy =
   EqWordInt (loadW64 mem ((W64.to_uint policyAddr)+56)) policy.`specialMin /\
   EqWordInt (loadW64 mem ((W64.to_uint policyAddr)+64)) policy.`specialMax.
 
-op memPolicy_eq_specPolicy policy (length lowercase_min lowercase_max uppercase_min uppercase_max
+op specPolicy_eq_registers policy (length lowercase_min lowercase_max uppercase_min uppercase_max
                  numbers_min numbers_max special_min special_max) =
   EqWordInt length policy.`length /\
   EqWordInt lowercase_min policy.`lowercaseMin /\
@@ -46,11 +50,10 @@ op memPolicy_eq_specPolicy policy (length lowercase_min lowercase_max uppercase_
 
 op memPassword_eq_specPassword_length mem passwordAddr length password =
   forall n, n \in range 0 length =>
-  nth (-1) password n = W8.to_uint (loadW8 mem (W64.to_uint passwordAddr + n)).
+  nth 0 password n = W8.to_uint (loadW8 mem (W64.to_uint passwordAddr + n)).
 
 op memPassword_eq_specPassword mem passwordAddr password =
   memPassword_eq_specPassword_length mem passwordAddr (size password) password.
-
 
 op satisfiableMemPolicy (length
                          lowercase_min lowercase_max
@@ -74,9 +77,6 @@ op satisfiableMemPolicy (length
   (lowercase_min + uppercase_min + numbers_min + special_min \ule length) /\
   (length \ule lowercase_max + uppercase_max + numbers_max + special_max).
 
-
-(*op memSet_eq_specSet memSet specSet =
-  forall x, (x \in memSet /\ !(x = W8.zero)) => exists y, y \in specSetEqWordChar*)
 
 module ConcreteScheme : RPG_T = {
 
@@ -141,7 +141,7 @@ module ConcreteScheme : RPG_T = {
 (*        AUXILIARY LEMMAS        *)
 (**********************************)
 
-lemma RDRAND_dinterval:
+lemma RDRAND_dinterval :
  RDRAND2 = dmap [0..W64.max_uint] W64.of_int.
 proof.
 rewrite /RDRAND2 /dword.
@@ -215,7 +215,7 @@ qed.
 
 lemma sat_mem_sat_spec policy length lowercase_min lowercase_max uppercase_min
                        uppercase_max numbers_min numbers_max special_min special_max :
-  (memPolicy_eq_specPolicy policy length lowercase_min lowercase_max uppercase_min
+  (specPolicy_eq_registers policy length lowercase_min lowercase_max uppercase_min
                  uppercase_max numbers_min numbers_max special_min special_max) =>
   (satisfiableMemPolicy length
                         lowercase_min lowercase_max
@@ -305,10 +305,17 @@ qed.
 axiom rdrand_eq_dist :
   RDRAND = dmap [0..W64.max_uint] W64.of_int.  
 
-lemma imp_ref_rng_equiv :
-  equiv[M.rng ~ RPGRef.rng : EqWordInt range{1} range{2} /\
+(*---------------------------*)
+(*----- RNG Equivalence -----*)
+(*---------------------------*)
+
+lemma imp_ref_rng_equiv _range :
+  equiv[M.rng ~ RPGRef.rng : range{2} = _range /\
+                             EqWordInt range{1} range{2} /\
                              0 < to_uint range{1} < W64.modulus
-                             ==> EqWordInt res{1} res{2}].
+                               ==>
+                             EqWordInt res{1} res{2} /\
+                             0 <= res{2} < _range].
 proof.
 proc.
 seq 5 1 : (#pre /\
@@ -316,34 +323,38 @@ seq 5 1 : (#pre /\
            EqWordInt tmp_range{1} (range{2} - 1) /\
            EqWordInt tmp2{1} (2^64-1) /\
            W64.one \ule (tmp2{1} - tmp1{1}) /\
-           tmp1{1} \ule tmp2{1}).
+           tmp1{1} \ule tmp2{1} /\
+           0 < _range).
 - wp.
   skip.
-  move => &1 &2 [h1 [h2 h3]] />.
+  move => &1 &2 [h1 [h2 [h3 h4]]] />.
   rewrite umodE /ulift2 h1 /= /EqWordInt to_uint_small.
   split.
   + by apply modn_ge0.
-  + move => h4.
-    rewrite -h1.
+  + move => h5.
+    rewrite h2.
     have mod : 18446744073709551615 %% to_uint range{1} < to_uint range{1}.
     * by apply ltz_pmod.
     (*apply (ltr_trans mod h3). cant find the lemma for some reason*)
     smt.
   do! split.
+  + by rewrite h2 h1.
   + rewrite to_uintB.
     rewrite uleE /=.
     smt().
-    by rewrite h1 /=.
+    by rewrite h2 h1 /=.
   + rewrite uleE /=.
     smt.
   + smt.
+  + rewrite h2 in h3.
+    by subst.    
 if.
-- move => &1 &2 [h1 [h2 [h3 h4]]] />.
+- move => &1 &2 [h1 [h2 [h3 [h4 h5]]]] />.
   split.
-  + move => h5.
+  + move => h6.
     rewrite -h2 -h3.
     congr.
-  + move => h5. 
+  + move => h6. 
     subst modValue{2}.
     apply wordint_to_intword in h2.
     apply wordint_to_intword in h3.
@@ -354,7 +365,9 @@ if.
 - seq 1 1 : (#[/:]pre /\ EqWordInt max_value{1} maxValue{2} /\ 0 <= maxValue{2} < W64.modulus).
   + wp.
     by skip.
-  seq 1 1 : (EqWordInt range{1} range{2} /\
+  seq 1 1 : (range{2} = _range /\ 
+             0 < _range /\
+             EqWordInt range{1} range{2} /\
              0 < to_uint range{1} < W64.modulus /\
              EqWordInt tmp1{1} modValue{2} /\
              EqWordInt tmp_range{1} (range{2} - 1) /\
@@ -365,25 +378,25 @@ if.
              EqWordInt tmp2{1} value{2}).
   + rnd W64.to_uint W64.of_int.
     skip.
-    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11.
+    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12.
     split.
-    * move => vR h12.
+    * move => vR h13.
       rewrite to_uint_small.   
       smt.
       reflexivity.
-    * move => h12.
+    * move => h13.
       split.
-      * move => vR h13.
+      * move => vR h14.
         rewrite RDRAND_dinterval (dmap1E_can [0..W64.max_uint] W64.of_int W64.to_uint).
         exact W64.to_uintK.
-        move => a h14.
+        move => a h15.
         rewrite to_uint_small.
         smt.
         reflexivity.
         rewrite to_uint_small.
         smt.
         by simplify.
-      * move => vR tmp2L h13.
+      * move => vR tmp2L h14.
         rewrite supp_dinter.    
         have eq : 0 <= to_uint tmp2L && to_uint tmp2L < W64.modulus.
         + apply W64.to_uint_cmp.
@@ -434,19 +447,19 @@ if.
               assumption. by move => h13 /=.
               assumption.
     * skip.
-      move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11.
+      move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12.
       split.
-      + move => h12.  
+      + move => h13.  
         rewrite /EqWordInt in h11.
         rewrite /EqWordInt in h6.
-        rewrite -h11 -h6.
-        by rewrite ultE in h12.
-      + move => h12.
-        apply wordint_to_intword in h11.
-        rewrite /EqIntWord in h11.
-        apply wordint_to_intword in h6.
-        rewrite /EqIntWord in h6.
-        rewrite -h11 -h6.
+        rewrite -h12 -h7.
+        by rewrite ultE in h13.
+      + move => h13.
+        apply wordint_to_intword in h12.
+        rewrite /EqIntWord in h12.
+        apply wordint_to_intword in h7.
+        rewrite /EqIntWord in h7.
+        rewrite -h12 -h7.
         rewrite ultE.
         rewrite to_uint_small.
         split. assumption. by move => ?.
@@ -455,16 +468,18 @@ if.
         assumption.
   wp.
   skip.
-  move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11.
-  rewrite /EqWordInt.
-  apply wordint_to_intword in h5.
-  rewrite /EqIntWord in h5.
-  rewrite -h5.
+  move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12.
+  do! split.
+  - rewrite /EqWordInt.
+  apply wordint_to_intword in h6.
+  rewrite /EqIntWord in h6.
+  rewrite -h6.
   simplify.
-  rewrite -h11.
+  rewrite -h12.
   rewrite umodE /ulift2 to_uint_small to_uint_small.
-  rewrite /EqWordInt in h1.
-  rewrite -h1.
+  rewrite h2 in h4.
+  smt().
+  smt().
   smt().
   smt().
   smt().
@@ -472,26 +487,30 @@ if.
 - seq 2 1 : (#[/:]pre /\ EqWordInt max_value{1} maxValue{2}).
   - wp.
     skip.
-    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9.
+    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10.
     rewrite /EqWordInt to_uintB.
     assumption. 
     rewrite to_uintB.
     assumption.
     by rewrite -h4 h6 /=.
-  seq 2 2 : (0 <= to_uint tmp2{1} /\
+  seq 2 2 : (range{2} = _range /\
+             0 < _range /\
+             0 <= to_uint tmp2{1} /\
              range{2} < W64.modulus /\
              EqWordInt tmp2{1} value{2} /\
              EqWordInt (tmp_range{1} + W64.one) range{2}).
   - seq 1 1 : (0 <= to_uint tmp2{1} /\
                range{2} < W64.modulus /\
+               range{2} = _range /\
+               0 < _range /\
                EqWordInt max_value{1} maxValue{2} /\
                EqWordInt tmp2{1} value{2} /\
                EqWordInt (tmp_range{1} + W64.one) range{2}).
     - rnd W64.to_uint W64.of_int.
     skip.
-    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10.
+    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11.
     split.
-    * move => vR h11.
+    * move => vR h12.
       rewrite to_uint_small.   
       smt.
       reflexivity.
@@ -520,57 +539,102 @@ if.
           * split.
             * by rewrite -h1.
             * smt.
-    while (EqWordInt max_value{1} maxValue{2} /\
+    while (range{2} = _range /\
+           0 < _range /\
+           EqWordInt max_value{1} maxValue{2} /\
            EqWordInt tmp2{1} value{2} /\
            EqWordInt (tmp_range{1} + W64.one) range{2}).
     * rnd W64.to_uint W64.of_int.  
       skip.
-      move => &m1 &m2 /> h1 h2 h3 h4 h5.
+      move => &m1 &m2 /> h1 h2 h3 h4 h5 h6.
       split.
-      + move => vR h6.
+      + move => vR h7.
         rewrite to_uint_small.   
         smt.
         reflexivity.
-      + move => h6.
+      + move => h7.
         split.
-        + move => vR h7.
+        + move => vR h8.
           rewrite RDRAND_dinterval (dmap1E_can [0..W64.max_uint] W64.of_int W64.to_uint).
           exact W64.to_uintK.
-          move => a h8.
+          move => a h9.
           rewrite to_uint_small.
           smt.
           reflexivity.
           rewrite to_uint_small.
           smt.
           by simplify.
-        + move => vR tmp2L h7.
+        + move => vR tmp2L h8.
           split.
           + rewrite supp_dinter.    
             have eq : 0 <= to_uint tmp2L && to_uint tmp2L < W64.modulus.
             * apply W64.to_uint_cmp.
             smt.
-          + move => h8.
+          + move => h9.
             do! split.
             + smt.
             + smt.
               skip.
-              move => &m1 &m2 /> h1 h2 h3 h4 h5.
+              move => &m1 &m2 /> h1 h2 h3 h4 h5 h6.
               do! split.
               + smt.
               + smt.                
        * smt.
 wp.
 skip.
-move => &m1 &m2 [h1 [h2 [h3 h4]]].
+move => &m1 &m2 [h1 [h2 [h3 [h4 [h5 h6]]]]].
 rewrite /EqWordInt umodE /ulift2 to_uint_small.
 split.
 - by apply modn_ge0.
-- move => h5.
-  rewrite /EqWordInt in h4.
-  rewrite h4.
-  smt.
-  by rewrite h3 h4.
+- smt.
+subst.
+move => vR />.
+split.
+- smt().
+- split.
+  - rewrite modz_ge0. smt().
+  - move => h7. by apply ltz_pmod.
 qed.
+
+(*---------------------------*)
+(*----- RCG Equivalence -----*)
+(*---------------------------*)
+
+print EqWordIntSet.
+
+lemma imp_ref_rcg_equiv :
+  equiv[M.random_char_generator ~ RPGRef.random_char_generator :
+          EqWordIntSet set{1} set{2} /\
+          EqWordInt range{1} (size set{2}) /\
+          0 < to_uint range{1} < W64.modulus
+           ==>
+          EqWordChar res{1} res{2}].
+proof.
+proc.
+seq 1 1 : (#pre /\ 0 <= choice{2} < (size set{2}) /\ EqWordInt choice_0{1} choice{2}).
+- ecall (imp_ref_rng_equiv (size set{2})).
+  by skip.
+wp.
+skip.
+move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7.
+rewrite /EqWordIntSet in h1.
+rewrite /EqWordChar.
+rewrite -h1 h7.
+rewrite (nth_map witness (-1) (W8.to_uint) choice{m2} ((take (size set{m2}) (to_list set{m1})))).
+split.
+- assumption.
+- move => h8.
+  by rewrite -(size_map W8.to_uint (take (size set{m2}) (to_list set{m1}))) h1.
+rewrite nth_take.
+smt().
+assumption.
+by rewrite -get_to_list.
+qed.
+
+
+(*---------------------------*)
+(*----- RPG Equivalence -----*)
+(*---------------------------*)
 
 (*lemma implementation_reference_equiv :
   equiv[M.generate_password ~ RPGRef.generate_password :
@@ -584,17 +648,16 @@ lemma implementation_reference_equiv :
          ={policy} /\ policyFitsW64 policy{2} ==> ={res}].
 proof.
 proc.
-admitted.
-(*seq 3 0 : (#pre /\
+seq 3 0 : (#pre /\
            policyAddr{1} = W64.zero /\
            pwdAddr{1} = (of_int%W64 1000) /\ 
-           policyInMem policy{1} Glob.mem{1} (W64.zero)).
+           memPolicy_eq_specPolicy Glob.mem{1} (W64.zero) policy{1}).
 sp.
 (*ecall{1} (imp_policy_to_mem policy{1} Glob.mem{1} policyAddr{1}).*)
 admit.
 inline M.generate_password.
 seq 17 0 : (={policy} /\
-            memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+            specPolicy_eq_registers policy{1} length{1} lowercase_min{1} lowercase_max{1}
                            uppercase_min{1} uppercase_max{1} numbers_min{1}
                            numbers_max{1} special_min{1} special_max{1} /\
             tmp64_1{1} = length{1}).
@@ -603,7 +666,7 @@ seq 17 0 : (={policy} /\
 if{1}.
 if{1}.
 seq 0 0 : (={policy} /\
-           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+           specPolicy_eq_registers policy{1} length{1} lowercase_min{1} lowercase_max{1}
                            uppercase_min{1} uppercase_max{1} numbers_min{1}
                            numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
@@ -612,7 +675,7 @@ by skip.
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+           specPolicy_eq_registers policy{1} length{1} lowercase_min{1} lowercase_max{1}
                            uppercase_min{1} uppercase_max{1} numbers_min{1}
                            numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
@@ -622,7 +685,7 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+           specPolicy_eq_registers policy{1} length{1} lowercase_min{1} lowercase_max{1}
                            uppercase_min{1} uppercase_max{1} numbers_min{1}
                            numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
@@ -633,7 +696,7 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+           specPolicy_eq_registers policy{1} length{1} lowercase_min{1} lowercase_max{1}
                            uppercase_min{1} uppercase_max{1} numbers_min{1}
                            numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
@@ -645,7 +708,7 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+           specPolicy_eq_registers policy{1} length{1} lowercase_min{1} lowercase_max{1}
                            uppercase_min{1} uppercase_max{1} numbers_min{1}
                            numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
@@ -658,7 +721,7 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+           specPolicy_eq_registers policy{1} length{1} lowercase_min{1} lowercase_max{1}
                            uppercase_min{1} uppercase_max{1} numbers_min{1}
                            numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
@@ -672,7 +735,7 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+           specPolicy_eq_registers policy{1} length{1} lowercase_min{1} lowercase_max{1}
                            uppercase_min{1} uppercase_max{1} numbers_min{1}
                            numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
@@ -687,7 +750,7 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+           specPolicy_eq_registers policy{1} length{1} lowercase_min{1} lowercase_max{1}
                            uppercase_min{1} uppercase_max{1} numbers_min{1}
                            numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
@@ -703,7 +766,7 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+           specPolicy_eq_registers policy{1} length{1} lowercase_min{1} lowercase_max{1}
                            uppercase_min{1} uppercase_max{1} numbers_min{1}
                            numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
@@ -720,7 +783,7 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+           specPolicy_eq_registers policy{1} length{1} lowercase_min{1} lowercase_max{1}
                            uppercase_min{1} uppercase_max{1} numbers_min{1}
                            numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
@@ -738,7 +801,7 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+           specPolicy_eq_registers policy{1} length{1} lowercase_min{1} lowercase_max{1}
                            uppercase_min{1} uppercase_max{1} numbers_min{1}
                            numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
@@ -757,7 +820,7 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+           specPolicy_eq_registers policy{1} length{1} lowercase_min{1} lowercase_max{1}
                            uppercase_min{1} uppercase_max{1} numbers_min{1}
                            numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
@@ -777,7 +840,7 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+           specPolicy_eq_registers policy{1} length{1} lowercase_min{1} lowercase_max{1}
                            uppercase_min{1} uppercase_max{1} numbers_min{1}
                            numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
@@ -798,7 +861,7 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+           specPolicy_eq_registers policy{1} length{1} lowercase_min{1} lowercase_max{1}
                            uppercase_min{1} uppercase_max{1} numbers_min{1}
                            numbers_max{1} special_min{1} special_max{1} /\
            length{1} \ule (of_int 200)%W64 /\
@@ -820,7 +883,7 @@ seq 0 0 : (={policy} /\
 sp.
 if{1}.
 seq 0 0 : (={policy} /\
-           memP_eq_specP policy{1} length{1} lowercase_min{1} lowercase_max{1}
+           specPolicy_eq_registers policy{1} length{1} lowercase_min{1} lowercase_max{1}
                          uppercase_min{1} uppercase_max{1} numbers_min{1}
                          numbers_max{1} special_min{1} special_max{1} /\
            satisfiableMemPolicy length{1} lowercase_min{1} lowercase_max{1}
@@ -878,9 +941,17 @@ seq 2 0 : (#pre).
       wp. skip. smt.
       skip.
       smt.
-seq 1 1 : (#[/:]pre /\ generatedPassword{2} = [] /\
-           size generatedPassword{2} = to_uint%W64 i_filled{1}).
+seq 1 1 : (specPolicy_eq_registers policy{1} length{1} lowercase_min{1}
+              lowercase_max{1} uppercase_min{1} uppercase_max{1} numbers_min{1}
+              numbers_max{1} special_min{1} special_max{1} /\
+           ={policy} /\
+           generatedPassword{2} = [] /\
+           size generatedPassword{2} = to_uint%W64 i_filled{1} /\
+           memPassword_eq_specPassword_length Glob.mem{1}
+           (W64.of_int 1000) (to_uint i_filled{1}) generatedPassword{2}).
 - auto.
+  move => &m1 &m2 />.
+  by rewrite /memPassword_eq_specPassword_length /= range_geq.
 seq 0 4 : (#[/:]pre /\
            EqWordInt lowercase_max{1} lowercaseAvailable{2} /\
            EqWordInt uppercase_max{1} uppercaseAvailable{2} /\
@@ -888,8 +959,31 @@ seq 0 4 : (#[/:]pre /\
            EqWordInt special_max{1} specialAvailable{2}).
 - auto.
   move => />.
-seq 1 1 : ().
-admit.
+seq 1 1 : (size generatedPassword{2} = to_uint%W64 i_filled{1} /\
+           memPassword_eq_specPassword_length Glob.mem{1}
+           (W64.of_int 1000) (to_uint i_filled{1}) generatedPassword{2} /\
+           EqWordInt lowercase_max{1} lowercaseAvailable{2} /\
+           EqWordInt uppercase_max{1} uppercaseAvailable{2} /\
+           EqWordInt numbers_max{1} numbersAvailable{2} /\
+           EqWordInt special_max{1} specialAvailable{2}).
+- if.
+  + move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15.
+    split.
+    * by rewrite ultE h12 /=.
+    * by rewrite ultE h12 /=.
+  + seq 1 1 : (#pre /\ EqWordInt i{1} i{2}).
+    - auto.
+    while (size generatedPassword{2} = to_uint%W64 i_filled{1} /\
+           memPassword_eq_specPassword_length Glob.mem{1}
+           (W64.of_int 1000) (to_uint i_filled{1}) generatedPassword{2} /\
+           EqWordInt lowercase_max{1} lowercaseAvailable{2} /\
+           EqWordInt uppercase_max{1} uppercaseAvailable{2} /\
+           EqWordInt numbers_max{1} numbersAvailable{2} /\
+           EqWordInt special_max{1} specialAvailable{2}).
+    - .
+
+
+
 
 (* if spec policy is unsat and mem policy is sat *)
 conseq (_: false ==> _).
@@ -1352,7 +1446,7 @@ if{2}.
     rewrite sltE !of_sintK /smod /= in h5.
     trivial.
     trivial.
-admitted.*)
+admitted.
 
 
 (*********************************)
