@@ -10,8 +10,11 @@ require import WArray76.
 op EqWordChar word char = W8.to_uint word = char.
 op EqWordInt word int = W64.to_uint word = int.
 op EqIntWord int word = W64.of_int int = word.
+(*op EqWordIntSet (memSet:W8.t Array76.t) (specSet:charSet) =
+  map W8.to_uint (take (size specSet) (Array76.to_list memSet)) = specSet.*)
+
 op EqWordIntSet (memSet:W8.t Array76.t) (specSet:charSet) =
-  map W8.to_uint (take (size specSet) (Array76.to_list memSet)) = specSet.
+  forall n, n \in range 0 (size specSet) => EqWordChar memSet.[n] (nth (-1) specSet n).
 
 op policyFitsW64 policy =
   0 <= policy.`length < W64.modulus /\
@@ -296,6 +299,27 @@ split.
     rewrite to_uintD_small. smt.
     assumption.
 qed.
+
+
+lemma append_trash_to_eq_set memSet specSet n x:
+  EqWordIntSet memSet specSet =>
+  size specSet <= n =>
+  EqWordIntSet memSet.[n <- x] specSet.
+proof.
+move => h1 h2.
+rewrite /EqWordIntSet.
+rewrite /EqWordIntSet in h1.
+move => n0.
+move => h3.
+rewrite /EqWordChar.
+rewrite get_set_if.
+have diff : !(n0 = n).
++ rewrite mem_range in h3.
+  smt().
+rewrite diff /=.
+by apply h1.
+qed.
+
 
 
 (*********************************)
@@ -601,8 +625,6 @@ qed.
 (*----- RCG Equivalence -----*)
 (*---------------------------*)
 
-print EqWordIntSet.
-
 lemma imp_ref_rcg_equiv :
   equiv[M.random_char_generator ~ RPGRef.random_char_generator :
           EqWordIntSet set{1} set{2} /\
@@ -619,17 +641,9 @@ wp.
 skip.
 move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7.
 rewrite /EqWordIntSet in h1.
-rewrite /EqWordChar.
-rewrite -h1 h7.
-rewrite (nth_map witness (-1) (W8.to_uint) choice{m2} ((take (size set{m2}) (to_list set{m1})))).
-split.
-- assumption.
-- move => h8.
-  by rewrite -(size_map W8.to_uint (take (size set{m2}) (to_list set{m1}))) h1.
-rewrite nth_take.
-smt().
-assumption.
-by rewrite -get_to_list.
+rewrite h7.
+apply h1.
+by apply mem_range.
 qed.
 
 
@@ -892,57 +906,224 @@ seq 0 0 : (={policy} /\
                                 numbers_min{1} numbers_max{1}
                                 special_min{1} special_max{1}).
 - skip.
-  move => &m1 &m2 />.   
-if{2}.
+  move => &m1 &m2 />.
+
 (* if both mem and spec are satisfiable... distribution on the output should be equal *)
-(* talvez seja necessario tirar informacoes sobre equivalencia entre os conjuntos *)
-seq 84 4 : (#pre).
-- inline *.
-  auto.
-  seq 26 0 : (#pre).
-  - auto.
-  seq 2 0 : (#pre).
-  - sp.
-    while{1} true (76 - to_uint i{1}).
-    + move => &m z.
-      wp. skip. smt.
-      skip.
-      smt.
-  seq 26 0 : (#pre).
-  - auto.
-  seq 2 0 : (#pre).
-  - sp.
-    while{1} true (76 - to_uint i{1}).
-    + move => &m z.
-      wp. skip. smt.
-      skip.
-      smt.
-  seq 10 0 : (#pre).
-  - auto.
-  seq 2 0 : (#pre).
-  - sp.
-    while{1} true (76 - to_uint i{1}).
-    + move => &m z.
-      wp. skip. smt.
-      skip.
-      smt.
-  seq 14 0 : (#pre).
-  - auto.
-  seq 2 0 : (#pre).
-  - sp.
-    while{1} true (76 - to_uint i{1}).
-    + move => &m z.
-      wp. skip. smt.
-      skip.
-      smt.
-  by skip.
+if{2}.
+seq 26 1 : (#[/:]pre /\ EqWordIntSet lowercase_set{1} lowercaseSet{2}).
+inline *.
+wp.
+auto.
+move => &m1 &m2 /> ????????????????????????????????????????? n h1.
+rewrite /lowercaseSet /EqWordIntSet /size /=.
+do! rewrite get_set_if /=.
+case (n=0). move => h2. rewrite h2 /=. reflexivity.
+case (n=1). move => h2. rewrite h2 /=. reflexivity.
+case (n=2). move => h2. rewrite h2 /=. reflexivity.
+case (n=3). move => h2. rewrite h2 /=. reflexivity.
+case (n=4). move => h2. rewrite h2 /=. reflexivity.
+case (n=5). move => h2. rewrite h2 /=. reflexivity.
+case (n=6). move => h2. rewrite h2 /=. reflexivity.
+case (n=7). move => h2. rewrite h2 /=. reflexivity.
+case (n=8). move => h2. rewrite h2 /=. reflexivity.
+case (n=9). move => h2. rewrite h2 /=. reflexivity.
+case (n=10). move => h2. rewrite h2 /=. reflexivity.
+case (n=11). move => h2. rewrite h2 /=. reflexivity.
+case (n=12). move => h2. rewrite h2 /=. reflexivity.
+case (n=13). move => h2. rewrite h2 /=. reflexivity.
+case (n=14). move => h2. rewrite h2 /=. reflexivity.
+case (n=15). move => h2. rewrite h2 /=. reflexivity.
+case (n=16). move => h2. rewrite h2 /=. reflexivity.
+case (n=17). move => h2. rewrite h2 /=. reflexivity.
+case (n=18). move => h2. rewrite h2 /=. reflexivity.
+case (n=19). move => h2. rewrite h2 /=. reflexivity.
+case (n=20). move => h2. rewrite h2 /=. reflexivity.
+case (n=21). move => h2. rewrite h2 /=. reflexivity.
+case (n=22). move => h2. rewrite h2 /=. reflexivity.
+case (n=23). move => h2. rewrite h2 /=. reflexivity.
+case (n=24). move => h2. rewrite h2 /=. reflexivity.
+case (n=25). move => h2. rewrite h2 /=. reflexivity.
+case (25<n). smt.
+smt.
 seq 2 0 : (#pre).
 - sp.
-  while{1} true (76 - to_uint i{1}).
-    + move => &m z.
-      wp. skip. smt.
-      skip.
+  while{1} (={policy} /\
+         specPolicy_eq_registers policy{1} length{1} lowercase_min{1}
+            lowercase_max{1} uppercase_min{1} uppercase_max{1} numbers_min{1}
+            numbers_max{1} special_min{1} special_max{1} /\
+         satisfiableMemPolicy length{1} lowercase_min{1} lowercase_max{1}
+            uppercase_min{1} uppercase_max{1} numbers_min{1} numbers_max{1}
+            special_min{1} special_max{1} /\
+         satisfiablePolicy policy{2} /\
+         EqWordIntSet lowercase_set{1} lowercaseSet{2} /\
+         W64.of_int 26 \ule i{1}) (76 - W64.to_uint i{1}).
+  * move => &m2 z.
+    auto.
+    move => &m1 /> ????????????????????????????????????????????.
+    do! split.
+    - apply append_trash_to_eq_set.
+      assumption.
       smt.
+    - smt.
+    - smt.
+  * skip.
+    move => &m1 &m2 />.
+    smt.
+seq 26 1 : (#[/:]pre /\ EqWordIntSet uppercase_set{1} uppercaseSet{2}).
+inline *.
+wp.
+auto.
+move => &m1 &m2 /> ?????????????????????????????????????????? n h1.
+rewrite /uppercaseSet /EqWordIntSet /size /=.
+do! rewrite get_set_if /=.
+case (n=0). move => h2. rewrite h2 /=. reflexivity.
+case (n=1). move => h2. rewrite h2 /=. reflexivity.
+case (n=2). move => h2. rewrite h2 /=. reflexivity.
+case (n=3). move => h2. rewrite h2 /=. reflexivity.
+case (n=4). move => h2. rewrite h2 /=. reflexivity.
+case (n=5). move => h2. rewrite h2 /=. reflexivity.
+case (n=6). move => h2. rewrite h2 /=. reflexivity.
+case (n=7). move => h2. rewrite h2 /=. reflexivity.
+case (n=8). move => h2. rewrite h2 /=. reflexivity.
+case (n=9). move => h2. rewrite h2 /=. reflexivity.
+case (n=10). move => h2. rewrite h2 /=. reflexivity.
+case (n=11). move => h2. rewrite h2 /=. reflexivity.
+case (n=12). move => h2. rewrite h2 /=. reflexivity.
+case (n=13). move => h2. rewrite h2 /=. reflexivity.
+case (n=14). move => h2. rewrite h2 /=. reflexivity.
+case (n=15). move => h2. rewrite h2 /=. reflexivity.
+case (n=16). move => h2. rewrite h2 /=. reflexivity.
+case (n=17). move => h2. rewrite h2 /=. reflexivity.
+case (n=18). move => h2. rewrite h2 /=. reflexivity.
+case (n=19). move => h2. rewrite h2 /=. reflexivity.
+case (n=20). move => h2. rewrite h2 /=. reflexivity.
+case (n=21). move => h2. rewrite h2 /=. reflexivity.
+case (n=22). move => h2. rewrite h2 /=. reflexivity.
+case (n=23). move => h2. rewrite h2 /=. reflexivity.
+case (n=24). move => h2. rewrite h2 /=. reflexivity.
+case (n=25). move => h2. rewrite h2 /=. reflexivity.
+case (25<n). smt.
+smt.
+seq 2 0 : (#pre).
+- sp.
+  while{1} (={policy} /\
+         specPolicy_eq_registers policy{1} length{1} lowercase_min{1}
+            lowercase_max{1} uppercase_min{1} uppercase_max{1} numbers_min{1}
+            numbers_max{1} special_min{1} special_max{1} /\
+         satisfiableMemPolicy length{1} lowercase_min{1} lowercase_max{1}
+            uppercase_min{1} uppercase_max{1} numbers_min{1} numbers_max{1}
+            special_min{1} special_max{1} /\
+         satisfiablePolicy policy{2} /\
+         EqWordIntSet lowercase_set{1} lowercaseSet{2} /\
+         EqWordIntSet uppercase_set{1} uppercaseSet{2} /\
+         W64.of_int 26 \ule i{1}) (76 - W64.to_uint i{1}).
+  * move => &m2 z.
+    auto.
+    move => &m1 /> ?????????????????????????????????????????????.
+    do! split.
+    - apply append_trash_to_eq_set.
+      assumption.
+      smt.
+    - smt.
+    - smt.
+  * skip.
+    move => &m1 &m2 />.
+    smt.
+seq 10 1 : (#[/:]pre /\ EqWordIntSet numbers_set{1} numbersSet{2}).
+inline *.
+wp.
+auto.
+move => &m1 &m2 /> ??????????????????????????????????????????? n h1.
+rewrite /numbersSet /EqWordIntSet /size /=.
+do! rewrite get_set_if /=.
+case (n=0). move => h2. rewrite h2 /=. reflexivity.
+case (n=1). move => h2. rewrite h2 /=. reflexivity.
+case (n=2). move => h2. rewrite h2 /=. reflexivity.
+case (n=3). move => h2. rewrite h2 /=. reflexivity.
+case (n=4). move => h2. rewrite h2 /=. reflexivity.
+case (n=5). move => h2. rewrite h2 /=. reflexivity.
+case (n=6). move => h2. rewrite h2 /=. reflexivity.
+case (n=7). move => h2. rewrite h2 /=. reflexivity.
+case (n=8). move => h2. rewrite h2 /=. reflexivity.
+case (n=9). move => h2. rewrite h2 /=. reflexivity.
+case (9<n). smt.
+smt.
+seq 2 0 : (#pre).
+- sp.
+  while{1} (={policy} /\
+         specPolicy_eq_registers policy{1} length{1} lowercase_min{1}
+            lowercase_max{1} uppercase_min{1} uppercase_max{1} numbers_min{1}
+            numbers_max{1} special_min{1} special_max{1} /\
+         satisfiableMemPolicy length{1} lowercase_min{1} lowercase_max{1}
+            uppercase_min{1} uppercase_max{1} numbers_min{1} numbers_max{1}
+            special_min{1} special_max{1} /\
+         satisfiablePolicy policy{2} /\
+         EqWordIntSet lowercase_set{1} lowercaseSet{2} /\
+         EqWordIntSet uppercase_set{1} uppercaseSet{2} /\
+         EqWordIntSet numbers_set{1} numbersSet{2} /\
+         W64.of_int 10 \ule i{1}) (76 - W64.to_uint i{1}).
+  * move => &m2 z.
+    auto.
+    move => &m1 /> ??????????????????????????????????????????????.
+    do! split.
+    - apply append_trash_to_eq_set.
+      assumption.
+      smt.
+    - smt.
+    - smt.
+  * skip.
+    move => &m1 &m2 />.
+    smt.
+seq 14 1 : (#[/:]pre /\ EqWordIntSet special_set{1} specialSet{2}).
+inline *.
+wp.
+auto.
+move => &m1 &m2 /> ???????????????????????????????????????????? n h1.
+rewrite /specialSet /EqWordIntSet /size /=.
+do! rewrite get_set_if /=.
+case (n=0). move => h2. rewrite h2 /=. reflexivity.
+case (n=1). move => h2. rewrite h2 /=. reflexivity.
+case (n=2). move => h2. rewrite h2 /=. reflexivity.
+case (n=3). move => h2. rewrite h2 /=. reflexivity.
+case (n=4). move => h2. rewrite h2 /=. reflexivity.
+case (n=5). move => h2. rewrite h2 /=. reflexivity.
+case (n=6). move => h2. rewrite h2 /=. reflexivity.
+case (n=7). move => h2. rewrite h2 /=. reflexivity.
+case (n=8). move => h2. rewrite h2 /=. reflexivity.
+case (n=9). move => h2. rewrite h2 /=. reflexivity.
+case (n=10). move => h2. rewrite h2 /=. reflexivity.
+case (n=11). move => h2. rewrite h2 /=. reflexivity.
+case (n=12). move => h2. rewrite h2 /=. reflexivity.
+case (n=13). move => h2. rewrite h2 /=. reflexivity.
+case (13<n). smt.
+smt.
+seq 2 0 : (#pre).
+- sp.
+  while{1} (={policy} /\
+         specPolicy_eq_registers policy{1} length{1} lowercase_min{1}
+            lowercase_max{1} uppercase_min{1} uppercase_max{1} numbers_min{1}
+            numbers_max{1} special_min{1} special_max{1} /\
+         satisfiableMemPolicy length{1} lowercase_min{1} lowercase_max{1}
+            uppercase_min{1} uppercase_max{1} numbers_min{1} numbers_max{1}
+            special_min{1} special_max{1} /\
+         satisfiablePolicy policy{2} /\
+         EqWordIntSet lowercase_set{1} lowercaseSet{2} /\
+         EqWordIntSet uppercase_set{1} uppercaseSet{2} /\
+         EqWordIntSet numbers_set{1} numbersSet{2} /\
+         EqWordIntSet special_set{1} specialSet{2} /\
+         W64.of_int 14 \ule i{1}) (76 - W64.to_uint i{1}).
+  * move => &m2 z.
+    auto.
+    move => &m1 /> ???????????????????????????????????????????????.
+    do! split.
+    - apply append_trash_to_eq_set.
+      assumption.
+      smt.
+    - smt.
+    - smt.
+  * skip.
+    move => &m1 &m2 />.
+    smt.
 seq 1 1 : (={policy} /\
            specPolicy_eq_registers policy{2} length{1} lowercase_min{1}
              lowercase_max{1} uppercase_min{1} uppercase_max{1}
@@ -969,7 +1150,7 @@ seq 1 1 : (={policy} /\
              (W64.of_int 1000) (to_uint i_filled{1}) generatedPassword{2} /\
            i_filled{1} = W64.zero).
 - auto.
-  move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35 h36 h37 h38 h39 h40 h41.
+  move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35 h36 h37 h38 h39 h40 h41 h42 h43 h44 h45.
   do! split.
   - smt.
   - smt.
