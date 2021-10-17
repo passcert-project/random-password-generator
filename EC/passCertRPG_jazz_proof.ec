@@ -1647,10 +1647,16 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
                  0 <= to_uint i{1} < to_uint uppercase_min{1} /\
                  i_filled{1} = lowercase_min{1} + i{1}).
       - auto.
-        move => &m1 &m2 h1 diff.
-        have lmax_ge_one : W64.one \ule uppercase_max{m1}.
+        move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35 h36 h37 h38 h39.
+        have umax_ge_one : W64.one \ule uppercase_max{m1}.
         + smt.
-        smt.
+        do! split.
+        - smt.
+        - rewrite /EqWordInt to_uintB.
+          assumption.
+          by rewrite h29.
+        - smt.
+        - smt.
       seq 1 1 : (#pre /\ EqWordChar tmp8{1} randomChar{2}).
       - call imp_ref_rcg_equiv.
         skip.
@@ -1749,6 +1755,453 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
     rewrite h36.
     ring.
 
+seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
+           to_uint lowercase_min{1} = policy{2}.`lowercaseMin /\
+           to_uint uppercase_min{1} = policy{2}.`uppercaseMin /\
+           to_uint numbers_min{1} = policy{2}.`numbersMin /\
+           to_uint special_min{1} = policy{2}.`specialMin /\
+           EqWordIntSet lowercase_set{1} RPGRef.lowercaseSet{2} /\
+           EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
+           EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
+           EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+           size RPGRef.lowercaseSet{2} = 26 /\
+           size RPGRef.uppercaseSet{2} = 26 /\
+           size RPGRef.numbersSet{2} = 10 /\
+           size RPGRef.specialSet{2} = 14 /\
+           EqWordInt length{1} policy{2}.`length /\
+           W64.zero \ule lowercase_min{1} /\
+           lowercase_min{1} \ule W64.of_int 200 /\
+           lowercase_max{1} \ule W64.of_int 200 /\
+           W64.zero \ule uppercase_min{1} /\
+           uppercase_min{1} \ule W64.of_int 200 /\
+           uppercase_max{1} \ule W64.of_int 200 /\
+           W64.zero \ule numbers_min{1} /\
+           numbers_min{1} \ule W64.of_int 200 /\
+           numbers_max{1} \ule W64.of_int 200 /\
+           W64.zero \ule special_min{1} /\
+           special_min{1} \ule W64.of_int 200 /\
+           special_max{1} \ule W64.of_int 200 /\
+           special_min{1} \ule special_max{1} /\
+           EqWordInt lowercase_max{1} lowercaseAvailable{2} /\
+           EqWordInt uppercase_max{1} uppercaseAvailable{2} /\
+           EqWordInt numbers_max{1} numbersAvailable{2} /\
+           EqWordInt special_max{1} specialAvailable{2} /\
+           size generatedPassword{2} = W64.to_uint i_filled{1} /\
+           i_filled{1} = lowercase_min{1} + uppercase_min{1} + numbers_min{1} /\
+           memPassword_eq_specPassword Glob.mem{1} (W64.of_int 1000) generatedPassword{2}).
+- if.
+  + move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33.
+    split.
+    * by rewrite ultE h30 /=.
+    * by rewrite ultE h30 /=.
+  + seq 1 1 : (#[/:]pre /\ 
+               EqWordInt i{1} i{2} /\
+               i{2} = 0 /\
+               numbers_min{1} \ule i{1} + numbers_max{1}).
+    - auto.
+    while (output_addr{1} = W64.of_int 1000 /\
+           to_uint lowercase_min{1} = policy{2}.`lowercaseMin /\
+           to_uint uppercase_min{1} = policy{2}.`uppercaseMin /\
+           to_uint numbers_min{1} = policy{2}.`numbersMin /\
+           to_uint special_min{1} = policy{2}.`specialMin /\
+           EqWordIntSet lowercase_set{1} RPGRef.lowercaseSet{2} /\
+           EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
+           EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
+           EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+           size RPGRef.lowercaseSet{2} = 26 /\
+           size RPGRef.uppercaseSet{2} = 26 /\
+           size RPGRef.numbersSet{2} = 10 /\
+           size RPGRef.specialSet{2} = 14 /\
+           EqWordInt length{1} policy{2}.`length /\
+           W64.zero \ule lowercase_min{1} /\
+           lowercase_min{1} \ule W64.of_int 200 /\
+           lowercase_max{1} \ule W64.of_int 200 /\
+           W64.zero \ule uppercase_min{1} /\
+           uppercase_min{1} \ule W64.of_int 200 /\
+           uppercase_max{1} \ule W64.of_int 200 /\
+           W64.zero \ule numbers_min{1} /\
+           numbers_min{1} \ule W64.of_int 200 /\
+           numbers_max{1} \ule W64.of_int 200 /\
+           W64.zero \ule special_min{1} /\
+           special_min{1} \ule W64.of_int 200 /\
+           special_max{1} \ule W64.of_int 200 /\
+           special_min{1} \ule special_max{1} /\
+           EqWordInt lowercase_max{1} lowercaseAvailable{2} /\
+           EqWordInt uppercase_max{1} uppercaseAvailable{2} /\
+           EqWordInt numbers_max{1} numbersAvailable{2} /\
+           EqWordInt special_max{1} specialAvailable{2} /\
+           size generatedPassword{2} = W64.to_uint i_filled{1} /\
+           memPassword_eq_specPassword Glob.mem{1} (W64.of_int 1000) generatedPassword{2} /\
+           EqWordInt i{1} i{2} /\
+           numbers_min{1} \ule i{1} + numbers_max{1} /\
+           0 <= to_uint i{1} <= to_uint numbers_min{1} /\
+           i_filled{1} = lowercase_min{1} + uppercase_min{1} + i{1}).
+    * seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
+                 to_uint lowercase_min{1} = policy{2}.`lowercaseMin /\
+                 to_uint uppercase_min{1} = policy{2}.`uppercaseMin /\
+                 to_uint numbers_min{1} = policy{2}.`numbersMin /\
+                 to_uint special_min{1} = policy{2}.`specialMin /\
+                 EqWordIntSet lowercase_set{1} RPGRef.lowercaseSet{2} /\
+                 EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
+                 EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
+                 EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+                 size RPGRef.lowercaseSet{2} = 26 /\
+                 size RPGRef.uppercaseSet{2} = 26 /\
+                 size RPGRef.numbersSet{2} = 10 /\
+                 size RPGRef.specialSet{2} = 14 /\
+                 EqWordInt length{1} policy{2}.`length /\
+                 W64.zero \ule lowercase_min{1} /\
+                 lowercase_min{1} \ule W64.of_int 200 /\
+                 lowercase_max{1} \ule W64.of_int 200 /\
+                 W64.zero \ule uppercase_min{1} /\
+                 uppercase_min{1} \ule W64.of_int 200 /\
+                 uppercase_max{1} \ule W64.of_int 200 /\
+                 W64.zero \ule numbers_min{1} /\
+                 numbers_min{1} \ule W64.of_int 200 /\
+                 numbers_max{1} \ule W64.of_int 200 /\
+                 W64.zero \ule special_min{1} /\
+                 special_min{1} \ule W64.of_int 200 /\
+                 special_max{1} \ule W64.of_int 200 /\
+                 special_min{1} \ule special_max{1} /\
+                 EqWordInt lowercase_max{1} lowercaseAvailable{2} /\
+                 EqWordInt uppercase_max{1} uppercaseAvailable{2} /\
+                 EqWordInt numbers_max{1} numbersAvailable{2} /\
+                 EqWordInt special_max{1} specialAvailable{2} /\
+                 size generatedPassword{2} = W64.to_uint i_filled{1} /\
+                 memPassword_eq_specPassword Glob.mem{1} (W64.of_int 1000) generatedPassword{2} /\
+                 EqWordInt i{1} i{2} /\
+                 numbers_min{1} \ule i{1} + numbers_max{1} + W64.one /\
+                 0 <= to_uint i{1} < to_uint numbers_min{1} /\
+                 i_filled{1} = lowercase_min{1} + uppercase_min{1} + i{1}).
+      - auto.
+        move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35 h36 h37 h38.
+        have nmax_ge_one : W64.one \ule numbers_max{m1}.
+        + smt.
+        do! split.
+        - smt.
+        - rewrite /EqWordInt to_uintB.
+          assumption.
+          by rewrite h29.
+        - smt.
+        - smt.
+      seq 1 1 : (#pre /\ EqWordChar tmp8{1} randomChar{2}).
+      - call imp_ref_rcg_equiv.
+        skip.
+        move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35 h36.
+        - by rewrite /EqWordInt eq_sym /=.
+      seq 3 2 : (output_addr{1} = W64.of_int 1000 /\
+                 to_uint lowercase_min{1} = policy{2}.`lowercaseMin /\
+                 to_uint uppercase_min{1} = policy{2}.`uppercaseMin /\
+                 to_uint numbers_min{1} = policy{2}.`numbersMin /\
+                 to_uint special_min{1} = policy{2}.`specialMin /\
+                 EqWordIntSet lowercase_set{1} RPGRef.lowercaseSet{2} /\
+                 EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
+                 EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
+                 EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+                 size RPGRef.lowercaseSet{2} = 26 /\
+                 size RPGRef.uppercaseSet{2} = 26 /\
+                 size RPGRef.numbersSet{2} = 10 /\
+                 size RPGRef.specialSet{2} = 14 /\
+                 EqWordInt length{1} policy{2}.`length /\
+                 W64.zero \ule lowercase_min{1} /\
+                 lowercase_min{1} \ule W64.of_int 200 /\
+                 lowercase_max{1} \ule W64.of_int 200 /\
+                 W64.zero \ule uppercase_min{1} /\
+                 uppercase_min{1} \ule W64.of_int 200 /\
+                 uppercase_max{1} \ule W64.of_int 200 /\
+                 W64.zero \ule numbers_min{1} /\
+                 numbers_min{1} \ule W64.of_int 200 /\
+                 numbers_max{1} \ule W64.of_int 200 /\
+                 W64.zero \ule special_min{1} /\
+                 special_min{1} \ule W64.of_int 200 /\
+                 special_max{1} \ule W64.of_int 200 /\
+                 special_min{1} \ule special_max{1} /\
+                 EqWordInt lowercase_max{1} lowercaseAvailable{2} /\
+                 EqWordInt uppercase_max{1} uppercaseAvailable{2} /\
+                 EqWordInt numbers_max{1} numbersAvailable{2} /\
+                 EqWordInt special_max{1} specialAvailable{2} /\
+                 size generatedPassword{2} = W64.to_uint i_filled{1} /\
+                 memPassword_eq_specPassword Glob.mem{1} (W64.of_int 1000) generatedPassword{2} /\
+                 EqWordInt i{1} i{2} /\
+                 numbers_min{1} \ule i{1} + numbers_max{1} /\
+                 0 <= to_uint i{1} <= to_uint numbers_min{1} /\
+                 i_filled{1} = lowercase_min{1} + uppercase_min{1} + i{1} /\
+                 EqWordChar tmp8{1} randomChar{2}).
+      - auto.
+        move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35 h36 h37.
+        do! split.
+        - rewrite to_uintD.
+          have small : (to_uint (lowercase_min{m1} + uppercase_min{m1} + i{m1}) + to_uint W64.one) %% W64.modulus =
+                       to_uint (lowercase_min{m1} + uppercase_min{m1} + i{m1}) + to_uint W64.one.
+          + smt.
+          by rewrite small -h31 size_cat /=. 
+        - rewrite to_uintD.
+          have small :
+            (to_uint (W64.of_int 1000) + to_uint (lowercase_min{m1} + uppercase_min{m1} + i{m1})) %% W64.modulus =
+            to_uint (W64.of_int 1000) + to_uint (lowercase_min{m1} + uppercase_min{m1} + i{m1}).
+          + smt.
+          rewrite small -h31 /=.
+          by apply (eq_mem_password_append Glob.mem{m1}
+          (W64.of_int 1000) generatedPassword{m2} tmp8{m1} randomChar{m2}).
+        - smt.
+        - smt.
+        - smt.
+        - smt.
+        - ring.
+      skip.
+      move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35 h36 h37.
+      do! split.
+      - smt.
+      - smt.
+    *  skip.
+       move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35 h36.
+       do! split.
+       - smt().
+       - smt.
+       - apply wordint_to_intword in h35.
+         by rewrite -to_uintK -h35.
+       - move => h37.
+         rewrite -h3.
+         rewrite ultE in h37.
+         by rewrite h35 in h37.
+       - move => h37.
+         rewrite -h3 in h37.
+         rewrite -h35 in h37.
+         by rewrite ultE.
+       - move => ????????????????.
+         smt.
+  + skip.
+    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34.
+    have : numbers_max{m1} = W64.zero. 
+    + rewrite ultE in h34.
+      smt.
+    have : numbers_min{m1} = W64.zero.
+    + smt.
+    move => h35 h36.
+    rewrite h35.
+    ring.
+
+seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
+           to_uint lowercase_min{1} = policy{2}.`lowercaseMin /\
+           to_uint uppercase_min{1} = policy{2}.`uppercaseMin /\
+           to_uint numbers_min{1} = policy{2}.`numbersMin /\
+           to_uint special_min{1} = policy{2}.`specialMin /\
+           EqWordIntSet lowercase_set{1} RPGRef.lowercaseSet{2} /\
+           EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
+           EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
+           EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+           size RPGRef.lowercaseSet{2} = 26 /\
+           size RPGRef.uppercaseSet{2} = 26 /\
+           size RPGRef.numbersSet{2} = 10 /\
+           size RPGRef.specialSet{2} = 14 /\
+           EqWordInt length{1} policy{2}.`length /\
+           W64.zero \ule lowercase_min{1} /\
+           lowercase_min{1} \ule W64.of_int 200 /\
+           lowercase_max{1} \ule W64.of_int 200 /\
+           W64.zero \ule uppercase_min{1} /\
+           uppercase_min{1} \ule W64.of_int 200 /\
+           uppercase_max{1} \ule W64.of_int 200 /\
+           W64.zero \ule numbers_min{1} /\
+           numbers_min{1} \ule W64.of_int 200 /\
+           numbers_max{1} \ule W64.of_int 200 /\
+           W64.zero \ule special_min{1} /\
+           special_min{1} \ule W64.of_int 200 /\
+           special_max{1} \ule W64.of_int 200 /\
+           EqWordInt lowercase_max{1} lowercaseAvailable{2} /\
+           EqWordInt uppercase_max{1} uppercaseAvailable{2} /\
+           EqWordInt numbers_max{1} numbersAvailable{2} /\
+           EqWordInt special_max{1} specialAvailable{2} /\
+           size generatedPassword{2} = W64.to_uint i_filled{1} /\
+           i_filled{1} = lowercase_min{1} + uppercase_min{1} + numbers_min{1} + special_min{1}/\
+           memPassword_eq_specPassword Glob.mem{1} (W64.of_int 1000) generatedPassword{2}).
+- if.
+  + move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32.
+    split.
+    * by rewrite ultE h30 /=.
+    * by rewrite ultE h30 /=.
+  + seq 1 1 : (#[/:]pre /\ 
+               EqWordInt i{1} i{2} /\
+               i{2} = 0 /\
+               special_min{1} \ule i{1} + special_max{1}).
+    - auto.
+    while (output_addr{1} = W64.of_int 1000 /\
+           to_uint lowercase_min{1} = policy{2}.`lowercaseMin /\
+           to_uint uppercase_min{1} = policy{2}.`uppercaseMin /\
+           to_uint numbers_min{1} = policy{2}.`numbersMin /\
+           to_uint special_min{1} = policy{2}.`specialMin /\
+           EqWordIntSet lowercase_set{1} RPGRef.lowercaseSet{2} /\
+           EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
+           EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
+           EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+           size RPGRef.lowercaseSet{2} = 26 /\
+           size RPGRef.uppercaseSet{2} = 26 /\
+           size RPGRef.numbersSet{2} = 10 /\
+           size RPGRef.specialSet{2} = 14 /\
+           EqWordInt length{1} policy{2}.`length /\
+           W64.zero \ule lowercase_min{1} /\
+           lowercase_min{1} \ule W64.of_int 200 /\
+           lowercase_max{1} \ule W64.of_int 200 /\
+           W64.zero \ule uppercase_min{1} /\
+           uppercase_min{1} \ule W64.of_int 200 /\
+           uppercase_max{1} \ule W64.of_int 200 /\
+           W64.zero \ule numbers_min{1} /\
+           numbers_min{1} \ule W64.of_int 200 /\
+           numbers_max{1} \ule W64.of_int 200 /\
+           W64.zero \ule special_min{1} /\
+           special_min{1} \ule W64.of_int 200 /\
+           special_max{1} \ule W64.of_int 200 /\
+           EqWordInt lowercase_max{1} lowercaseAvailable{2} /\
+           EqWordInt uppercase_max{1} uppercaseAvailable{2} /\
+           EqWordInt numbers_max{1} numbersAvailable{2} /\
+           EqWordInt special_max{1} specialAvailable{2} /\
+           size generatedPassword{2} = W64.to_uint i_filled{1} /\
+           memPassword_eq_specPassword Glob.mem{1} (W64.of_int 1000) generatedPassword{2} /\
+           EqWordInt i{1} i{2} /\
+           special_min{1} \ule i{1} + special_max{1} /\
+           0 <= to_uint i{1} <= to_uint special_min{1} /\
+           i_filled{1} = lowercase_min{1} + uppercase_min{1} + numbers_min{1} + i{1}).
+    * seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
+                 to_uint lowercase_min{1} = policy{2}.`lowercaseMin /\
+                 to_uint uppercase_min{1} = policy{2}.`uppercaseMin /\
+                 to_uint numbers_min{1} = policy{2}.`numbersMin /\
+                 to_uint special_min{1} = policy{2}.`specialMin /\
+                 EqWordIntSet lowercase_set{1} RPGRef.lowercaseSet{2} /\
+                 EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
+                 EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
+                 EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+                 size RPGRef.lowercaseSet{2} = 26 /\
+                 size RPGRef.uppercaseSet{2} = 26 /\
+                 size RPGRef.numbersSet{2} = 10 /\
+                 size RPGRef.specialSet{2} = 14 /\
+                 EqWordInt length{1} policy{2}.`length /\
+                 W64.zero \ule lowercase_min{1} /\
+                 lowercase_min{1} \ule W64.of_int 200 /\
+                 lowercase_max{1} \ule W64.of_int 200 /\
+                 W64.zero \ule uppercase_min{1} /\
+                 uppercase_min{1} \ule W64.of_int 200 /\
+                 uppercase_max{1} \ule W64.of_int 200 /\
+                 W64.zero \ule numbers_min{1} /\
+                 numbers_min{1} \ule W64.of_int 200 /\
+                 numbers_max{1} \ule W64.of_int 200 /\
+                 W64.zero \ule special_min{1} /\
+                 special_min{1} \ule W64.of_int 200 /\
+                 special_max{1} \ule W64.of_int 200 /\
+                 EqWordInt lowercase_max{1} lowercaseAvailable{2} /\
+                 EqWordInt uppercase_max{1} uppercaseAvailable{2} /\
+                 EqWordInt numbers_max{1} numbersAvailable{2} /\
+                 EqWordInt special_max{1} specialAvailable{2} /\
+                 size generatedPassword{2} = W64.to_uint i_filled{1} /\
+                 memPassword_eq_specPassword Glob.mem{1} (W64.of_int 1000) generatedPassword{2} /\
+                 EqWordInt i{1} i{2} /\
+                 special_min{1} \ule i{1} + special_max{1} + W64.one /\
+                 0 <= to_uint i{1} < to_uint special_min{1} /\
+                 i_filled{1} = lowercase_min{1} + uppercase_min{1} + numbers_min{1} + i{1}).
+      - auto.
+        move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35 h36 h37.
+        have smax_ge_one : W64.one \ule special_max{m1}.
+          + smt.
+        do! split.
+        - smt.
+        - rewrite /EqWordInt to_uintB.
+          assumption.
+          by rewrite h29.
+        - smt.
+        - smt.
+      seq 1 1 : (#pre /\ EqWordChar tmp8{1} randomChar{2}).
+      - call imp_ref_rcg_equiv.
+        skip.
+        move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35.
+        - by rewrite /EqWordInt eq_sym /=.
+      seq 3 2 : (output_addr{1} = W64.of_int 1000 /\
+                 to_uint lowercase_min{1} = policy{2}.`lowercaseMin /\
+                 to_uint uppercase_min{1} = policy{2}.`uppercaseMin /\
+                 to_uint numbers_min{1} = policy{2}.`numbersMin /\
+                 to_uint special_min{1} = policy{2}.`specialMin /\
+                 EqWordIntSet lowercase_set{1} RPGRef.lowercaseSet{2} /\
+                 EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
+                 EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
+                 EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+                 size RPGRef.lowercaseSet{2} = 26 /\
+                 size RPGRef.uppercaseSet{2} = 26 /\
+                 size RPGRef.numbersSet{2} = 10 /\
+                 size RPGRef.specialSet{2} = 14 /\
+                 EqWordInt length{1} policy{2}.`length /\
+                 W64.zero \ule lowercase_min{1} /\
+                 lowercase_min{1} \ule W64.of_int 200 /\
+                 lowercase_max{1} \ule W64.of_int 200 /\
+                 W64.zero \ule uppercase_min{1} /\
+                 uppercase_min{1} \ule W64.of_int 200 /\
+                 uppercase_max{1} \ule W64.of_int 200 /\
+                 W64.zero \ule numbers_min{1} /\
+                 numbers_min{1} \ule W64.of_int 200 /\
+                 numbers_max{1} \ule W64.of_int 200 /\
+                 W64.zero \ule special_min{1} /\
+                 special_min{1} \ule W64.of_int 200 /\
+                 special_max{1} \ule W64.of_int 200 /\
+                 EqWordInt lowercase_max{1} lowercaseAvailable{2} /\
+                 EqWordInt uppercase_max{1} uppercaseAvailable{2} /\
+                 EqWordInt numbers_max{1} numbersAvailable{2} /\
+                 EqWordInt special_max{1} specialAvailable{2} /\
+                 size generatedPassword{2} = W64.to_uint i_filled{1} /\
+                 memPassword_eq_specPassword Glob.mem{1} (W64.of_int 1000) generatedPassword{2} /\
+                 EqWordInt i{1} i{2} /\
+                 special_min{1} \ule i{1} + special_max{1} /\
+                 0 <= to_uint i{1} <= to_uint special_min{1} /\
+                 i_filled{1} = lowercase_min{1} + uppercase_min{1} + numbers_min{1} + i{1} /\
+                 EqWordChar tmp8{1} randomChar{2}).
+      - auto.
+        move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35 h36.
+        do! split.
+        - rewrite to_uintD.
+          have small : (to_uint (lowercase_min{m1} + uppercase_min{m1} + numbers_min{m1} + i{m1}) + to_uint W64.one) %% W64.modulus =
+                       to_uint (lowercase_min{m1} + uppercase_min{m1} + numbers_min{m1} + i{m1}) + to_uint W64.one.
+          + smt.
+          by rewrite small -h30 size_cat /=. 
+        - rewrite to_uintD.
+          have small :
+            (to_uint (W64.of_int 1000) + to_uint (lowercase_min{m1} + uppercase_min{m1} + numbers_min{m1} + i{m1})) %% W64.modulus =
+            to_uint (W64.of_int 1000) + to_uint (lowercase_min{m1} + uppercase_min{m1} + numbers_min{m1} + i{m1}).
+          + smt.
+          rewrite small -h30 /=.
+          by apply (eq_mem_password_append Glob.mem{m1}
+          (W64.of_int 1000) generatedPassword{m2} tmp8{m1} randomChar{m2}).
+        - smt.
+        - smt.
+        - smt.
+        - smt.
+        - ring.
+      skip.
+      move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35 h36.
+      do! split.
+      - smt.
+      - smt.
+    *  skip.
+       move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35.
+       do! split.
+       - smt().
+       - smt.
+       - apply wordint_to_intword in h34.
+         by rewrite -to_uintK -h34.
+       - move => h36.
+         rewrite -h4.
+         rewrite ultE in h36.
+         by rewrite h34 in h36.
+       - move => h36.
+         rewrite -h4 in h36.
+         rewrite -h34 in h36.
+         by rewrite ultE.
+       - move => ????????????????.
+         smt.
+  + skip.
+    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33.
+    have : special_max{m1} = W64.zero. 
+    + rewrite ultE in h33.
+      smt.
+    have : special_min{m1} = W64.zero.
+    + smt.
+    move => h34 h35.
+    rewrite h34.
+    ring.
 
 
 
