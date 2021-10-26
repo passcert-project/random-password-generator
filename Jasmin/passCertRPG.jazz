@@ -58,13 +58,66 @@ inline fn define_union_set(reg u64 lowercase_max, reg u64 uppercase_max, reg u64
     i_set = 0;
 
     if (lowercase_max > 0) {
-        i = 0;
-        while (i < 26) {
-            tmp = lowercase_set[(int)i];
-            union_set[(int)i_set] = tmp;
-            i += 1;
-            i_set += 1;
-        }    
+        // i = 0;
+        // while (i < 26) {
+        //     tmp = lowercase_set[(int)i];
+        //     union_set[(int)i_set] = tmp;
+        //     i += 1;
+        //     i_set += 1;
+        // }
+        tmp = lowercase_set[0];
+        union_set[i_set + 0] = tmp;
+        tmp = lowercase_set[1];
+        union_set[i_set + 1] = tmp;
+        tmp = lowercase_set[2];
+        union_set[i_set + 2] = tmp;
+        tmp = lowercase_set[3];
+        union_set[i_set + 3] = tmp;
+        tmp = lowercase_set[4];
+        union_set[i_set + 4] = tmp;
+        tmp = lowercase_set[5];
+        union_set[i_set + 5] = tmp;
+        tmp = lowercase_set[6];
+        union_set[i_set + 6] = tmp;
+        tmp = lowercase_set[7];
+        union_set[i_set + 7] = tmp;
+        tmp = lowercase_set[8];
+        union_set[i_set + 8] = tmp;
+        tmp = lowercase_set[9];
+        union_set[i_set + 9] = tmp;
+        tmp = lowercase_set[10];
+        union_set[i_set + 10] = tmp;
+        tmp = lowercase_set[11];
+        union_set[i_set + 11] = tmp;
+        tmp = lowercase_set[12];
+        union_set[i_set + 12] = tmp;
+        tmp = lowercase_set[13];
+        union_set[i_set + 13] = tmp;
+        tmp = lowercase_set[14];
+        union_set[i_set + 14] = tmp;
+        tmp = lowercase_set[15];
+        union_set[i_set + 15] = tmp;
+        tmp = lowercase_set[16];
+        union_set[i_set + 16] = tmp;
+        tmp = lowercase_set[17];
+        union_set[i_set + 17] = tmp;
+        tmp = lowercase_set[18];
+        union_set[i_set + 18] = tmp;
+        tmp = lowercase_set[19];
+        union_set[i_set + 19] = tmp;
+        tmp = lowercase_set[20];
+        union_set[i_set + 20] = tmp;
+        tmp = lowercase_set[21];
+        union_set[i_set + 21] = tmp;
+        tmp = lowercase_set[22];
+        union_set[i_set + 22] = tmp;
+        tmp = lowercase_set[23];
+        union_set[i_set + 23] = tmp;
+        tmp = lowercase_set[24];
+        union_set[i_set + 24] = tmp;
+        tmp = lowercase_set[25];
+        union_set[i_set + 25] = tmp;
+        i_set += 26;
     }
     if (uppercase_max > 0) {
         i = 0;
@@ -136,9 +189,9 @@ export fn generate_password(reg u64 policy_addr, reg u64 output_addr) -> reg u64
     special_max     = [policy_addr + 64];
 
     
-    ////////////////////////////
-    // VERIFICATIONS OF INPUT //
-    ////////////////////////////
+    /////////////////////////
+    // INPUT VERIFICATIONS //
+    /////////////////////////
 
     // Length does not exceed maximum length of 200
     tmp64_1 = length;
