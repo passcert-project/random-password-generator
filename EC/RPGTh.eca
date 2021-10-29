@@ -25,6 +25,11 @@ op satisfiesBounds (p:policy) (pw:password) : bool =
   p.`numbersMin <= setOccurrences numbersSet pw <= p.`numbersMax /\
   p.`specialMin <= setOccurrences specialSet pw <= p.`specialMax.
 
+op satisfiesPolicy (p:policy) (pw:password) : bool =
+  satisfiesLength p pw /\ satisfiesBounds p pw.
+
+op doesNotSatisfyPolicy (p:policy) (pw:password) : bool =
+  !(satisfiesPolicy p pw).
 
 
 (* Correctness definition for an RPG *)
@@ -39,9 +44,7 @@ module Correctness(RPG : RPG_T) = {
 
     if(satisfiablePolicy policy) {
     
-      satisfied <- is_some pw /\
-                   satisfiesLength policy (oget pw) /\
-                   satisfiesBounds policy (oget pw);
+      satisfied <- is_some pw /\ satisfiesPolicy policy (oget pw);
     }
     else {
       satisfied <- is_none pw;
@@ -75,7 +78,8 @@ module IdealRPG  = {
     var out;
     
     if(satisfiablePolicy policy) {
-      pw <$ dpassword \ (fun pass => !(satisfiesLength policy pw) /\ !(satisfiesBounds policy pw));
+      (*pw <$ dpassword \ (fun pass => !(satisfiesLength policy pw) /\ !(satisfiesBounds policy pw));*)
+      pw <$ dpassword \ doesNotSatisfyPolicy policy;
       out <- Some pw;
     } else {
       out <- None;

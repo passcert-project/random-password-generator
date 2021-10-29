@@ -821,8 +821,17 @@ lemma imp_ref_define_union_set_equiv :
    ].
 proof.
 proc.
-seq 1 1 : (#pre /\ i_set{1} = W64.zero /\ to_uint i_set{1} = size unionSet{2}).
+seq 1 1 : (#pre /\
+           i_set{1} = W64.zero /\
+           to_uint i_set{1} = size unionSet{2} /\
+           EqWordIntSet union_set{1} unionSet{2}).
 - auto.
+  move => &m1 &m2 /> ????????????.
+  rewrite /EqWordIntSet.
+  move => n.
+  have : n \in range 0 0 = false.
+  + smt(@List).
+  smt().
 seq 1 1 : (EqWordInt lowercase_max{1} nLowercase{2} /\
            EqWordInt uppercase_max{1} nUppercase{2} /\
            EqWordInt numbers_max{1} nNumbers{2} /\
@@ -835,9 +844,9 @@ seq 1 1 : (EqWordInt lowercase_max{1} nLowercase{2} /\
            size uppercaseSet{2} = 26 /\
            size numbersSet{2} = 10 /\
            size specialSet{2} = 14 /\
-           to_uint i_set{1} = 26 /\
            to_uint i_set{1} = size unionSet{2} /\
-           EqWordIntSet union_set{1} unionSet{2}).
+           EqWordIntSet union_set{1} unionSet{2} /\
+           0 <= size unionSet{2} <= 26).
 - if.
   + move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13.
     by rewrite -h1 ultE.
@@ -854,31 +863,172 @@ seq 1 1 : (EqWordInt lowercase_max{1} nLowercase{2} /\
               size uppercaseSet{2} = 26 /\
               size numbersSet{2} = 10 /\
               size specialSet{2} = 14 /\
-              to_uint i_set{1} = to_uint i{1})
+              EqWordIntSet union_set{1} (take (to_uint i_set{1}) lowercaseSet{2}) /\
+              to_uint i_set{1} = to_uint i{1} /\
+              0 <= to_uint i{1} /\
+              to_uint i{1} <= 26)
               (26 - to_uint i{1}).
     * move => &m2 z.
-      auto. move => &m1 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14.
-      rewrite ultE /= in h14.
-      do! split.     
+      auto.
+      move => &m1 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17.
+      rewrite ultE /= in h17.
+      do! split.
+      - admit.
       - rewrite to_uintD to_uintD.
         have small1 : (to_uint i_set{m1} + to_uint W64.one) %% W64.modulus =
                       to_uint i_set{m1} + to_uint W64.one.
-        + smt.
+        + rewrite pmod_small.
+          smt().
+          reflexivity.
         have small2 : (to_uint i{m1} + to_uint W64.one) %% W64.modulus =
                       to_uint i{m1} + to_uint W64.one.
-        + smt.
-        by rewrite small1 small2 -h13.
-      - smt.
+        + rewrite pmod_small.
+          smt().
+          reflexivity.
+        by rewrite small1 small2 -h14.
+      - rewrite to_uintD.
+        smt().
+      - rewrite to_uintD.
+        have small : (to_uint i{m1} + to_uint W64.one) %% W64.modulus =
+                      to_uint i{m1} + to_uint W64.one.
+        + rewrite pmod_small.
+          smt().
+          reflexivity.
+        rewrite small.
+        smt(@Number).
+      - rewrite to_uintD.
+        have small : (to_uint i{m1} + to_uint W64.one) %% W64.modulus =
+                      to_uint i{m1} + to_uint W64.one.
+        + rewrite pmod_small.
+          smt().
+          reflexivity.
+        rewrite small.
+        smt(@Number).
     * auto.
-      move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14.
+      move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15.
+      split. rewrite take0. smt(@List).
       move => iL isetL unionSetL.
       split.
-      - smt.
-      - move => h15 h16.
-        
+      - move => h16 h17 h18 h19 h21.
+        rewrite ultE /=.
+        smt(@Number).
+      - move => h16 h17 h18 h19 h20.
+        have h21 : to_uint iL = 26.
+        + rewrite ultE /= in h16.
+        smt(@Number).        
+        do! split.
+        - by rewrite size_cat -h13 h18 h9 /=.
+        - have h22 : unionSet{m2} = [].
+          + apply size_eq0.
+            smt().
+          rewrite h22 /=.
+          smt(@List).
+        - rewrite size_cat -h13 /=.
+          smt().
+        - rewrite size_cat -h13  /=.
+          smt().
+  + auto.
+    move => &m1 &m2 /> *.
+    smt().
+seq 1 1 : (EqWordInt lowercase_max{1} nLowercase{2} /\
+           EqWordInt uppercase_max{1} nUppercase{2} /\
+           EqWordInt numbers_max{1} nNumbers{2} /\
+           EqWordInt special_max{1} nSpecial{2} /\
+           EqWordIntSet lowercase_set{1} lowercaseSet{2} /\
+           EqWordIntSet uppercase_set{1} uppercaseSet{2} /\
+           EqWordIntSet numbers_set{1} numbersSet{2} /\
+           EqWordIntSet special_set{1} specialSet{2} /\
+           size lowercaseSet{2} = 26 /\
+           size uppercaseSet{2} = 26 /\
+           size numbersSet{2} = 10 /\
+           size specialSet{2} = 14 /\
+           to_uint i_set{1} = size unionSet{2} /\
+           EqWordIntSet union_set{1} unionSet{2} /\
+           0 <= size unionSet{2} <= 26 + 26).
+- if.
+  + move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16.
+    by rewrite -h2 ultE.
+  + sp 1 0.
+    while{1} (EqWordInt lowercase_max{1} nLowercase{2} /\
+              EqWordInt uppercase_max{1} nUppercase{2} /\
+              EqWordInt numbers_max{1} nNumbers{2} /\
+              EqWordInt special_max{1} nSpecial{2} /\
+              EqWordIntSet lowercase_set{1} lowercaseSet{2} /\
+              EqWordIntSet uppercase_set{1} uppercaseSet{2} /\
+              EqWordIntSet numbers_set{1} numbersSet{2} /\
+              EqWordIntSet special_set{1} specialSet{2} /\
+              size lowercaseSet{2} = 26 /\
+              size uppercaseSet{2} = 26 /\
+              size numbersSet{2} = 10 /\
+              size specialSet{2} = 14 /\
+              EqWordIntSet union_set{1} (take (to_uint i_set{1}) (unionSet{2} ++ uppercaseSet{2})) /\
+              to_uint i_set{1} = size unionSet{2} + to_uint i{1} /\
+              0 <= to_uint i{1} /\
+              to_uint i{1} <= 26 /\
+              0 <= size unionSet{2} <= 26)
+              (26 - to_uint i{1}).
+    * move => &m2 z.
+      auto.
+      move => &m1 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19.
+      rewrite ultE /= in h19.
+      do! split.
+      - admit.
+      - rewrite to_uintD to_uintD.
+        have small1 : (to_uint i_set{m1} + to_uint W64.one) %% W64.modulus =
+                      to_uint i_set{m1} + to_uint W64.one.
+        + rewrite pmod_small.
+          rewrite h14.
+          smt(@Number).
+          reflexivity.
+        have small2 : (to_uint i{m1} + to_uint W64.one) %% W64.modulus =
+                      to_uint i{m1} + to_uint W64.one.
+        + rewrite pmod_small.
+          smt(@Number).
+          reflexivity.
+        rewrite small1 small2 h14.
+        ring.
+      - rewrite to_uintD.
+        smt(@Number).
+      - rewrite to_uintD.
+        have small : (to_uint i{m1} + to_uint W64.one) %% W64.modulus =
+                      to_uint i{m1} + to_uint W64.one.
+        + rewrite pmod_small.
+          smt(@Number).
+          reflexivity.
+        rewrite small.
+        smt(@Number).
+      - rewrite to_uintD.
+        have small : (to_uint i{m1} + to_uint W64.one) %% W64.modulus =
+                      to_uint i{m1} + to_uint W64.one.
+        + rewrite pmod_small.
+          smt(@Number).
+          reflexivity.
+        rewrite small.
+        smt(@Number).
+    * auto.
+      move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17.
+      split. admit.
+      move => iL isetL unionSetL.
+      split.
+      - move => h18 h19 h20 h21 h22.
+        rewrite ultE /=.
+        smt(@Number).
+      - move => h18 h19 h20 h21 h22.
+        have h23 : to_uint iL = 26.
+        + rewrite ultE /= in h18.
+        smt(@Number).        
+        do! split.
+        - by rewrite size_cat -h13 h18 h9 /=.
+        - have h22 : unionSet{m2} = [].
+          + apply size_eq0.
+            smt().
+          rewrite h22 /=.
+          smt(@List).         
+  + auto.
 
-  +
-          
+
+
+
 
 
 (*---------------------------*)
