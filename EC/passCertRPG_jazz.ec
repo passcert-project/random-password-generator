@@ -4,8 +4,7 @@ from Jasmin require import JModel.
 require import Array76.
 require import WArray76.
 
-op [full uniform] RDRAND: W64.t distr.
-op RDRAND2 = W64.dword.
+op RDRAND = W64.dword.
 
 module M = {
   proc rng (range:W64.t) : W64.t = {
@@ -26,10 +25,10 @@ module M = {
       max_value <- (tmp2 - tmp1);
       max_value <- (max_value - (W64.of_int 1));
     }
-    tmp2 <$ RDRAND2 ;
+    tmp2 <$ RDRAND ;
     
     while ((max_value \ult tmp2)) {
-      tmp2 <$ RDRAND2 ;
+      tmp2 <$ RDRAND ;
     }
     tmp1 <- tmp2;
     tmp_range <- (tmp_range + (W64.of_int 1));
