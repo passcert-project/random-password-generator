@@ -74,55 +74,178 @@ module M = {
   W64.t * W8.t Array76.t = {
     
     var i_set:W64.t;
-    var i:W64.t;
     var tmp:W8.t;
     
     i_set <- (W64.of_int 0);
     if (((W64.of_int 0) \ult lowercase_max)) {
-      i <- (W64.of_int 0);
-      
-      while ((i \ult (W64.of_int 26))) {
-        tmp <- lowercase_set.[(W64.to_uint i)];
-        union_set.[(W64.to_uint i_set)] <- tmp;
-        i <- (i + (W64.of_int 1));
-        i_set <- (i_set + (W64.of_int 1));
-      }
+      tmp <- lowercase_set.[0];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 0)))] <- tmp;
+      tmp <- lowercase_set.[1];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 1)))] <- tmp;
+      tmp <- lowercase_set.[2];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 2)))] <- tmp;
+      tmp <- lowercase_set.[3];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 3)))] <- tmp;
+      tmp <- lowercase_set.[4];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 4)))] <- tmp;
+      tmp <- lowercase_set.[5];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 5)))] <- tmp;
+      tmp <- lowercase_set.[6];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 6)))] <- tmp;
+      tmp <- lowercase_set.[7];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 7)))] <- tmp;
+      tmp <- lowercase_set.[8];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 8)))] <- tmp;
+      tmp <- lowercase_set.[9];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 9)))] <- tmp;
+      tmp <- lowercase_set.[10];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 10)))] <- tmp;
+      tmp <- lowercase_set.[11];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 11)))] <- tmp;
+      tmp <- lowercase_set.[12];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 12)))] <- tmp;
+      tmp <- lowercase_set.[13];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 13)))] <- tmp;
+      tmp <- lowercase_set.[14];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 14)))] <- tmp;
+      tmp <- lowercase_set.[15];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 15)))] <- tmp;
+      tmp <- lowercase_set.[16];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 16)))] <- tmp;
+      tmp <- lowercase_set.[17];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 17)))] <- tmp;
+      tmp <- lowercase_set.[18];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 18)))] <- tmp;
+      tmp <- lowercase_set.[19];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 19)))] <- tmp;
+      tmp <- lowercase_set.[20];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 20)))] <- tmp;
+      tmp <- lowercase_set.[21];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 21)))] <- tmp;
+      tmp <- lowercase_set.[22];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 22)))] <- tmp;
+      tmp <- lowercase_set.[23];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 23)))] <- tmp;
+      tmp <- lowercase_set.[24];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 24)))] <- tmp;
+      tmp <- lowercase_set.[25];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 25)))] <- tmp;
+      i_set <- (i_set + (W64.of_int 26));
     } else {
       
     }
     if (((W64.of_int 0) \ult uppercase_max)) {
-      i <- (W64.of_int 0);
-      
-      while ((i \ult (W64.of_int 26))) {
-        tmp <- uppercase_set.[(W64.to_uint i)];
-        union_set.[(W64.to_uint i_set)] <- tmp;
-        i <- (i + (W64.of_int 1));
-        i_set <- (i_set + (W64.of_int 1));
-      }
+      tmp <- uppercase_set.[0];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 0)))] <- tmp;
+      tmp <- uppercase_set.[1];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 1)))] <- tmp;
+      tmp <- uppercase_set.[2];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 2)))] <- tmp;
+      tmp <- uppercase_set.[3];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 3)))] <- tmp;
+      tmp <- uppercase_set.[4];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 4)))] <- tmp;
+      tmp <- uppercase_set.[5];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 5)))] <- tmp;
+      tmp <- uppercase_set.[6];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 6)))] <- tmp;
+      tmp <- uppercase_set.[7];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 7)))] <- tmp;
+      tmp <- uppercase_set.[8];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 8)))] <- tmp;
+      tmp <- uppercase_set.[9];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 9)))] <- tmp;
+      tmp <- uppercase_set.[10];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 10)))] <- tmp;
+      tmp <- uppercase_set.[11];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 11)))] <- tmp;
+      tmp <- uppercase_set.[12];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 12)))] <- tmp;
+      tmp <- uppercase_set.[13];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 13)))] <- tmp;
+      tmp <- uppercase_set.[14];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 14)))] <- tmp;
+      tmp <- uppercase_set.[15];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 15)))] <- tmp;
+      tmp <- uppercase_set.[16];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 16)))] <- tmp;
+      tmp <- uppercase_set.[17];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 17)))] <- tmp;
+      tmp <- uppercase_set.[18];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 18)))] <- tmp;
+      tmp <- uppercase_set.[19];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 19)))] <- tmp;
+      tmp <- uppercase_set.[20];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 20)))] <- tmp;
+      tmp <- uppercase_set.[21];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 21)))] <- tmp;
+      tmp <- uppercase_set.[22];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 22)))] <- tmp;
+      tmp <- uppercase_set.[23];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 23)))] <- tmp;
+      tmp <- uppercase_set.[24];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 24)))] <- tmp;
+      tmp <- uppercase_set.[25];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 25)))] <- tmp;
+      i_set <- (i_set + (W64.of_int 26));
     } else {
       
     }
     if (((W64.of_int 0) \ult numbers_max)) {
-      i <- (W64.of_int 0);
-      
-      while ((i \ult (W64.of_int 10))) {
-        tmp <- numbers_set.[(W64.to_uint i)];
-        union_set.[(W64.to_uint i_set)] <- tmp;
-        i <- (i + (W64.of_int 1));
-        i_set <- (i_set + (W64.of_int 1));
-      }
+      tmp <- uppercase_set.[0];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 0)))] <- tmp;
+      tmp <- uppercase_set.[1];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 1)))] <- tmp;
+      tmp <- uppercase_set.[2];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 2)))] <- tmp;
+      tmp <- uppercase_set.[3];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 3)))] <- tmp;
+      tmp <- uppercase_set.[4];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 4)))] <- tmp;
+      tmp <- uppercase_set.[5];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 5)))] <- tmp;
+      tmp <- uppercase_set.[6];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 6)))] <- tmp;
+      tmp <- uppercase_set.[7];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 7)))] <- tmp;
+      tmp <- uppercase_set.[8];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 8)))] <- tmp;
+      tmp <- uppercase_set.[9];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 9)))] <- tmp;
+      i_set <- (i_set + (W64.of_int 10));
     } else {
       
     }
     if (((W64.of_int 0) \ult special_max)) {
-      i <- (W64.of_int 0);
-      
-      while ((i \ult (W64.of_int 14))) {
-        tmp <- special_set.[(W64.to_uint i)];
-        union_set.[(W64.to_uint i_set)] <- tmp;
-        i <- (i + (W64.of_int 1));
-        i_set <- (i_set + (W64.of_int 1));
-      }
+      tmp <- uppercase_set.[0];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 0)))] <- tmp;
+      tmp <- uppercase_set.[1];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 1)))] <- tmp;
+      tmp <- uppercase_set.[2];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 2)))] <- tmp;
+      tmp <- uppercase_set.[3];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 3)))] <- tmp;
+      tmp <- uppercase_set.[4];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 4)))] <- tmp;
+      tmp <- uppercase_set.[5];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 5)))] <- tmp;
+      tmp <- uppercase_set.[6];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 6)))] <- tmp;
+      tmp <- uppercase_set.[7];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 7)))] <- tmp;
+      tmp <- uppercase_set.[8];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 8)))] <- tmp;
+      tmp <- uppercase_set.[9];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 9)))] <- tmp;
+      tmp <- uppercase_set.[10];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 10)))] <- tmp;
+      tmp <- uppercase_set.[11];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 11)))] <- tmp;
+      tmp <- uppercase_set.[12];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 12)))] <- tmp;
+      tmp <- uppercase_set.[13];
+      union_set.[(W64.to_uint (i_set + (W64.of_int 13)))] <- tmp;
+      i_set <- (i_set + (W64.of_int 14));
     } else {
       
     }

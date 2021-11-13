@@ -16,9 +16,9 @@ inline fn rng(reg u64 range) -> reg u64 {
         max_value -= 1;
     }
 
-    tmp2 = #RDRAND();
+    tmp2 = #RDRAND(); // RDRAND
     while(max_value < tmp2) {
-        tmp2 = #RDRAND();
+        tmp2 = #RDRAND(); // RDRAND
     }
     tmp1 = tmp2;
     tmp_range += 1;
@@ -49,7 +49,7 @@ inline fn permutation(reg u64 p_string, reg u64 string_len) {
     }
 }
 
-inline fn define_union_set(reg u64 lowercase_max, reg u64 uppercase_max, reg u64 numbers_max, reg u64 special_max, stack u8[76] lowercase_set,
+inline fn define_union_set(stack u64 lowercase_max, stack u64 uppercase_max, stack u64 numbers_max, stack u64 special_max, stack u8[76] lowercase_set,
     stack u8[76] uppercase_set, stack u8[76] numbers_set, stack u8[76] special_set, stack u8[76] union_set) -> reg u64, stack u8[76] {
     
     reg u8 tmp;
@@ -66,85 +66,167 @@ inline fn define_union_set(reg u64 lowercase_max, reg u64 uppercase_max, reg u64
         //     i_set += 1;
         // }
         tmp = lowercase_set[0];
-        union_set[i_set + 0] = tmp;
+        union_set[(int)(i_set + 0)] = tmp;
         tmp = lowercase_set[1];
-        union_set[i_set + 1] = tmp;
+        union_set[(int)(i_set + 1)] = tmp;
         tmp = lowercase_set[2];
-        union_set[i_set + 2] = tmp;
+        union_set[(int)(i_set + 2)] = tmp;
         tmp = lowercase_set[3];
-        union_set[i_set + 3] = tmp;
+        union_set[(int)(i_set + 3)] = tmp;
         tmp = lowercase_set[4];
-        union_set[i_set + 4] = tmp;
+        union_set[(int)(i_set + 4)] = tmp;
         tmp = lowercase_set[5];
-        union_set[i_set + 5] = tmp;
+        union_set[(int)(i_set + 5)] = tmp;
         tmp = lowercase_set[6];
-        union_set[i_set + 6] = tmp;
+        union_set[(int)(i_set + 6)] = tmp;
         tmp = lowercase_set[7];
-        union_set[i_set + 7] = tmp;
+        union_set[(int)(i_set + 7)] = tmp;
         tmp = lowercase_set[8];
-        union_set[i_set + 8] = tmp;
+        union_set[(int)(i_set + 8)] = tmp;
         tmp = lowercase_set[9];
-        union_set[i_set + 9] = tmp;
+        union_set[(int)(i_set + 9)] = tmp;
         tmp = lowercase_set[10];
-        union_set[i_set + 10] = tmp;
+        union_set[(int)(i_set + 10)] = tmp;
         tmp = lowercase_set[11];
-        union_set[i_set + 11] = tmp;
+        union_set[(int)(i_set + 11)] = tmp;
         tmp = lowercase_set[12];
-        union_set[i_set + 12] = tmp;
+        union_set[(int)(i_set + 12)] = tmp;
         tmp = lowercase_set[13];
-        union_set[i_set + 13] = tmp;
+        union_set[(int)(i_set + 13)] = tmp;
         tmp = lowercase_set[14];
-        union_set[i_set + 14] = tmp;
+        union_set[(int)(i_set + 14)] = tmp;
         tmp = lowercase_set[15];
-        union_set[i_set + 15] = tmp;
+        union_set[(int)(i_set + 15)] = tmp;
         tmp = lowercase_set[16];
-        union_set[i_set + 16] = tmp;
+        union_set[(int)(i_set + 16)] = tmp;
         tmp = lowercase_set[17];
-        union_set[i_set + 17] = tmp;
+        union_set[(int)(i_set + 17)] = tmp;
         tmp = lowercase_set[18];
-        union_set[i_set + 18] = tmp;
+        union_set[(int)(i_set + 18)] = tmp;
         tmp = lowercase_set[19];
-        union_set[i_set + 19] = tmp;
+        union_set[(int)(i_set + 19)] = tmp;
         tmp = lowercase_set[20];
-        union_set[i_set + 20] = tmp;
+        union_set[(int)(i_set + 20)] = tmp;
         tmp = lowercase_set[21];
-        union_set[i_set + 21] = tmp;
+        union_set[(int)(i_set + 21)] = tmp;
         tmp = lowercase_set[22];
-        union_set[i_set + 22] = tmp;
+        union_set[(int)(i_set + 22)] = tmp;
         tmp = lowercase_set[23];
-        union_set[i_set + 23] = tmp;
+        union_set[(int)(i_set + 23)] = tmp;
         tmp = lowercase_set[24];
-        union_set[i_set + 24] = tmp;
+        union_set[(int)(i_set + 24)] = tmp;
         tmp = lowercase_set[25];
-        union_set[i_set + 25] = tmp;
+        union_set[(int)(i_set + 25)] = tmp;
         i_set += 26;
     }
     if (uppercase_max > 0) {
-        i = 0;
-        while (i < 26) {
-            tmp = uppercase_set[(int)i];
-            union_set[(int)i_set] = tmp;
-            i += 1;
-            i_set += 1;
-        }    
+        tmp = uppercase_set[0];
+        union_set[(int)(i_set + 0)] = tmp;
+        tmp = uppercase_set[1];
+        union_set[(int)(i_set + 1)] = tmp;
+        tmp = uppercase_set[2];
+        union_set[(int)(i_set + 2)] = tmp;
+        tmp = uppercase_set[3];
+        union_set[(int)(i_set + 3)] = tmp;
+        tmp = uppercase_set[4];
+        union_set[(int)(i_set + 4)] = tmp;
+        tmp = uppercase_set[5];
+        union_set[(int)(i_set + 5)] = tmp;
+        tmp = uppercase_set[6];
+        union_set[(int)(i_set + 6)] = tmp;
+        tmp = uppercase_set[7];
+        union_set[(int)(i_set + 7)] = tmp;
+        tmp = uppercase_set[8];
+        union_set[(int)(i_set + 8)] = tmp;
+        tmp = uppercase_set[9];
+        union_set[(int)(i_set + 9)] = tmp;
+        tmp = uppercase_set[10];
+        union_set[(int)(i_set + 10)] = tmp;
+        tmp = uppercase_set[11];
+        union_set[(int)(i_set + 11)] = tmp;
+        tmp = uppercase_set[12];
+        union_set[(int)(i_set + 12)] = tmp;
+        tmp = uppercase_set[13];
+        union_set[(int)(i_set + 13)] = tmp;
+        tmp = uppercase_set[14];
+        union_set[(int)(i_set + 14)] = tmp;
+        tmp = uppercase_set[15];
+        union_set[(int)(i_set + 15)] = tmp;
+        tmp = uppercase_set[16];
+        union_set[(int)(i_set + 16)] = tmp;
+        tmp = uppercase_set[17];
+        union_set[(int)(i_set + 17)] = tmp;
+        tmp = uppercase_set[18];
+        union_set[(int)(i_set + 18)] = tmp;
+        tmp = uppercase_set[19];
+        union_set[(int)(i_set + 19)] = tmp;
+        tmp = uppercase_set[20];
+        union_set[(int)(i_set + 20)] = tmp;
+        tmp = uppercase_set[21];
+        union_set[(int)(i_set + 21)] = tmp;
+        tmp = uppercase_set[22];
+        union_set[(int)(i_set + 22)] = tmp;
+        tmp = uppercase_set[23];
+        union_set[(int)(i_set + 23)] = tmp;
+        tmp = uppercase_set[24];
+        union_set[(int)(i_set + 24)] = tmp;
+        tmp = uppercase_set[25];
+        union_set[(int)(i_set + 25)] = tmp;
+        i_set += 26;
     }
     if (numbers_max > 0) {
-        i = 0;
-        while (i < 10) {
-            tmp = numbers_set[(int)i];
-            union_set[(int)i_set] = tmp;
-            i += 1;
-            i_set += 1;
-        }    
+        tmp = uppercase_set[0];
+        union_set[(int)(i_set + 0)] = tmp;
+        tmp = uppercase_set[1];
+        union_set[(int)(i_set + 1)] = tmp;
+        tmp = uppercase_set[2];
+        union_set[(int)(i_set + 2)] = tmp;
+        tmp = uppercase_set[3];
+        union_set[(int)(i_set + 3)] = tmp;
+        tmp = uppercase_set[4];
+        union_set[(int)(i_set + 4)] = tmp;
+        tmp = uppercase_set[5];
+        union_set[(int)(i_set + 5)] = tmp;
+        tmp = uppercase_set[6];
+        union_set[(int)(i_set + 6)] = tmp;
+        tmp = uppercase_set[7];
+        union_set[(int)(i_set + 7)] = tmp;
+        tmp = uppercase_set[8];
+        union_set[(int)(i_set + 8)] = tmp;
+        tmp = uppercase_set[9];
+        union_set[(int)(i_set + 9)] = tmp;
+        i_set += 10;      
     }
     if (special_max > 0) {
-        i = 0;
-        while (i < 14) {
-            tmp = special_set[(int)i];
-            union_set[(int)i_set] = tmp;
-            i += 1;
-            i_set += 1;
-        }    
+        tmp = uppercase_set[0];
+        union_set[(int)(i_set + 0)] = tmp;
+        tmp = uppercase_set[1];
+        union_set[(int)(i_set + 1)] = tmp;
+        tmp = uppercase_set[2];
+        union_set[(int)(i_set + 2)] = tmp;
+        tmp = uppercase_set[3];
+        union_set[(int)(i_set + 3)] = tmp;
+        tmp = uppercase_set[4];
+        union_set[(int)(i_set + 4)] = tmp;
+        tmp = uppercase_set[5];
+        union_set[(int)(i_set + 5)] = tmp;
+        tmp = uppercase_set[6];
+        union_set[(int)(i_set + 6)] = tmp;
+        tmp = uppercase_set[7];
+        union_set[(int)(i_set + 7)] = tmp;
+        tmp = uppercase_set[8];
+        union_set[(int)(i_set + 8)] = tmp;
+        tmp = uppercase_set[9];
+        union_set[(int)(i_set + 9)] = tmp;
+        tmp = uppercase_set[10];
+        union_set[(int)(i_set + 10)] = tmp;
+        tmp = uppercase_set[11];
+        union_set[(int)(i_set + 11)] = tmp;
+        tmp = uppercase_set[12];
+        union_set[(int)(i_set + 12)] = tmp;
+        tmp = uppercase_set[13];
+        union_set[(int)(i_set + 13)] = tmp;
+        i_set += 14;
     }
 
     return i_set, union_set;
@@ -404,7 +486,7 @@ export fn generate_password(reg u64 policy_addr, reg u64 output_addr) -> reg u64
 
     // Define set of available characters, if their maximum value has not been reached yet
     tmp64_1, union_set = define_union_set(lowercase_max, uppercase_max, numbers_max, special_max,
-                        lowercase_set, uppercase_set, numbers_set, special_set, union_set);
+                         lowercase_set, uppercase_set, numbers_set, special_set, union_set);
 
     // Generate password from the set of available characters
     tmp64_2 = length;
