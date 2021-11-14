@@ -807,13 +807,15 @@ qed.
 (*----- RCG Equivalence -----*)
 (*---------------------------*)
 
-lemma imp_ref_rcg_equiv :
+lemma imp_ref_rcg_equiv _set :
   equiv[M.random_char_generator ~ RPGRef.random_char_generator :
+          _set = set{2} /\
           EqWordIntSet set{1} set{2} /\
           EqWordInt range{1} (size set{2}) /\
           0 < to_uint range{1} < W64.modulus
            ==>
-          EqWordChar res{1} res{2}].
+          EqWordChar res{1} res{2} /\
+          res{2} \in _set].
 proof.
 proc.
 seq 1 1 : (#pre /\ 0 <= choice{2} < (size set{2}) /\ EqWordInt choice_0{1} choice{2}).
@@ -824,8 +826,11 @@ skip.
 move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7.
 rewrite /EqWordIntSet in h1.
 rewrite h7.
-apply h1.
-by apply mem_range.
+split.
+- apply h1.
+  by apply mem_range.
+- apply mem_nth.
+  split. assumption. move => h8. assumption.
 qed.
 
 lemma n_range_0 (n:int) :
@@ -838,8 +843,12 @@ qed.
 (*----- Def. UnionSet Equivalence -----*)
 (*-------------------------------------*)
 
-lemma imp_ref_define_union_set_equiv :
+lemma imp_ref_define_union_set_equiv _nLowercase _nUppercase _nNumbers _nSpecial :
   equiv[M.define_union_set ~ RPGRef.define_union_set :
+        nLowercase{2} = _nLowercase /\
+        nUppercase{2} = _nUppercase /\
+        nNumbers{2} = _nNumbers /\
+        nSpecial{2} = _nSpecial /\
         EqWordInt lowercase_max{1} nLowercase{2} /\
         EqWordInt uppercase_max{1} nUppercase{2} /\
         EqWordInt numbers_max{1} nNumbers{2} /\
@@ -863,7 +872,11 @@ lemma imp_ref_define_union_set_equiv :
          x \in lowercaseSet{2} \/
          x \in uppercaseSet{2} \/
          x \in numbersSet{2} \/
-         x \in specialSet{2})].
+         x \in specialSet{2}) /\
+        (has (fun (x) => x \in res{2}) lowercaseSet{2} => 0 < _nLowercase) /\
+        (has (fun (x) => x \in res{2}) uppercaseSet{2} => 0 < _nUppercase) /\
+        (has (fun (x) => x \in res{2}) numbersSet{2} => 0 < _nNumbers) /\
+        (has (fun (x) => x \in res{2}) specialSet{2} => 0 < _nSpecial)].
 proof.
 proc.
 seq 1 1 : (#pre /\
@@ -873,11 +886,13 @@ seq 1 1 : (#pre /\
 - auto.
   move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 n h14.
   rewrite /= in h14.
-  apply n_range_0 in h14.
-  trivial.
+  by apply n_range_0 in h14.
 
-
-seq 1 1 : (EqWordInt lowercase_max{1} nLowercase{2} /\
+seq 1 1 : (nLowercase{2} = _nLowercase /\
+           nUppercase{2} = _nUppercase /\
+           nNumbers{2} = _nNumbers /\
+           nSpecial{2} = _nSpecial /\
+           EqWordInt lowercase_max{1} nLowercase{2} /\
            EqWordInt uppercase_max{1} nUppercase{2} /\
            EqWordInt numbers_max{1} nNumbers{2} /\
            EqWordInt special_max{1} nSpecial{2} /\
@@ -897,12 +912,15 @@ seq 1 1 : (EqWordInt lowercase_max{1} nLowercase{2} /\
            EqWordIntSet union_set{1} unionSet{2} /\
            0 <= size unionSet{2} <= 26 /\
            (forall x, x \in unionSet{2} =>
-            x \in lowercaseSet{2})).
+            x \in lowercaseSet{2}) /\
+           (has (mem unionSet{2}) lowercaseSet => 0 < _nLowercase)).
 - if.
   + move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14.
     by rewrite -h1 ultE.
   + auto.
     move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15.
+    rewrite ultE /= in h15.
+    rewrite /EqWOrdInt in h1.
     do! split.
     - by rewrite size_cat -h13 /= eq_sym.
     - rewrite /EqWordIntSet size_cat -h13 /=.
@@ -917,14 +935,29 @@ seq 1 1 : (EqWordInt lowercase_max{1} nLowercase{2} /\
         apply h5.
         rewrite mem_range /#.
         admit.
-     - by rewrite size_cat h9 -h13.
-     - by rewrite size_cat h9 -h13.
-     - smt().
+    - by rewrite size_cat h9 -h13.
+    - by rewrite size_cat h9 -h13.
+    - rewrite eq_sym size_eq0 in h13.
+      by rewrite h13.
+    - rewrite eq_sym size_eq0 in h13.
+      rewrite h13 /=.
+      rewrite charset_has /#.
   + auto.
-    move => &m1 &m2 /> * /#.
+    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15.
+    rewrite eq_sym size_eq0 in h13.
+    do! split.
+    - smt().
+    - smt().
+    - move => x.
+      by rewrite h13 /=.
+    - rewrite h13.
+      trivial.
 
-
-seq 1 1 : (EqWordInt lowercase_max{1} nLowercase{2} /\
+seq 1 1 : (nLowercase{2} = _nLowercase /\
+           nUppercase{2} = _nUppercase /\
+           nNumbers{2} = _nNumbers /\
+           nSpecial{2} = _nSpecial /\
+           EqWordInt lowercase_max{1} nLowercase{2} /\
            EqWordInt uppercase_max{1} nUppercase{2} /\
            EqWordInt numbers_max{1} nNumbers{2} /\
            EqWordInt special_max{1} nSpecial{2} /\
@@ -932,32 +965,42 @@ seq 1 1 : (EqWordInt lowercase_max{1} nLowercase{2} /\
            EqWordIntSet uppercase_set{1} uppercaseSet{2} /\
            EqWordIntSet numbers_set{1} numbersSet{2} /\
            EqWordIntSet special_set{1} specialSet{2} /\
+           lowercaseSet{2} = lowercaseSet /\
+           uppercaseSet{2} = uppercaseSet /\
+           numbersSet{2} = numbersSet /\
+           specialSet{2} = specialSet /\
            size lowercaseSet{2} = 26 /\
            size uppercaseSet{2} = 26 /\
            size numbersSet{2} = 10 /\
            size specialSet{2} = 14 /\
            to_uint i_set{1} = size unionSet{2} /\
            EqWordIntSet union_set{1} unionSet{2} /\
-           0 <= size unionSet{2} <= 26 + 26).
-- if.
-  + move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16.
+           0 <= size unionSet{2} <= 26 + 26 /\
+           (forall x, x \in unionSet{2} =>
+            x \in lowercaseSet{2} \/
+            x \in uppercaseSet{2}) /\
+           (has (fun (x) => x \in unionSet{2}) lowercaseSet{2} => 0 < _nLowercase) /\
+           (has (fun (x) => x \in unionSet{2}) uppercaseSet{2} => 0 < _nUppercase)).
+- if. 
+  + move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18.
     by rewrite -h2 ultE.
   + auto.
-    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17.
+    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19.
     do! split.
     - rewrite size_cat -h13 h10 eq_sym to_uintD /=.
-      have h18 : (to_uint i_set{m1} + 26) %% 18446744073709551616 =
+      have h20 : (to_uint i_set{m1} + 26) %% 18446744073709551616 =
                  (to_uint i_set{m1} + 26).
       + smt().
-      by rewrite h18.
+      by rewrite h20.
     - rewrite /EqWordIntSet size_cat -h13 /=.
       rewrite /EqWordIntSet in h6.
       move => n.
       rewrite mem_range.
-      move => [h18 h19].
+      move => [h20 h21].
       do! rewrite get_set_if /=.
-      + case (n = (to_uint i_set{m1}) + 25). move => h20.
-        rewrite h20 /=.
+      + case (n = (to_uint i_set{m1}) + 25).
+        move => h22.
+        rewrite h22 /=.
         have : (0 <= to_uint (i_set{m1} + (of_int 25)%W64) &&
                to_uint (i_set{m1} + (of_int 25)%W64) < 76) /\
                to_uint i_set{m1} + 25 = to_uint (i_set{m1} + (of_int 25)%W64).
@@ -965,21 +1008,52 @@ seq 1 1 : (EqWordInt lowercase_max{1} nLowercase{2} /\
           * rewrite to_uintD /= /#.
           * rewrite to_uintD h13 /#.
           * rewrite to_uintD /#.
-        move => h21. rewrite h21 /=.
-        rewrite nth_cat h13. have h22 : !(size unionSet{m2} + 25 < size unionSet{m2}). smt().
-        rewrite h22 /=.
-        have h23 : size unionSet{m2} + 25 - size unionSet{m2} = 25. smt().
-        rewrite h23.
+        move => h23. rewrite h23 /=.
+        rewrite nth_cat h13. have h24 : !(size unionSet{m2} + 25 < size unionSet{m2}). smt().
+        rewrite h24 /=.
+        have h25 : size unionSet{m2} + 25 - size unionSet{m2} = 25. smt().
+        rewrite h25.
         apply h6.
         rewrite mem_range /#.
       + admit.
     - rewrite size_cat /#.
     - rewrite size_cat /#.
+    - move => x h20.
+      rewrite char_cat2 in h20.
+      case h20.
+      * move => h20.
+        by rewrite h17.
+      * move => h21.
+        by rewrite h21.
+    - move => h20.
+      have disjoint : (forall (x : char), x \in lowercaseSet => ! (x \in uppercaseSet)).
+      + rewrite /lowercaseSet /uppercaseSet /#.
+    - have h21 : has (mem unionSet{m2}) lowercaseSet.
+      + by apply (has_cat_set unionSet{m2} uppercaseSet lowercaseSet).
+      by apply h18 in h21.
+    - rewrite ultE /= in h19.
+      by rewrite -h2.
   + auto.
-    move => &m1 &m2 /> * /#.
+    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19.
+    do! split.
+    - smt().
+    - smt().
+    - have disjoint : (forall (x : char), x \in lowercaseSet => ! (x \in uppercaseSet)).
+      + rewrite /lowercaseSet /uppercaseSet /#.
+      have : !(has (mem unionSet{m2}) uppercaseSet).
+      + rewrite hasPn.
+        move => x h20.
+        rewrite disjoint_symmetry in disjoint.
+        apply disjoint in h20.
+        apply in_contra in h17.
+        by apply h17 in h20.
+      trivial.
 
-
-seq 1 1 : (EqWordInt lowercase_max{1} nLowercase{2} /\
+seq 1 1 : (nLowercase{2} = _nLowercase /\
+           nUppercase{2} = _nUppercase /\
+           nNumbers{2} = _nNumbers /\
+           nSpecial{2} = _nSpecial /\
+           EqWordInt lowercase_max{1} nLowercase{2} /\
            EqWordInt uppercase_max{1} nUppercase{2} /\
            EqWordInt numbers_max{1} nNumbers{2} /\
            EqWordInt special_max{1} nSpecial{2} /\
@@ -987,20 +1061,35 @@ seq 1 1 : (EqWordInt lowercase_max{1} nLowercase{2} /\
            EqWordIntSet uppercase_set{1} uppercaseSet{2} /\
            EqWordIntSet numbers_set{1} numbersSet{2} /\
            EqWordIntSet special_set{1} specialSet{2} /\
+           lowercaseSet{2} = lowercaseSet /\
+           uppercaseSet{2} = uppercaseSet /\
+           numbersSet{2} = numbersSet /\
+           specialSet{2} = specialSet /\
            size lowercaseSet{2} = 26 /\
            size uppercaseSet{2} = 26 /\
            size numbersSet{2} = 10 /\
            size specialSet{2} = 14 /\
            to_uint i_set{1} = size unionSet{2} /\
            EqWordIntSet union_set{1} unionSet{2} /\
-           0 <= size unionSet{2} <= 26 + 26 + 10).
+           0 <= size unionSet{2} <= 26 + 26 + 10 /\
+           (forall x, x \in unionSet{2} =>
+            x \in lowercaseSet{2} \/
+            x \in uppercaseSet{2} \/
+            x \in numbersSet{2}) /\
+           (has (fun (x) => x \in unionSet{2}) lowercaseSet{2} => 0 < _nLowercase) /\
+           (has (fun (x) => x \in unionSet{2}) uppercaseSet{2} => 0 < _nUppercase) /\
+           (has (fun (x) => x \in unionSet{2}) numbersSet{2} => 0 < _nNumbers)).
 - if.
   + admit.
   + admit.
   + admit.
 
 
-seq 1 1 : (EqWordInt lowercase_max{1} nLowercase{2} /\
+seq 1 1 : (nLowercase{2} = _nLowercase /\
+           nUppercase{2} = _nUppercase /\
+           nNumbers{2} = _nNumbers /\
+           nSpecial{2} = _nSpecial /\
+           EqWordInt lowercase_max{1} nLowercase{2} /\
            EqWordInt uppercase_max{1} nUppercase{2} /\
            EqWordInt numbers_max{1} nNumbers{2} /\
            EqWordInt special_max{1} nSpecial{2} /\
@@ -1008,13 +1097,26 @@ seq 1 1 : (EqWordInt lowercase_max{1} nLowercase{2} /\
            EqWordIntSet uppercase_set{1} uppercaseSet{2} /\
            EqWordIntSet numbers_set{1} numbersSet{2} /\
            EqWordIntSet special_set{1} specialSet{2} /\
+           lowercaseSet{2} = lowercaseSet /\
+           uppercaseSet{2} = uppercaseSet /\
+           numbersSet{2} = numbersSet /\
+           specialSet{2} = specialSet /\
            size lowercaseSet{2} = 26 /\
            size uppercaseSet{2} = 26 /\
            size numbersSet{2} = 10 /\
            size specialSet{2} = 14 /\
            to_uint i_set{1} = size unionSet{2} /\
            EqWordIntSet union_set{1} unionSet{2} /\
-           0 <= size unionSet{2} <= 26 + 26 + 10 + 14).
+           0 <= size unionSet{2} <= 26 + 26 + 10 + 14 /\
+           (forall x, x \in unionSet{2} =>
+            x \in lowercaseSet{2} \/
+            x \in uppercaseSet{2} \/
+            x \in numbersSet{2} \/
+            x \in specialSet{2}) /\
+           (has (fun (x) => x \in unionSet{2}) lowercaseSet{2} => 0 < _nLowercase) /\
+           (has (fun (x) => x \in unionSet{2}) uppercaseSet{2} => 0 < _nUppercase) /\
+           (has (fun (x) => x \in unionSet{2}) numbersSet{2} => 0 < _nNumbers) /\
+           (has (fun (x) => x \in unionSet{2}) specialSet{2} => 0 < _nSpecial)).
 - if.
   + admit.
   + admit.
@@ -1033,7 +1135,8 @@ qed.
 (*----- RPG Equivalence -----*)
 (*---------------------------*)
 
-(*lemma implementation_reference_equiv :
+(*OTHER POSSIBLE FORMALIZATION:
+lemma implementation_reference_equiv :
   equiv[M.generate_password ~ RPGRef.generate_password :
           policyFitsW64 policy{2} /\
           policyInMem Glob.mem{1} policy_addr{1} policy{2}
@@ -1584,6 +1687,10 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
            EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
            EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
            EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+           RPGRef.lowercaseSet{2} = lowercaseSet /\
+           RPGRef.uppercaseSet{2} = uppercaseSet /\
+           RPGRef.numbersSet{2} = numbersSet /\
+           RPGRef.specialSet{2} = specialSet /\
            size RPGRef.lowercaseSet{2} = 26 /\
            size RPGRef.uppercaseSet{2} = 26 /\
            size RPGRef.numbersSet{2} = 10 /\
@@ -1641,6 +1748,10 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
            EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
            EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
            EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+           RPGRef.lowercaseSet{2} = lowercaseSet /\
+           RPGRef.uppercaseSet{2} = uppercaseSet /\
+           RPGRef.numbersSet{2} = numbersSet /\
+           RPGRef.specialSet{2} = specialSet /\
            size RPGRef.lowercaseSet{2} = 26 /\
            size RPGRef.uppercaseSet{2} = 26 /\
            size RPGRef.numbersSet{2} = 10 /\
@@ -1690,6 +1801,10 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
            EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
            EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
            EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+           RPGRef.lowercaseSet{2} = lowercaseSet /\
+           RPGRef.uppercaseSet{2} = uppercaseSet /\
+           RPGRef.numbersSet{2} = numbersSet /\
+           RPGRef.specialSet{2} = specialSet /\
            size RPGRef.lowercaseSet{2} = 26 /\
            size RPGRef.uppercaseSet{2} = 26 /\
            size RPGRef.numbersSet{2} = 10 /\
@@ -1731,6 +1846,10 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
                  EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
                  EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
                  EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+                 RPGRef.lowercaseSet{2} = lowercaseSet /\
+                 RPGRef.uppercaseSet{2} = uppercaseSet /\
+                 RPGRef.numbersSet{2} = numbersSet /\
+                 RPGRef.specialSet{2} = specialSet /\
                  size RPGRef.lowercaseSet{2} = 26 /\
                  size RPGRef.uppercaseSet{2} = 26 /\
                  size RPGRef.numbersSet{2} = 10 /\
@@ -1794,12 +1913,9 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
           smt().
         - assumption.
       seq 1 1 : (#pre /\ EqWordChar tmp8{1} randomChar{2}).
-      - call imp_ref_rcg_equiv.
+      - ecall (imp_ref_rcg_equiv lowercaseSet{2}).
         skip.
-        move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18
-                h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35 h36
-                h37 h38 h39 h40.
-        - by rewrite /EqWordInt eq_sym /=.
+        move => &m1 &m2 /> *.
       seq 3 2 : (output_addr{1} = W64.of_int 1000 /\
                  to_uint lowercase_min{1} = policy{2}.`lowercaseMin /\
                  to_uint uppercase_min{1} = policy{2}.`uppercaseMin /\
@@ -1809,6 +1925,10 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
                  EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
                  EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
                  EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+                 RPGRef.lowercaseSet{2} = lowercaseSet /\
+                 RPGRef.uppercaseSet{2} = uppercaseSet /\
+                 RPGRef.numbersSet{2} = numbersSet /\
+                 RPGRef.specialSet{2} = specialSet /\
                  size RPGRef.lowercaseSet{2} = 26 /\
                  size RPGRef.uppercaseSet{2} = 26 /\
                  size RPGRef.numbersSet{2} = 10 /\
@@ -1933,6 +2053,10 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
            EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
            EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
            EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+           RPGRef.lowercaseSet{2} = lowercaseSet /\
+           RPGRef.uppercaseSet{2} = uppercaseSet /\
+           RPGRef.numbersSet{2} = numbersSet /\
+           RPGRef.specialSet{2} = specialSet /\
            size RPGRef.lowercaseSet{2} = 26 /\
            size RPGRef.uppercaseSet{2} = 26 /\
            size RPGRef.numbersSet{2} = 10 /\
@@ -1980,6 +2104,10 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
            EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
            EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
            EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+           RPGRef.lowercaseSet{2} = lowercaseSet /\
+           RPGRef.uppercaseSet{2} = uppercaseSet /\
+           RPGRef.numbersSet{2} = numbersSet /\
+           RPGRef.specialSet{2} = specialSet /\
            size RPGRef.lowercaseSet{2} = 26 /\
            size RPGRef.uppercaseSet{2} = 26 /\
            size RPGRef.numbersSet{2} = 10 /\
@@ -2020,6 +2148,10 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
                  EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
                  EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
                  EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+                 RPGRef.lowercaseSet{2} = lowercaseSet /\
+                 RPGRef.uppercaseSet{2} = uppercaseSet /\
+                 RPGRef.numbersSet{2} = numbersSet /\
+                 RPGRef.specialSet{2} = specialSet /\
                  size RPGRef.lowercaseSet{2} = 26 /\
                  size RPGRef.uppercaseSet{2} = 26 /\
                  size RPGRef.numbersSet{2} = 10 /\
@@ -2081,12 +2213,9 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
           smt().
         - assumption.
       seq 1 1 : (#pre /\ EqWordChar tmp8{1} randomChar{2}).
-      - call imp_ref_rcg_equiv.
+      - ecall (imp_ref_rcg_equiv uppercaseSet{2}).
         skip.
-        move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18
-                h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35 h36
-                h37 h38 h39.
-        - by rewrite /EqWordInt eq_sym /=.
+        move => &m1 &m2 /> *.
       seq 3 2 : (output_addr{1} = W64.of_int 1000 /\
                  to_uint lowercase_min{1} = policy{2}.`lowercaseMin /\
                  to_uint uppercase_min{1} = policy{2}.`uppercaseMin /\
@@ -2096,6 +2225,10 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
                  EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
                  EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
                  EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+                 RPGRef.lowercaseSet{2} = lowercaseSet /\
+                 RPGRef.uppercaseSet{2} = uppercaseSet /\
+                 RPGRef.numbersSet{2} = numbersSet /\
+                 RPGRef.specialSet{2} = specialSet /\
                  size RPGRef.lowercaseSet{2} = 26 /\
                  size RPGRef.uppercaseSet{2} = 26 /\
                  size RPGRef.numbersSet{2} = 10 /\
@@ -2227,6 +2360,10 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
            EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
            EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
            EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+           RPGRef.lowercaseSet{2} = lowercaseSet /\
+           RPGRef.uppercaseSet{2} = uppercaseSet /\
+           RPGRef.numbersSet{2} = numbersSet /\
+           RPGRef.specialSet{2} = specialSet /\
            size RPGRef.lowercaseSet{2} = 26 /\
            size RPGRef.uppercaseSet{2} = 26 /\
            size RPGRef.numbersSet{2} = 10 /\
@@ -2273,6 +2410,10 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
            EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
            EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
            EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+           RPGRef.lowercaseSet{2} = lowercaseSet /\
+           RPGRef.uppercaseSet{2} = uppercaseSet /\
+           RPGRef.numbersSet{2} = numbersSet /\
+           RPGRef.specialSet{2} = specialSet /\
            size RPGRef.lowercaseSet{2} = 26 /\
            size RPGRef.uppercaseSet{2} = 26 /\
            size RPGRef.numbersSet{2} = 10 /\
@@ -2312,6 +2453,10 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
                  EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
                  EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
                  EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+                 RPGRef.lowercaseSet{2} = lowercaseSet /\
+                 RPGRef.uppercaseSet{2} = uppercaseSet /\
+                 RPGRef.numbersSet{2} = numbersSet /\
+                 RPGRef.specialSet{2} = specialSet /\
                  size RPGRef.lowercaseSet{2} = 26 /\
                  size RPGRef.uppercaseSet{2} = 26 /\
                  size RPGRef.numbersSet{2} = 10 /\
@@ -2374,12 +2519,9 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
           smt().
         - assumption.
       seq 1 1 : (#pre /\ EqWordChar tmp8{1} randomChar{2}).
-      - call imp_ref_rcg_equiv.
+      - ecall (imp_ref_rcg_equiv numbersSet{2}).
         skip.
-        move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18
-                h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35 h36
-                h37 h38.
-        - by rewrite /EqWordInt eq_sym /=.
+        move => &m1 &m2 /> *.
       seq 3 2 : (output_addr{1} = W64.of_int 1000 /\
                  to_uint lowercase_min{1} = policy{2}.`lowercaseMin /\
                  to_uint uppercase_min{1} = policy{2}.`uppercaseMin /\
@@ -2389,6 +2531,10 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
                  EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
                  EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
                  EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+                 RPGRef.lowercaseSet{2} = lowercaseSet /\
+                 RPGRef.uppercaseSet{2} = uppercaseSet /\
+                 RPGRef.numbersSet{2} = numbersSet /\
+                 RPGRef.specialSet{2} = specialSet /\
                  size RPGRef.lowercaseSet{2} = 26 /\
                  size RPGRef.uppercaseSet{2} = 26 /\
                  size RPGRef.numbersSet{2} = 10 /\
@@ -2526,6 +2672,10 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
            EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
            EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
            EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+           RPGRef.lowercaseSet{2} = lowercaseSet /\
+           RPGRef.uppercaseSet{2} = uppercaseSet /\
+           RPGRef.numbersSet{2} = numbersSet /\
+           RPGRef.specialSet{2} = specialSet /\
            size RPGRef.lowercaseSet{2} = 26 /\
            size RPGRef.uppercaseSet{2} = 26 /\
            size RPGRef.numbersSet{2} = 10 /\
@@ -2571,6 +2721,10 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
            EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
            EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
            EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+           RPGRef.lowercaseSet{2} = lowercaseSet /\
+           RPGRef.uppercaseSet{2} = uppercaseSet /\
+           RPGRef.numbersSet{2} = numbersSet /\
+           RPGRef.specialSet{2} = specialSet /\
            size RPGRef.lowercaseSet{2} = 26 /\
            size RPGRef.uppercaseSet{2} = 26 /\
            size RPGRef.numbersSet{2} = 10 /\
@@ -2609,6 +2763,10 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
                  EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
                  EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
                  EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+                 RPGRef.lowercaseSet{2} = lowercaseSet /\
+                 RPGRef.uppercaseSet{2} = uppercaseSet /\
+                 RPGRef.numbersSet{2} = numbersSet /\
+                 RPGRef.specialSet{2} = specialSet /\
                  size RPGRef.lowercaseSet{2} = 26 /\
                  size RPGRef.uppercaseSet{2} = 26 /\
                  size RPGRef.numbersSet{2} = 10 /\
@@ -2670,12 +2828,9 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
           smt().
         - assumption.
       seq 1 1 : (#pre /\ EqWordChar tmp8{1} randomChar{2}).
-      - call imp_ref_rcg_equiv.
+      - ecall (imp_ref_rcg_equiv specialSet{2}).
         skip.
-        move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18
-                h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35 h36
-                h37.
-        - by rewrite /EqWordInt eq_sym /=.
+        move => &m1 &m2 /> *.
       seq 3 2 : (output_addr{1} = W64.of_int 1000 /\
                  to_uint lowercase_min{1} = policy{2}.`lowercaseMin /\
                  to_uint uppercase_min{1} = policy{2}.`uppercaseMin /\
@@ -2685,6 +2840,10 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
                  EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
                  EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
                  EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+                 RPGRef.lowercaseSet{2} = lowercaseSet /\
+                 RPGRef.uppercaseSet{2} = uppercaseSet /\
+                 RPGRef.numbersSet{2} = numbersSet /\
+                 RPGRef.specialSet{2} = specialSet /\
                  size RPGRef.lowercaseSet{2} = 26 /\
                  size RPGRef.uppercaseSet{2} = 26 /\
                  size RPGRef.numbersSet{2} = 10 /\
@@ -2820,19 +2979,22 @@ seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
 
 seq 1 1 : (#pre /\
            EqWordIntSet union_set{1} unionSet{2} /\
-           to_uint tmp64_1{1} = size unionSet{2} (*/\
+           to_uint tmp64_1{1} = size unionSet{2} /\
            (forall x, x \in unionSet{2} =>
             x \in lowercaseSet{2} \/
             x \in uppercaseSet{2} \/
             x \in numbersSet{2} \/
-            x \in specialSet{2})*)).
-call imp_ref_define_union_set_equiv.
+            x \in specialSet{2}) /\
+           (has (fun (x) => x \in unionSet{2}) lowercaseSet{2} => 0 < lowercaseAvailable{2}) /\
+           (has (fun (x) => x \in unionSet{2}) uppercaseSet{2} => 0 < uppercaseAvailable{2}) /\
+           (has (fun (x) => x \in unionSet{2}) numbersSet{2} => 0 < numbersAvailable{2}) /\
+           (has (fun (x) => x \in unionSet{2}) specialSet{2} => 0 < specialAvailable{2})).
+ecall (imp_ref_define_union_set_equiv
+       lowercaseAvailable{2} uppercaseAvailable{2} numbersAvailable{2} specialAvailable{2}).
 auto.
-seq 1 0 : (#[/:]pre /\ EqWordInt tmp64_2{1} policy{2}.`length).
-- auto.
 
 (* JUST TO SIMPLIFY PROOFS! THIS SHOULD BE DONE EARLIER *)
-seq 0 0 : (output_addr{1} = (W64.of_int 1000) /\
+seq 1 0 : (output_addr{1} = (W64.of_int 1000) /\
            to_uint lowercase_min{1} = policy{2}.`lowercaseMin /\
            to_uint uppercase_min{1} = policy{2}.`uppercaseMin /\
            to_uint numbers_min{1} = policy{2}.`numbersMin /\
@@ -2845,6 +3007,10 @@ seq 0 0 : (output_addr{1} = (W64.of_int 1000) /\
            EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
            EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
            EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+           RPGRef.lowercaseSet{2} = lowercaseSet /\
+           RPGRef.uppercaseSet{2} = uppercaseSet /\
+           RPGRef.numbersSet{2} = numbersSet /\
+           RPGRef.specialSet{2} = specialSet /\
            size RPGRef.lowercaseSet{2} = 26 /\
            size RPGRef.uppercaseSet{2} = 26 /\
            size RPGRef.numbersSet{2} = 10 /\
@@ -2870,10 +3036,19 @@ seq 0 0 : (output_addr{1} = (W64.of_int 1000) /\
              generatedPassword{2} /\
            EqWordIntSet union_set{1} unionSet{2} /\
            to_uint tmp64_1{1} = size unionSet{2} /\
+           (forall x, x \in unionSet{2} =>
+            x \in lowercaseSet{2} \/
+            x \in uppercaseSet{2} \/
+            x \in numbersSet{2} \/
+            x \in specialSet{2}) /\
+           (has (fun (x) => x \in unionSet{2}) lowercaseSet{2} => 0 < lowercaseAvailable{2}) /\
+           (has (fun (x) => x \in unionSet{2}) uppercaseSet{2} => 0 < uppercaseAvailable{2}) /\
+           (has (fun (x) => x \in unionSet{2}) numbersSet{2} => 0 < numbersAvailable{2}) /\
+           (has (fun (x) => x \in unionSet{2}) specialSet{2} => 0 < specialAvailable{2}) /\
            EqWordInt tmp64_2{1} policy{2}.`PassCertRPG_ref.length).
 auto.
 move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19
-        h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35 h36.
+        h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35 h36 h37 h38 h39 h40.
 rewrite uleE in h16.
 rewrite uleE in h17.
 rewrite uleE in h18.
@@ -2933,6 +3108,10 @@ while (output_addr{1} = (W64.of_int 1000) /\
        EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
        EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
        EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+       RPGRef.lowercaseSet{2} = lowercaseSet /\
+       RPGRef.uppercaseSet{2} = uppercaseSet /\
+       RPGRef.numbersSet{2} = numbersSet /\
+       RPGRef.specialSet{2} = specialSet /\
        size RPGRef.lowercaseSet{2} = 26 /\
        size RPGRef.uppercaseSet{2} = 26 /\
        size RPGRef.numbersSet{2} = 10 /\
@@ -2956,12 +3135,24 @@ while (output_addr{1} = (W64.of_int 1000) /\
          generatedPassword{2} /\
        EqWordIntSet union_set{1} unionSet{2} /\
        to_uint tmp64_1{1} = size unionSet{2} /\
+       (forall x, x \in unionSet{2} =>
+        x \in lowercaseSet{2} \/
+        x \in uppercaseSet{2} \/
+        x \in numbersSet{2} \/
+        x \in specialSet{2}) /\
+       (has (fun (x) => x \in unionSet{2}) lowercaseSet{2} => 0 < lowercaseAvailable{2}) /\
+       (has (fun (x) => x \in unionSet{2}) uppercaseSet{2} => 0 < uppercaseAvailable{2}) /\
+       (has (fun (x) => x \in unionSet{2}) numbersSet{2} => 0 < numbersAvailable{2}) /\
+       (has (fun (x) => x \in unionSet{2}) specialSet{2} => 0 < specialAvailable{2}) /\
        EqWordInt tmp64_2{1} policy{2}.`PassCertRPG_ref.length).
-seq 1 1 : (#pre /\ EqWordChar tmp8{1} randomChar{2}).
-- call imp_ref_rcg_equiv.
+seq 1 1 : (#pre /\
+           EqWordChar tmp8{1} randomChar{2} /\
+           randomChar{2} \in unionSet{2}).
+- ecall (imp_ref_rcg_equiv unionSet{2}).
   auto.
   move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18
-          h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35 h36 h37 h38.
+          h19 h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35 h36 h37
+          h38 h39 h40 h41 h42 h43.
   rewrite /EqWordInt in h1.
   rewrite h35.
   admit. (*size unionSet bounded*)
@@ -2969,14 +3160,159 @@ if{1}.
 + if.
   - move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19
                        h20 h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35 h36
-                       h37 h38 h39 h40.
+                       h37 h38 h39 h40 h41 h42 h43 h44 h45 h46.
     split.
-    * move => h41.
-      rewrite uleE /= in h40.
-      rewrite uleE /= in h41.
-      
-  -
-  -
+    * move => h47.
+      rewrite uleE /= in h46.
+      rewrite uleE /= in h47.
+      rewrite /EqWordChar in h44.
+      rewrite -h44 /lowercaseSet /#.
+    * move => h47.
+      rewrite uleE /= in h46.
+      rewrite /lowercaseSet in h47.
+      rewrite /EqWordChar in h44.
+      rewrite -h44 in h47.
+      rewrite uleE /= /#. 
+  - seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
+               to_uint lowercase_min{1} = policy{2}.`lowercaseMin /\
+               to_uint uppercase_min{1} = policy{2}.`uppercaseMin /\
+               to_uint numbers_min{1} = policy{2}.`numbersMin /\
+               to_uint special_min{1} = policy{2}.`specialMin /\
+               EqWordInt lowercase_max{1} lowercaseAvailable{2} /\
+               EqWordInt uppercase_max{1} uppercaseAvailable{2} /\
+               EqWordInt numbers_max{1} numbersAvailable{2} /\
+               EqWordInt special_max{1} specialAvailable{2} /\
+               EqWordIntSet lowercase_set{1} RPGRef.lowercaseSet{2} /\
+               EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
+               EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
+               EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+               RPGRef.lowercaseSet{2} = lowercaseSet /\
+               RPGRef.uppercaseSet{2} = uppercaseSet /\
+               RPGRef.numbersSet{2} = numbersSet /\
+               RPGRef.specialSet{2} = specialSet /\
+               size RPGRef.lowercaseSet{2} = 26 /\
+               size RPGRef.uppercaseSet{2} = 26 /\
+               size RPGRef.numbersSet{2} = 10 /\
+               size RPGRef.specialSet{2} = 14 /\
+               EqWordInt length{1} policy{2}.`PassCertRPG_ref.length /\
+               (0 <  to_uint length{1} <= 200) /\
+               0 <= to_uint lowercase_min{1} /\
+               to_uint lowercase_min{1} <= 200 /\
+               to_uint lowercase_max{1} <= 200 /\
+               0 <= to_uint uppercase_min{1} /\
+               to_uint uppercase_min{1} <= 200 /\
+               to_uint uppercase_max{1} <= 200 /\
+               0 <= to_uint numbers_min{1} /\
+               to_uint numbers_min{1} <= 200 /\
+               to_uint numbers_max{1} <= 200 /\
+               0 <= to_uint special_min{1} /\
+               to_uint special_min{1} <= 200 /\
+               to_uint special_max{1} <= 200 /\
+               size generatedPassword{2} = to_uint i_filled{1} /\
+               memPassword_eq_specPassword Glob.mem{1} (W64.of_int 1000)
+                 generatedPassword{2} /\
+               EqWordIntSet union_set{1} unionSet{2} /\
+               to_uint tmp64_1{1} = size unionSet{2} /\
+               EqWordInt tmp64_2{1} policy{2}.`PassCertRPG_ref.length /\
+               (i_filled{1} \ult tmp64_2{1}) /\
+               size generatedPassword{2} < policy{2}.`PassCertRPG_ref.length /\
+               EqWordChar tmp8{1} randomChar{2} /\
+               (randomChar{2} \in unionSet{2}) /\
+               (W8.of_int 97 \ule tmp8{1}) /\
+               (tmp8{1} \ule W8.of_int 122)).
+    + auto.
+      move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19 h20
+              h21 h22 h23 h24 h25 h26 h27 h28 h29 h30 h31 h32 h33 h34 h35 h36 h37 h38 h39 h40
+              h41 h42 h43 h44 h45 h46 h47.
+      have h48 : randomChar{m2} \in lowercaseSet.
+      + rewrite uleE /= in h46.
+        rewrite uleE /= in h47.
+        rewrite /lowercaseSet.
+        rewrite /EqWordChar in h44.
+        rewrite -h44 /#.
+      have h49 : 0 < lowercaseAvailable{m2}.
+      + have h50 : has (mem unionSet{m2}) lowercaseSet{m2}.
+        + by apply (charset_mem_has randomChar{m2} unionSet{m2} lowercaseSet{m2}).
+        by apply h37 in h50.
+      split.
+      * rewrite /EqWordInt in h5.
+        rewrite /EqWordInt to_uintB.
+        rewrite uleE h5 /= /#.
+        by rewrite h5.
+      * rewrite to_uintB.
+        rewrite uleE h5 /= /#.
+        smt().
+    if.
+    * move => &m1 &m2 /> ????h1*.
+      rewrite /EqWordInt -h1.
+      by rewrite to_uint_eq /=.
+    * seq 1 1 : (output_addr{1} = W64.of_int 1000 /\
+                 to_uint lowercase_min{1} = policy{2}.`lowercaseMin /\
+                 to_uint uppercase_min{1} = policy{2}.`uppercaseMin /\
+                 to_uint numbers_min{1} = policy{2}.`numbersMin /\
+                 to_uint special_min{1} = policy{2}.`specialMin /\
+                 EqWordInt lowercase_max{1} lowercaseAvailable{2} /\
+                 EqWordInt uppercase_max{1} uppercaseAvailable{2} /\
+                 EqWordInt numbers_max{1} numbersAvailable{2} /\
+                 EqWordInt special_max{1} specialAvailable{2} /\
+                 EqWordIntSet lowercase_set{1} RPGRef.lowercaseSet{2} /\
+                 EqWordIntSet uppercase_set{1} RPGRef.uppercaseSet{2} /\
+                 EqWordIntSet numbers_set{1} RPGRef.numbersSet{2} /\
+                 EqWordIntSet special_set{1} RPGRef.specialSet{2} /\
+                 RPGRef.lowercaseSet{2} = lowercaseSet /\
+                 RPGRef.uppercaseSet{2} = uppercaseSet /\
+                 RPGRef.numbersSet{2} = numbersSet /\
+                 RPGRef.specialSet{2} = specialSet /\
+                 size RPGRef.lowercaseSet{2} = 26 /\
+                 size RPGRef.uppercaseSet{2} = 26 /\
+                 size RPGRef.numbersSet{2} = 10 /\
+                 size RPGRef.specialSet{2} = 14 /\
+                 EqWordInt length{1} policy{2}.`PassCertRPG_ref.length /\
+                 (0 < to_uint length{1} <= 200) /\
+                 0 <= to_uint lowercase_min{1} /\
+                 to_uint lowercase_min{1} <= 200 /\
+                 to_uint lowercase_max{1} <= 200 /\
+                 0 <= to_uint uppercase_min{1} /\
+                 to_uint uppercase_min{1} <= 200 /\
+                 to_uint uppercase_max{1} <= 200 /\
+                 0 <= to_uint numbers_min{1} /\
+                 to_uint numbers_min{1} <= 200 /\
+                 to_uint numbers_max{1} <= 200 /\
+                 0 <= to_uint special_min{1} /\
+                 to_uint special_min{1} <= 200 /\
+                 to_uint special_max{1} <= 200 /\
+                 size generatedPassword{2} = to_uint i_filled{1} /\
+                 memPassword_eq_specPassword Glob.mem{1} (W64.of_int 1000)
+                   generatedPassword{2} /\
+                 EqWordIntSet union_set{1} unionSet{2} /\
+                 to_uint tmp64_1{1} = size unionSet{2} /\
+                 EqWordInt tmp64_2{1} policy{2}.`PassCertRPG_ref.length /\
+                 (i_filled{1} \ult tmp64_2{1}) /\
+                 size generatedPassword{2} < policy{2}.`PassCertRPG_ref.length /\
+                 EqWordChar tmp8{1} randomChar{2} /\
+                 (W8.of_int 97 \ule tmp8{1}) /\
+                 (tmp8{1} \ule W8.of_int 122) /\
+                 lowercase_max{1} = W64.zero /\
+                 (forall x, x \in unionSet{2} =>
+                  x \in lowercaseSet{2} \/
+                  x \in uppercaseSet{2} \/
+                  x \in numbersSet{2} \/
+                  x \in specialSet{2}) /\
+                 (has (fun (x) => x \in unionSet{2}) lowercaseSet{2} =>
+                    0 < lowercaseAvailable{2}) /\
+                 (has (fun (x) => x \in unionSet{2}) uppercaseSet{2} =>
+                    0 < uppercaseAvailable{2}) /\
+                 (has (fun (x) => x \in unionSet{2}) numbersSet{2} =>
+                    0 < numbersAvailable{2}) /\
+                 (has (fun (x) => x \in unionSet{2}) specialSet{2} =>
+                    0 < specialAvailable{2})).
+       + ecall (imp_ref_define_union_set_equiv
+         lowercaseAvailable{2} uppercaseAvailable{2} numbersAvailable{2} specialAvailable{2}).
+         auto.
+       sd         
+         
+    *  
+  - admit.
 +
 
 
