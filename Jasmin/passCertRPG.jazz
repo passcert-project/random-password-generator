@@ -16,9 +16,9 @@ inline fn rng(reg u64 range) -> reg u64 {
         max_value -= 1;
     }
 
-    tmp2 = #RDRAND(); // RDRAND
+    tmp2 = #RDRAND();
     while(max_value < tmp2) {
-        tmp2 = #RDRAND(); // RDRAND
+        tmp2 = #RDRAND();
     }
     tmp1 = tmp2;
     tmp_range += 1;
