@@ -37,7 +37,7 @@ module M = {
   }
   
   proc random_char_generator (range:W64.t, set:W8.t Array76.t) : W8.t = {
-    
+
     var char:W8.t;
     var choice_0:W64.t;
     

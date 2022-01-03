@@ -11,11 +11,12 @@ require import WArray76.
 (*----- Auxiliary operators -----*)
 (*-------------------------------*)
 
-op EqWordChar word char = W8.to_uint word = char.
-op EqWordInt word int = W64.to_uint word = int.
-op EqIntWord int word = W64.of_int int = word.
+abbrev EqWordChar word char = W8.to_uint word = char.
+abbrev EqWordInt word int = W64.to_uint word = int.
+abbrev EqIntWord int word = W64.of_int int = word.
 op EqWordIntSet (memSet:W8.t Array76.t) (specSet:charSet) =
   forall n, n \in range 0 (size specSet) => EqWordChar memSet.[n] (nth (-1) specSet n).
+
 
 op policyFitsW64 policy =
   0 <= policy.`length < W64.modulus /\
@@ -28,6 +29,7 @@ op policyFitsW64 policy =
   0 <= policy.`specialMin < W64.modulus /\
   0 <= policy.`specialMax < W64.modulus.
 
+
 op memPolicy_eq_specPolicy mem policyAddr policy =
   EqWordInt (loadW64 mem (W64.to_uint policyAddr)) policy.`length /\
   EqWordInt (loadW64 mem ((W64.to_uint policyAddr)+8)) policy.`lowercaseMin /\
@@ -38,6 +40,7 @@ op memPolicy_eq_specPolicy mem policyAddr policy =
   EqWordInt (loadW64 mem ((W64.to_uint policyAddr)+48)) policy.`numbersMax /\
   EqWordInt (loadW64 mem ((W64.to_uint policyAddr)+56)) policy.`specialMin /\
   EqWordInt (loadW64 mem ((W64.to_uint policyAddr)+64)) policy.`specialMax.
+
 
 op specPolicy_eq_registers policy (length lowercase_min lowercase_max uppercase_min uppercase_max
                  numbers_min numbers_max special_min special_max) =
@@ -55,6 +58,7 @@ op specPolicy_eq_registers policy (length lowercase_min lowercase_max uppercase_
 op memPassword_eq_specPassword mem passwordAddr password =
   forall n, n \in range 0 (size password) =>
   nth (-1) password n = W8.to_uint (loadW8 mem (W64.to_uint passwordAddr + n)).
+
 
 op satisfiableMemPolicy (length
                          lowercase_min lowercase_max
@@ -173,24 +177,6 @@ have ->: size (filter (pred1 x \o W64.of_int) (range 0 18446744073709551616)) = 
 done.
 qed.
 
-lemma wordint_to_intword word int :
-  EqWordInt word int => EqIntWord int word.
-proof.
-rewrite /EqWordInt /EqIntWord.
-move => h1.
-by rewrite - h1.
-qed.
-
-
-lemma eqwordint_int_id x :
-  0 <= x < W64.modulus =>
-  EqWordInt (of_int%W64 x) x.
-proof.
-move => h1.
-rewrite /EqWordInt to_uint_small.
-assumption.
-reflexivity.
-qed.
 
 lemma load_from_store mem addr word :
   loadW64 (storeW64 mem addr word) (addr) = word.
@@ -200,11 +186,13 @@ apply W8u8.Pack.all_eq_eq; rewrite /all_eq !storesE /=.
 rewrite !get_setE => |>. smt().
 qed.
 
+
 lemma load_from_store_W8 mem addr word :
   loadW8 (storeW8 mem addr word) (addr) = word.
 proof.
 by rewrite /loadW8 /storeW8 /=.
 qed.
+
 
 lemma load_storeW64_neq mem a1 a2 word:
  (a2 + 8 <= a1 || a1 + 8 <= a2) => 
@@ -214,6 +202,7 @@ move => H; rewrite /loadW64 /storeW64; congr.
 apply W8u8.Pack.all_eq_eq; rewrite /all_eq !storesE /=.
 rewrite !get_setE => |>. smt(). 
 qed.
+
 
 lemma load_pw_append_unchanged (mem:global_mem_t) offset max x :
   forall n, n \in range 0 max =>
@@ -374,7 +363,6 @@ rewrite /EqWordIntSet.
 rewrite /EqWordIntSet in h1.
 move => n0.
 move => h3.
-rewrite /EqWordChar.
 rewrite get_set_if.
 have diff : !(n0 = n).
 + rewrite mem_range in h3.
@@ -468,6 +456,8 @@ case (n = size specSet).
   smt().
 qed.
 
+
+
 lemma pwdMemToSpec_eq mem addr length pw :
   hoare[ConcreteScheme.pwdMemToSpec :
         length = size pw /\
@@ -525,12 +515,11 @@ seq 5 1 : (#pre /\
 - wp.
   skip.
   move => &1 &2 [h1 [h2 [h3 h4]]] />.
-  rewrite umodE /ulift2 h1 /= /EqWordInt to_uint_small.
+  rewrite umodE /ulift2 h1 /= to_uint_small.
   split.
   + by apply modn_ge0.
   + move => h5.
     rewrite h2.
-    rewrite /EqWordInt in h2.
     rewrite h2 in h4.
     smt().
   do! split.
@@ -555,12 +544,7 @@ if.
     congr.
   + move => h6. 
     subst modValue{2}.
-    apply wordint_to_intword in h2.
-    apply wordint_to_intword in h3.
-    rewrite /EqIntWord in h2.
-    rewrite /EqIntWord in h3.
-    subst tmp1{1}.
-    by subst tmp_range{1}.
+    by rewrite -to_uintK h2 -h3 to_uintK.
 - seq 1 1 : (#[/:]pre /\ EqWordInt max_value{1} maxValue{2} /\ 0 <= maxValue{2} < W64.modulus).
   + wp.
     by skip.
@@ -577,7 +561,7 @@ if.
              EqWordInt tmp2{1} value{2}).
   + rnd W64.to_uint W64.of_int.
     skip.
-    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12.
+    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8.
     split.
     * move => vR h13.
       rewrite to_uint_small.
@@ -615,20 +599,20 @@ if.
            EqWordInt tmp2{1} value{2}).
     * rnd W64.to_uint W64.of_int.  
       skip.
-      move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8.
+      move => &m1 &m2 /> h1 h2 h3 h4 h5 h6.
       split.
-      + move => vR h9.
+      + move => vR h7.
         rewrite to_uint_small.   
         have supp : 0 <= vR <= 18446744073709551615.
         + by apply supp_dinter.
         smt().
         reflexivity.
-      + move => h9.
+      + move => h7.
         split.
-        + move => vR h10.
+        + move => vR h8.
           rewrite RDRAND_dinterval (dmap1E_can [0..W64.max_uint] W64.of_int W64.to_uint).
           exact W64.to_uintK.
-          move => a h11.
+          move => a h9.
           rewrite to_uint_small.
           have supp : 0 <= a <= 18446744073709551615.
           + by apply supp_dinter.
@@ -639,73 +623,52 @@ if.
           + by apply supp_dinter.
           smt().
           by simplify.
-        + move => vR tmp2L h10.
+        + move => vR tmp2L h8.
           split.
           + rewrite supp_dinter.    
             have eq : 0 <= to_uint tmp2L && to_uint tmp2L < W64.modulus.
             * apply W64.to_uint_cmp.
             smt.
-          + move => h11.
+          + move => h9.
             do! split.
             + smt.
             + smt.
             + move => h12.
-              rewrite -h1.
               smt.
             + move => h12.
-              apply wordint_to_intword in h1.
-              rewrite -h1.
-              rewrite ultE to_uint_small.
-              split.
-              assumption. by move => h13 /=.
-              assumption.
+              by rewrite ultE.
     * skip.
-      move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12.
+      move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8.
       split.
-      + move => h13.  
-        rewrite /EqWordInt in h11.
-        rewrite /EqWordInt in h6.
-        rewrite -h12 -h7.
-        by rewrite ultE in h13.
-      + move => h13.
-        apply wordint_to_intword in h12.
-        rewrite /EqIntWord in h12.
-        apply wordint_to_intword in h7.
-        rewrite /EqIntWord in h7.
-        rewrite -h12 -h7.
-        rewrite ultE.
-        rewrite to_uint_small.
-        split. assumption. by move => ?.
-        rewrite to_uint_small.
-        smt.
-        assumption.
+      + move => h9.  
+        by rewrite ultE in h9.
+      + move => h9.
+        by rewrite ultE.
   wp.
   skip.
-  move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12.
+  move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8.
   do! split.
-  - rewrite /EqWordInt.
-  apply wordint_to_intword in h6.
-  rewrite /EqIntWord in h6.
-  rewrite -h6.
-  simplify.
-  rewrite -h12.
-  rewrite umodE /ulift2 to_uint_small to_uint_small.
-  rewrite h2 in h4.
-  smt().
-  smt().
-  smt().
-  smt().
-  smt().
-  smt().
+  - rewrite umodE /ulift2 to_uintD h4 /=.
+    have mod : to_uint range{m1} %% 18446744073709551616 = to_uint range{m1}.
+    + smt().
+    rewrite mod of_uintK /=.
+    smt().
+  - smt().
+  - smt().
 - seq 2 1 : (#[/:]pre /\ EqWordInt max_value{1} maxValue{2}).
   - wp.
     skip.
-    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10.
-    rewrite /EqWordInt to_uintB.
+    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7.
+    rewrite to_uintB.
     assumption. 
     rewrite to_uintB.
     assumption.
-    by rewrite -h4 h6 /=.
+    have eq : (to_uint tmp2{m1} - to_uint tmp1{m1} - 1 =
+              18446744073709551614 - to_uint tmp1{m1}) =
+              (to_uint tmp2{m1} - to_uint tmp1{m1} =
+              18446744073709551615 - to_uint tmp1{m1}).
+    + smt().
+    by rewrite /= eq h4.
   seq 2 2 : (range{2} = _range /\
              0 < _range /\
              0 <= to_uint tmp2{1} /\
@@ -721,20 +684,20 @@ if.
                EqWordInt (tmp_range{1} + W64.one) range{2}).
     - rnd W64.to_uint W64.of_int.
     skip.
-    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11.
+    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7.
     split.
-    * move => vR h12.
+    * move => vR h8.
       rewrite to_uint_small.   
       have supp : 0 <= vR <= 18446744073709551615.
       + by apply supp_dinter.
       smt().
       reflexivity.
-    * move => h12.
+    * move => h8.
       split.
-      * move => vR h13.
+      * move => vR h9.
         rewrite RDRAND_dinterval (dmap1E_can [0..W64.max_uint] W64.of_int W64.to_uint).
         exact W64.to_uintK.
-        move => a h14.
+        move => a h10.
         rewrite to_uint_small.
         have supp : 0 <= a <= 18446744073709551615.
         + by apply supp_dinter.
@@ -745,30 +708,25 @@ if.
         + by apply supp_dinter.
         smt().
         by simplify.
-      * move => vR tmp2L h13.
+      * move => vR tmp2L h9.
         rewrite supp_dinter.    
         have eq : 0 <= to_uint tmp2L && to_uint tmp2L < W64.modulus.
         + apply W64.to_uint_cmp.
-        split.
+        do! split.
         * smt.
-        * move => h14.
-          split.
-          * case eq.
-            move => />.
-          * split.
-            * by rewrite -h1.
-            * rewrite /EqWordInt in h5.
-              rewrite h1 in h3.
-              rewrite /EqWordInt to_uintD /=.
-              have : (to_uint tmp_range{m1} + 1) < 18446744073709551616.
-              + smt().
-              have : (to_uint tmp_range{m1} + 1) %% 18446744073709551616 =
-                     (to_uint tmp_range{m1} + 1).
-              + rewrite pmod_small.
-              smt().
-              reflexivity.
-              move => h15 h16.
-              rewrite h5 /= /#.
+        * move => h10.
+          case eq.
+          move => /> h11 h12.
+          smt().
+        * move => /> h10 h11.
+          rewrite to_uintD /=.
+          have small : (to_uint tmp_range{m1} + 1) %% 18446744073709551616 =
+                       to_uint tmp_range{m1} + 1.
+          + smt().
+          have eq2 : ((to_uint tmp_range{m1} + 1) = to_uint range {m1}) =
+                    EqWordInt tmp_range{m1} (to_uint range{m1} - 1).
+          + smt().
+          by rewrite small eq2.
     while (range{2} = _range /\
            0 < _range /\
            EqWordInt max_value{1} maxValue{2} /\
@@ -776,7 +734,7 @@ if.
            EqWordInt (tmp_range{1} + W64.one) range{2}).
     * rnd W64.to_uint W64.of_int.  
       skip.
-      move => &m1 &m2 /> h1 h2 h3 h4 h5 h6.
+      move => &m1 &m2 /> h1 h2 h3.
       split.
       + move => vR h7.
         rewrite to_uint_small.
@@ -807,20 +765,21 @@ if.
             * apply W64.to_uint_cmp.
             smt.
           + move => h9.
-            rewrite /EqWordInt in h2.
-            by rewrite ultE h2.
-              skip.
-              move => &m1 &m2 /> h1 h2 h3 h4 h5 h6.
-              rewrite /EqWordInt in h4.
-              rewrite /EqWordInt in h5.
-              do! split.
-              + by rewrite ultE h4 h5.
-              + by rewrite ultE h4 h5.
-              + smt.
-wp.
+            split.
+            * move => h10.
+              by rewrite ultE in h10.
+            * move => h10.
+              by rewrite ultE.
+        skip.
+        move => &m1 &m2 /> h1 h2 h3.
+        do! split.
+        + move => h4. by rewrite ultE in h4.
+        + move => h4. by rewrite ultE.
+        + smt.
+wp. 
 skip.
 move => &m1 &m2 [h1 [h2 [h3 [h4 [h5 h6]]]]].
-rewrite /EqWordInt umodE /ulift2 to_uint_small.
+rewrite umodE /ulift2 to_uint_small.
 split.
 - by apply modn_ge0.
 - smt.
@@ -828,9 +787,7 @@ subst.
 move => vR />.
 split.
 - smt().
-- split.
-  - rewrite modz_ge0. smt().
-  - move => h7. by apply ltz_pmod.
+- move => h7. by apply ltz_pmod.
 qed.
 
 (*---------------------------*)
