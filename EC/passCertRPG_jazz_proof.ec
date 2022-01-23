@@ -810,9 +810,8 @@ seq 1 1 : (#pre /\ 0 <= choice{2} < (size set{2}) /\ EqWordInt choice_0{1} choic
   by skip.
 wp.
 skip.
-move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7.
+move => &m1 &m2 /> h1 h2 h3 h4 h5 h6.
 rewrite /EqWordIntSet in h1.
-rewrite h7.
 split.
 - apply h1.
   by apply mem_range.
@@ -871,9 +870,9 @@ seq 1 1 : (#pre /\
            to_uint i_set{1} = size unionSet{2} /\
            EqWordIntSet union_set{1} unionSet{2}).
 - auto.
-  move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 n h14.
-  rewrite /= in h14.
-  by apply n_range_0 in h14.
+  move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 n h10.
+  rewrite /= in h10.
+  by apply n_range_0 in h10.
 
 seq 1 1 : (nLowercase{2} = _nLowercase /\
            nUppercase{2} = _nUppercase /\
@@ -902,42 +901,44 @@ seq 1 1 : (nLowercase{2} = _nLowercase /\
             x \in lowercaseSet{2}) /\
            (has (mem unionSet{2}) lowercaseSet => 0 < _nLowercase)).
 - if.
-  + move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14.
-    by rewrite -h1 ultE.
+  + move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10.
+    by rewrite ultE.
   + auto.
-    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15.
-    rewrite ultE /= in h15.
-    rewrite /EqWOrdInt in h1.
+    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11.
+    rewrite ultE /= in h11.
     do! split.
-    - by rewrite size_cat -h13 /= eq_sym.
-    - rewrite /EqWordIntSet size_cat -h13 /=.
-      rewrite /EqWordIntSet in h5.
+    - by rewrite size_cat -h9 /= eq_sym.
+    - rewrite /EqWordIntSet size_cat -h9 /=.
+      rewrite /EqWordIntSet in h1.
       move => n.
-      rewrite mem_range.
-      move => [h16 h17].
-      do! rewrite get_set_if /=.
-      - case (n=25). move => h18.
-        rewrite eq_sym size_eq0 in h13.
-        rewrite h13 h18 /=.
-        apply h5.
-        rewrite mem_range /#.
-        admit.
-    - by rewrite size_cat h9 -h13.
-    - by rewrite size_cat h9 -h13.
-    - rewrite eq_sym size_eq0 in h13.
-      by rewrite h13.
-    - rewrite eq_sym size_eq0 in h13.
-      rewrite h13 /=.
+      (*rewrite mem_range.
+      move => [h12 h13].*)
+      rewrite get_set_if /=.
+      + case (n=25). move => h12.
+        rewrite eq_sym size_eq0 in h9.
+        rewrite h9 h12 /=.
+        apply h1.
+      + case (n=24). move => h12.
+        rewrite eq_sym size_eq0 in h9.
+        rewrite h9 h12 /=.
+        apply h1.
+      admit. (*FACIL ISTO É UM LOOP*)        
+    - by rewrite size_cat -h9.
+    - by rewrite size_cat -h9.
+    - rewrite eq_sym size_eq0 in h9.
+      by rewrite h9.
+    - rewrite eq_sym size_eq0 in h9.
+      rewrite h9 /=.
       rewrite charset_has /#.
   + auto.
-    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15.
-    rewrite eq_sym size_eq0 in h13.
+    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11.
+    rewrite eq_sym size_eq0 in h9.
     do! split.
     - smt().
     - smt().
     - move => x.
-      by rewrite h13 /=.
-    - rewrite h13.
+      by rewrite h9 /=.
+    - rewrite h9.
       trivial.
 
 seq 1 1 : (nLowercase{2} = _nLowercase /\
@@ -969,38 +970,39 @@ seq 1 1 : (nLowercase{2} = _nLowercase /\
            (has (fun (x) => x \in unionSet{2}) lowercaseSet{2} => 0 < _nLowercase) /\
            (has (fun (x) => x \in unionSet{2}) uppercaseSet{2} => 0 < _nUppercase)).
 - if. 
-  + move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18.
-    by rewrite -h2 ultE.
+  + move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14.
+    by rewrite ultE.
   + auto.
-    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19.
+    move => &m1 &m2 /> h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15.
     do! split.
-    - rewrite size_cat -h13 h10 eq_sym to_uintD /=.
-      have h20 : (to_uint i_set{m1} + 26) %% 18446744073709551616 =
+    - rewrite size_cat -h9 eq_sym to_uintD /=.
+      have h16 : (to_uint i_set{m1} + 26) %% 18446744073709551616 =
                  (to_uint i_set{m1} + 26).
       + smt().
-      by rewrite h20.
-    - rewrite /EqWordIntSet size_cat -h13 /=.
-      rewrite /EqWordIntSet in h6.
+      by rewrite h16.
+    - rewrite /EqWordIntSet size_cat -h9 /=.
+      rewrite /EqWordIntSet in h2.
       move => n.
       rewrite mem_range.
-      move => [h20 h21].
+      move => h16.
       do! rewrite get_set_if /=.
       + case (n = (to_uint i_set{m1}) + 25).
-        move => h22.
-        rewrite h22 /=.
+        move => h17.
+        rewrite h17 /=.
         have : (0 <= to_uint (i_set{m1} + (of_int 25)%W64) &&
                to_uint (i_set{m1} + (of_int 25)%W64) < 76) /\
                to_uint i_set{m1} + 25 = to_uint (i_set{m1} + (of_int 25)%W64).
         + do! split.
           * rewrite to_uintD /= /#.
-          * rewrite to_uintD h13 /#.
           * rewrite to_uintD /#.
-        move => h23. rewrite h23 /=.
-        rewrite nth_cat h13. have h24 : !(size unionSet{m2} + 25 < size unionSet{m2}). smt().
-        rewrite h24 /=.
-        have h25 : size unionSet{m2} + 25 - size unionSet{m2} = 25. smt().
-        rewrite h25.
-        apply h6.
+          * rewrite to_uintD /#.
+        move => h18.
+        rewrite h18 /= nth_cat h9.
+        have h19 : !(size unionSet{m2} + 25 < size unionSet{m2}). smt().
+        rewrite h19 /=.
+        have h20 : size unionSet{m2} + 25 - size unionSet{m2} = 25. smt().
+        rewrite h20.
+        apply h2.
         rewrite mem_range /#.
       + admit.
     - rewrite size_cat /#.
