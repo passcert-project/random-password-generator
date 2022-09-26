@@ -1,0 +1,309 @@
+
+// Sizes of character-classes
+param int s_u = 26 // Uppercase
+param int s_l = 26 // Lowercase
+param int s_d = 10 // digits
+param int s_s = 14 // special
+u8[s_u+s_l+s_d+s_s] charLUT =
+ { // uppcase
+   65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90,
+   // lowercase
+   97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122,
+   // digit
+   48, 49, 50, 51, 52, 53, 54, 55, 56, 57,
+   // special
+   33, 35, 36, 37, 38, 42, 43, 45, 58, 59, 61, 63, 64, 95 };
+
+/* rejection sample on a multiple of 1061260200 (the LCM of all
+ possible ranges -- LCM([10,14,24,26,36,40,50,52,62,66,76]), which
+ are the ranges for all possible combinations of character-classes. */
+inline fn rng1061260200x() -> reg u64 {
+
+    reg u64 range value;
+
+    range = 18446744072704147200; // 17381923936 * 1061260200
+
+    value = #RDRAND();
+    while (range <= value) {
+      value = #RDRAND();
+    }
+    return value;
+}
+
+inline fn rng_range(reg u64 range) -> reg u64 {
+
+    reg u64 value;
+
+    /* ... rejection sampling with variable (public) range */
+    return value;
+}
+
+
+
+/* Constant-time lookup of character with index 's' over categories
+ specified in 'cats' */
+inline fn ctlookup_charLUT(reg u64 cats s) -> reg u64, reg u8 {
+  reg u8 c c_tmp;
+  reg u64 i, zero, minus_one, decmask, catsdec, dec, oncat; 
+
+  zero = 0;
+  minus_one = -1;
+  decmask = 1;
+  s += 1;
+  i = 0;
+  while (i < s_u+s_l+s_d+s_s) {
+    if (i == 0) {
+      dec = 1;
+      oncat = cats;
+      oncat &= 255;
+      dec = zero if oncat==0;
+    }
+    if (i == s_u) {
+      decmask <<= 8;
+      dec = 1;
+      oncat = cats;
+      oncat >>= 8;
+      oncat &= 255;
+      dec = zero if oncat==0;
+    }
+    if (i == s_u+s_l) {
+      decmask <<= 8;
+      dec = 1;
+      oncat = cats;
+      oncat >>= 16;
+      oncat &= 255;
+      dec = zero if oncat==0;
+    }
+    if (i == s_u+s_l+s_d) {
+      decmask <<= 8;
+      dec = 1;
+      oncat = cats;
+      oncat >>= 24;
+      oncat &= 255;
+      dec = zero if oncat==0;
+    }
+    c_tmp = charLUT[i];
+    catsdec = 0;
+    _, _, _, _, zf, s = #SUB_64(s, dec);
+    // IF s==0:
+    c = c_tmp if zf;
+    s = minus_one if zf;
+    catsdec = decmask if zf;
+    // ENDIF
+    cats -= catsdec;
+    i += 1;
+  }
+  return cats, c;
+}
+
+/* generates a random char, from the categories specified on 'cats'.
+ 'cats' contains the allowed (max) number of chars in each category:
+      byte0 cats = max_upper
+      byte1 cats = max_lower
+      byte2 cats = max_digits
+      byte3 cats = max_special
+ The returned character is sampled from all categories with non-zero
+ max limit. The encoded 'cats' is updated accordingly to the sampled
+ character. */
+inline fn random_char(reg u64 cats) -> reg u64 cats, reg u8 {
+  reg u8 range size zero c;
+  reg u64 value oncat;
+
+  zero = 0;
+  range = 0;
+  size = s_u;
+  oncat = cats;
+  oncat &= 255;
+  size = 0 if oncat==0;
+  range += size;
+  size = size_l;
+  oncat = cats;
+  oncat >>= 8;
+  oncat &= 255;
+  size = 0 if oncat==0;
+  range += size;
+  size = size_d;
+  oncat = cats;
+  oncat >>= 16;
+  oncat &= 255;
+  size = 0 if oncat==0;
+  range += size;
+  size = size_d;
+  oncat = cats;
+  oncat >>= 24;
+  oncat &= 255;
+  size = 0 if oncat==0;
+  range += size;
+
+  value = rng1061260200x();
+  value = value % range;
+
+  cats, c = ctlookup_charLUT(cats, value);
+  return cats, c;
+}
+
+/* checks if a policy is valid and satisfiable.
+ A policy is encoded as '(len, mins, maxs)', where
+    u8 len - length of password
+    u64 mins - minimum number of chars in each cat.
+    u64 maxs - maximum number of chars in each cat.
+ It checks:
+  - 'len' is positive
+  - each 'min' is less-or-equal to 'max'
+  - the sum of 'mins' is not greater than 'len'
+  - the sum of 'maxs' is not less than 'len'
+ OBS: no need to be CT...
+*/
+inline fn polSat(reg u8 len, reg u64 mins maxs) -> reg u64 {
+  reg u64 res, mins_sum, maxs_sum, min_tmp, max_tmp;
+  res = 1;
+  if (len == 0) { // obs: assuming max_pw_len=255
+    res &= 0;
+  }
+  // mins sum
+  mins_sum = 0;
+  maxs_sum = 0;
+  min_tmp = mins;
+  min_tmp &= 255;
+  max_tmp = maxs;
+  max_tmp &= 255;
+  mins_sum += min_tmp;
+  maxs_sum += max_tmp;
+  if (max_tmp < min_tmp) {
+    res = 0;
+  }
+  min_tmp = mins;
+  min_tmp >>= 8;
+  min_tmp &= 255;
+  max_tmp = maxs;
+  max_tmp >>= 8;
+  max_tmp &= 255;
+  mins_sum += min_tmp;
+  maxs_sum += max_tmp;
+  if (max_tmp < min_tmp) {
+    res = 0;
+  }
+  min_tmp = mins;
+  min_tmp >>= 16;
+  min_tmp &= 255;
+  max_tmp = maxs;
+  max_tmp >>= 16;
+  max_tmp &= 255;
+  mins_sum += min_tmp;
+  maxs_sum += max_tmp;
+  if (max_tmp < min_tmp) {
+    res = 0;
+  }
+  min_tmp = mins;
+  min_tmp >>= 24;
+  min_tmp &= 255;
+  max_tmp = maxs;
+  max_tmp >>= 24;
+  max_tmp &= 255;
+  mins_sum += min_tmp;
+  maxs_sum += max_tmp;
+  if (max_tmp < min_tmp) {
+    res = 0;
+  }
+  if (len < mins_sum) {
+    res = 0;
+  }
+  if (maxs_sum < len) {
+    res = 0;
+  }
+  return res;
+}
+
+inline fn genPolPw(reg u8 len, reg u64 mins maxs pwptr) -> reg u64{
+  reg u64 allowed;
+  
+  r = polSat(len, mins, maxs);
+  if (r != 0) {
+    // Generate minimums...
+    allowed = mins;
+    allowed &= 255;
+    while (allowed != 0) {
+      allowed, c = rnd_char(allowed);
+      [pwptr] = c;
+      pwptr += 1;
+      len -= 1;
+    }
+    allowed = mins;
+    allowed &= 255*256;
+    while (allowed != 0) {
+      allowed, c = rnd_char(allowed);
+      [pwptr] = c;
+      pwptr += 1;
+      len -= 1;
+    }
+    allowed = mins;
+    allowed &= 255*256*256;
+    while (allowed != 0) {
+      allowed, c = rnd_char(allowed);
+      [pwptr] = c;
+      pwptr += 1;
+      len -= 1;
+    }
+    allowed = mins;
+    allowed &= 255*256*256*256;
+    while (allowed != 0) {
+      allowed, c = rnd_char(allowed);
+      [pwptr] = c;
+      pwptr += 1;
+      len -= 1;
+    }
+    // remaining chars
+    allowed = maxs;
+    allowed -= mins;
+    while (0 < len) {
+      allowed, c = rnd_char(allowed);
+      [pwptr] = c;
+      pwptr += 1;
+      len -= 1;
+    }      
+  }
+  return r;
+}
+
+
+/* Constant-time swap:
+  swaps [pwptr+i] with [pwptr+j] in contant-time
+  assumes: pos1 <= pos2 < pw_len
+*/
+inline cswap(reg u64 pos1 pos2 pwptr) {
+  reg u8 c, c_new, c_i;
+  reg u64 i;
+
+  c = [pwptr+pos2];
+  c_new = c;
+  i = 0;
+  while (i < pos2) {
+    c_i = [pwptr + i];
+    _, _, _, _, zf, _ = #SUB(i,pos1);
+    c_new = c_i if zf;
+    c_i = c if zf;
+    [pwptr + i] = c_i;
+  }
+  [pwptr + pos2] = c_new;
+}
+
+/* generates a random permutation */
+inline rndPerm(reg u64 pwptr len) {
+  reg u64 i;
+  while (0 < len) {
+    i = rnd_range(len);
+    len -= 1;
+    cswap(pwptr, i, len);
+  }
+}
+
+
+export fn genPw(reg u8 len, reg u64 mins maxs pwptr) -> reg u64 {
+  reg u64 r;
+  r = genPolPw(len, mins, maxs, pwptr);
+  if (r != 0) {
+    rndPerm(pwptr, len);
+  }
+  return r;
+}
+
